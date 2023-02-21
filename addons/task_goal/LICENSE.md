@@ -22,6 +22,8 @@ SOFTWARE.
 
 ----
 
+Thirdparty
+
 SPDX-FileCopyrightText: 2021 University of Maryland
 SPDX-License-Identifier: BSD-3-Clause-Clear
 
