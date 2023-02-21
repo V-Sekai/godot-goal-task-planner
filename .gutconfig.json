@@ -6,7 +6,7 @@
 	"ignore_pause": false,
 	"include_subdirs": true,
 	"inner_class": "",
-	"log_level": 0,
+	"log_level": 3,
 	"opacity": 100,
 	"prefix": "test_",
 	"selected": "",
@@ -15,7 +15,7 @@
 	"suffix": ".gd",
 	"tests": [
 	],
-	"junit_xml_file": "res://TEST.xml",
+	"junit_xml_file": "res://task_goal_planner/results/TEST.xml",
 	"junit_xml_timestamp": true,
 	"unit_test_name": ""
 }

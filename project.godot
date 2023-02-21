@@ -13,3 +13,10 @@ config_version=5
 config/name="Task Goal Game Project"
 config/features=PackedStringArray("4.0", "Double Precision", "Forward Plus")
 config/icon="res://icon.svg"
+
+[debug]
+
+gdscript/warnings/inference_on_variant=1
+gdscript/warnings/native_method_override=1
+gdscript/warnings/get_node_default_without_onready=1
+gdscript/warnings/onready_with_export=1
