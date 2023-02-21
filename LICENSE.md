@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2022 K. S. Ernest (iFire) Lee
+Copyright (c) 2022-present K. S. Ernest (iFire) Lee
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
