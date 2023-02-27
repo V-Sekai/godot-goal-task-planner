@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="GutTests" failures="0" tests="12" >
+  <testsuite name="res://addons/task_goal/test/integration/test_integration.gd" tests="1" failures="0" skipped="0" >
+      <testcase name="test_together_goal" assertions="1" status="pass" classname="res://addons/task_goal/test/integration/test_integration.gd" >
+      </testcase>
+      </testsuite>
+  <testsuite name="res://addons/task_goal/test/integration/test_logistics.gd" tests="4" failures="0" skipped="0" >
+      <testcase name="test_move_goal_1" assertions="1" status="pass" classname="res://addons/task_goal/test/integration/test_logistics.gd" >
+      </testcase>
+      <testcase name="test_move_goal_2" assertions="1" status="pass" classname="res://addons/task_goal/test/integration/test_logistics.gd" >
+      </testcase>
+      <testcase name="test_move_goal_3" assertions="1" status="pass" classname="res://addons/task_goal/test/integration/test_logistics.gd" >
+      </testcase>
+      <testcase name="test_move_goal_4" assertions="1" status="pass" classname="res://addons/task_goal/test/integration/test_logistics.gd" >
+      </testcase>
+      </testsuite>
+  <testsuite name="res://addons/task_goal/test/integration/test_romantic.gd" tests="4" failures="0" skipped="0" >
+      <testcase name="test_move_to_home" assertions="1" status="pass" classname="res://addons/task_goal/test/integration/test_romantic.gd" >
+      </testcase>
+      <testcase name="test_move_to_band_practice" assertions="1" status="pass" classname="res://addons/task_goal/test/integration/test_romantic.gd" >
+      </testcase>
+      <testcase name="test_together_goal" assertions="1" status="pass" classname="res://addons/task_goal/test/integration/test_romantic.gd" >
+      </testcase>
+      <testcase name="test_play_game" assertions="1" status="pass" classname="res://addons/task_goal/test/integration/test_romantic.gd" >
+      </testcase>
+      </testsuite>
+  <testsuite name="res://addons/task_goal/test/integration/test_simple_gtn.gd" tests="1" failures="0" skipped="0" >
+      <testcase name="test_simple_gtn" assertions="4" status="pass" classname="res://addons/task_goal/test/integration/test_simple_gtn.gd" >
+      </testcase>
+      </testsuite>
+  <testsuite name="res://addons/task_goal/test/integration/test_simple_htn.gd" tests="1" failures="0" skipped="0" >
+      <testcase name="test_simple_gtn" assertions="3" status="pass" classname="res://addons/task_goal/test/integration/test_simple_htn.gd" >
+      </testcase>
+      </testsuite>
+  <testsuite name="res://addons/task_goal/test/unit/test_unit.gd" tests="1" failures="0" skipped="0" >
+      <testcase name="test_assert_eq_test_string_equal" assertions="1" status="pass" classname="res://addons/task_goal/test/unit/test_unit.gd" >
+      </testcase>
+      </testsuite>
+  </testsuites>

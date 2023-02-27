@@ -81,12 +81,11 @@ func _setup_gui(show_gui):
 
 
 func _write_results():
-	var content = _gui.get_textbox().text #_gut.logger.get_gui_bbcode()
-
+	var content = _gui.get_textbox().get_parsed_text() #_gut.logger.get_gui_bbcode()
 	var f = FileAccess.open(RESULT_FILE, FileAccess.WRITE)
 	if(f != null):
 		f.store_string(content)
-		f.close()
+		f = null # closes file
 	else:
 		push_error('Could not save bbcode, result = ', FileAccess.get_open_error())
 

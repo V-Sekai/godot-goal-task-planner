@@ -38,82 +38,10 @@ class_name GutTest
 # ##############################################################################
 extends Node
 
-# ------------------------------------------------------------------------------
-# Helper class to hold info for objects to double.  This extracts info and has
-# some convenience methods.  This is key in being able to make the "smart double"
-# method which makes doubling much easier for the user.
-# -----------------------------------------------------------------------------
-class DoubleInfo:
-	var subpath = null
-	var strategy
-	var make_partial
-	var _utils = load('res://addons/gut/utils.gd').get_instance()
-	var _is_native = false
-	var is_valid = false
-	var resource  = null
 
-	# Flexible init method.  p2 can be subpath or stategy unless p3 is
-	# specified, then p2 must be subpath and p3 is strategy.
-	#
-	# Examples:
-	#   (object_to_double)
-	#   (object_to_double, subpath)
-	#   (object_to_double, strategy)
-	#   (object_to_double, subpath, strategy)
-	func _init(thing,p2=null,p3=null):
-		strategy = p2
-		# short-circuit and ensure that is_valid
-		# is not set to true.
-		if(_utils.is_instance(thing)):
-			return
-
-		if(typeof(p2) == TYPE_STRING):
-			strategy = p3
-			subpath = p2
-
-		if(typeof(thing) == TYPE_OBJECT):
-			if(_utils.is_native_class(thing)):
-				_is_native = true
-			resource = thing
-		elif(typeof(thing) == TYPE_STRING):
-			resource = load(thing)
-			if(subpath != null and typeof(subpath) == TYPE_STRING):
-				var parts = subpath.split('/')
-				for i in range(parts.size()):
-					resource = resource.get(parts[i])
-			elif(subpath != null):
-				resource = subpath
-
-		is_valid = true
-
-	func is_scene():
-		return resource is PackedScene
-
-	func is_script():
-		return resource is GDScript
-
-	func is_native():
-		return _is_native
-
-	func to_s():
-		return str(
-			'resource   ', resource, "\n",
-			'subpath    ', subpath, "\n",
-			'strategy   ', strategy, "\n",
-			'partial    ', make_partial, "\n",
-			'native     ', _is_native, "\n",
-			'valid      ', is_valid, "\n")
-
-
-# ------------------------------------------------------------------------------
-# Begin test.gd
-# ------------------------------------------------------------------------------
 var _utils = load('res://addons/gut/utils.gd').get_instance()
 var _compare = _utils.Comparator.new()
 
-# constant for signal when calling yield_for
-const YIELD = 'timeout'
-signal timeout
 
 # Need a reference to the instance that is running the tests.  This
 # is set by the gut class when it runs the tests.  This gets you
@@ -314,13 +242,11 @@ func assert_eq(got, expected, text=""):
 		var disp = "[" + _str(got) + "] expected to equal [" + _str(expected) + "]:  " + text
 		var result = null
 
-		if(typeof(got) == TYPE_ARRAY):
-			result = _compare.shallow(got, expected)
-		else:
-			result = _compare.simple(got, expected)
+		result = _compare.simple(got, expected)
 
 		if(typeof(got) in [TYPE_ARRAY, TYPE_DICTIONARY]):
 			disp = str(result.summary, '  ', text)
+			_lgr.info('Array/Dictionary compared by value.  Use assert_same to compare references.  Use assert_eq_deep to see diff when failing.')
 
 		if(result.are_equal):
 			_pass(disp)
@@ -336,13 +262,11 @@ func assert_ne(got, not_expected, text=""):
 		var disp = "[" + _str(got) + "] expected to not equal [" + _str(not_expected) + "]:  " + text
 		var result = null
 
-		if(typeof(got) == TYPE_ARRAY):
-			result = _compare.shallow(got, not_expected)
-		else:
-			result = _compare.simple(got, not_expected)
+		result = _compare.simple(got, not_expected)
 
 		if(typeof(got) in [TYPE_ARRAY, TYPE_DICTIONARY]):
 			disp = str(result.summary, '  ', text)
+			_lgr.info('Array/Dictionary compared by value.  Use assert_not_same to compare references.  Use assert_ne_deep to see diff.')
 
 		if(result.are_equal):
 			_fail(disp)
@@ -750,6 +674,7 @@ func assert_has_signal(object, signal_name, text=""):
 	else:
 		_fail(disp)
 
+
 # ------------------------------------------------------------------------------
 # Returns the number of times a signal was emitted.  -1 returned if the object
 # is not being watched.
@@ -792,29 +717,29 @@ func get_call_count(object, method_name, parameters=null):
 	return gut.get_spy().call_count(object, method_name, parameters)
 
 
-## ------------------------------------------------------------------------------
-## Assert that object is an instance of a_class
-## ------------------------------------------------------------------------------
-#func assert_is(object, a_class, text=''):
-#	var disp  = ''#var disp = str('Expected [', _str(object), '] to be type of [', a_class, ']: ', text)
-#	var NATIVE_CLASS = 'GDScriptNativeClass'
-#	var GDSCRIPT_CLASS = 'GDScript'
-#	var bad_param_2 = 'Parameter 2 must be a Class (like Node2D or Label).  You passed '
-#
-#	if(typeof(object) != TYPE_OBJECT):
-#		_fail(str('Parameter 1 must be an instance of an object.  You passed:  ', _str(object)))
-#	elif(typeof(a_class) != TYPE_OBJECT):
-#		_fail(str(bad_param_2, _str(a_class)))
-#	else:
-#		var a_str = _str(a_class)
-#		disp = str('Expected [', _str(object), '] to extend [', a_str, ']: ', text)
-#		if(!_utils.is_native_class(a_class) and !_utils.is_gdscript(a_class)):
-#			_fail(str(bad_param_2, a_str))
-#		else:
-#			if(object is a_class):
-#				_pass(disp)
-#			else:
-#				_fail(disp)
+# ------------------------------------------------------------------------------
+# Assert that object is an instance of a_class
+# ------------------------------------------------------------------------------
+func assert_is(object, a_class, text=''):
+	var disp  = ''#var disp = str('Expected [', _str(object), '] to be type of [', a_class, ']: ', text)
+	var NATIVE_CLASS = 'GDScriptNativeClass'
+	var GDSCRIPT_CLASS = 'GDScript'
+	var bad_param_2 = 'Parameter 2 must be a Class (like Node2D or Label).  You passed '
+
+	if(typeof(object) != TYPE_OBJECT):
+		_fail(str('Parameter 1 must be an instance of an object.  You passed:  ', _str(object)))
+	elif(typeof(a_class) != TYPE_OBJECT):
+		_fail(str(bad_param_2, _str(a_class)))
+	else:
+		var a_str = _str(a_class)
+		disp = str('Expected [', _str(object), '] to extend [', a_str, ']: ', text)
+		if(!_utils.is_native_class(a_class) and !_utils.is_gdscript(a_class)):
+			_fail(str(bad_param_2, a_str))
+		else:
+			if(is_instance_of(object, a_class)):
+				_pass(disp)
+			else:
+				_fail(disp)
 
 func _get_typeof_string(the_type):
 	var to_return = ""
@@ -1152,6 +1077,10 @@ func assert_property(obj, property_name, default_value, new_value) -> void:
 	var setter_name = str('@', property_name, '_setter')
 	var getter_name = str('@', property_name, '_getter')
 
+	if(typeof(obj) != TYPE_OBJECT):
+		_fail(str(_str(obj), ' is not an object'))
+		return
+
 	assert_has_method(obj, setter_name)
 	assert_has_method(obj, getter_name)
 
@@ -1175,60 +1104,54 @@ func pending(text=""):
 		_lgr.pending(text)
 		gut._pending(text)
 
-# ------------------------------------------------------------------------------
-# Returns the number of times a signal was emitted.  -1 returned if the object
-# is not being watched.
-# ------------------------------------------------------------------------------
-
 
 # ------------------------------------------------------------------------------
 # Yield for the time sent in.  The optional message will be printed when
-# Gut detects the yield.  When the time expires the YIELD signal will be
-# emitted.
+# Gut detects the yield.
 # ------------------------------------------------------------------------------
 func wait_seconds(time, msg=''):
-	return gut.set_yield_time(time, msg).timeout
+	var to_return = gut.set_wait_time(time, msg)
+	return to_return
 
 func yield_for(time, msg=''):
 	_lgr.deprecated('yield_for', 'wait_seconds')
-	return gut.set_yield_time(time, msg).timeout
+	var to_return = gut.set_wait_time(time, msg)
+	return to_return
 
 
 # ------------------------------------------------------------------------------
-# Yield to a signal or a maximum amount of time, whichever comes first.  When
-# the conditions are met the YIELD signal will be emitted.
+# Yield to a signal or a maximum amount of time, whichever comes first.
 # ------------------------------------------------------------------------------
 func wait_for_signal(sig, max_wait, msg=''):
 	watch_signals(sig.get_object())
-	gut.set_yield_signal_or_time(sig.get_object(), sig.get_name(), max_wait, msg)
-	return gut.timeout
+	var to_return = gut.set_wait_for_signal_or_time(sig.get_object(), sig.get_name(), max_wait, msg)
+	return to_return
 
 
 func yield_to(obj, signal_name, max_wait, msg=''):
 	_lgr.deprecated('yield_to', 'wait_for_signal')
 	watch_signals(obj)
-	gut.set_yield_signal_or_time(obj, signal_name, max_wait, msg)
-	return gut.timeout
+	var to_return = gut.set_wait_for_signal_or_time(obj, signal_name, max_wait, msg)
+	return to_return
 
 # ------------------------------------------------------------------------------
 # Yield for a number of frames.  The optional message will be printed. when
-# Gut detects a yield.  When the number of frames have elapsed (counted in gut's
-# _process function) the YIELD signal will be emitted.
+# Gut detects a yield.
 # ------------------------------------------------------------------------------
 func wait_frames(frames, msg=''):
 	if(frames <= 0):
 		var text = str('yeild_frames:  frames must be > 0, you passed  ', frames, '.  0 frames waited.')
 		_lgr.error(text)
-		frames = 0
-	gut.set_yield_frames(frames, msg)
+		frames = 1
 
-	return gut.timeout
+	var to_return = gut.set_wait_frames(frames, msg)
+	return to_return
 
 
 func yield_frames(frames, msg=''):
 	_lgr.deprecated("yield_frames", "wait_frames")
-	wait_frames(frames, msg)
-	return gut.timeout
+	var to_return = wait_frames(frames, msg)
+	return to_return
 
 func get_summary():
 	return _summary
@@ -1277,58 +1200,67 @@ func get_summary_text():
 
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
-func _smart_double(double_info):
-	var override_strat = _utils.nvl(double_info.strategy, gut.get_doubler().get_strategy())
+func _smart_double(thing, double_strat, partial):
+	var override_strat = _utils.nvl(double_strat, gut.get_doubler().get_strategy())
 	var to_return = null
 
-	if(double_info.resource is PackedScene):
-		if(double_info.make_partial):
-			to_return =  gut.get_doubler().partial_double_scene(double_info.resource, override_strat)
+	if(thing is PackedScene):
+		if(partial):
+			to_return =  gut.get_doubler().partial_double_scene(thing, override_strat)
 		else:
-			to_return =  gut.get_doubler().double_scene(double_info.resource, override_strat)
+			to_return =  gut.get_doubler().double_scene(thing, override_strat)
 
-	elif(double_info.is_native()):
-		if(double_info.make_partial):
-			to_return = gut.get_doubler().partial_double_gdnative(double_info.resource)
+	elif(_utils.is_native_class(thing)):
+		if(partial):
+			to_return = gut.get_doubler().partial_double_gdnative(thing)
 		else:
-			to_return = gut.get_doubler().double_gdnative(double_info.resource)
+			to_return = gut.get_doubler().double_gdnative(thing)
 
-	elif(double_info.is_script()):
-		if(double_info.subpath == null):
-			if(double_info.make_partial):
-				to_return = gut.get_doubler().partial_double(double_info.resource, override_strat)
-			else:
-				to_return = gut.get_doubler().double(double_info.resource, override_strat)
+	elif(thing is GDScript):
+		if(partial):
+			to_return = gut.get_doubler().partial_double(thing, override_strat)
 		else:
-			if(double_info.make_partial):
-				to_return = gut.get_doubler().partial_double_inner(double_info.resource, double_info.subpath, override_strat)
-			else:
-				to_return = gut.get_doubler().double_inner(double_info.resource, double_info.subpath, override_strat)
+			to_return = gut.get_doubler().double(thing, override_strat)
+
 	return to_return
 
 # ------------------------------------------------------------------------------
+# This is here to aid in the transition to the new doubling sytnax.  Once this
+# has been established it could be removed.  We must keep the is_instance check
+# going forward though.
 # ------------------------------------------------------------------------------
-func double(thing, p2=null, p3=null):
-	var double_info = DoubleInfo.new(thing, p2, p3)
-	if(!double_info.is_valid):
-		_lgr.error('double requires a class or path, you passed an instance:  ' + _str(thing))
+func _are_double_parameters_valid(thing, p2, p3):
+	var bad_msg = ""
+	if(p3 != null or typeof(p2) == TYPE_STRING):
+		bad_msg += "Doubling using a subpath is not supported.  Call register_inner_class and then pass the Inner Class to double().\n"
+
+	if(typeof(thing) == TYPE_STRING):
+		bad_msg += "Doubling using the path to a script or scene is no longer supported.  Load the script or scene and pass that to double instead.\n"
+
+	if(_utils.is_instance(thing)):
+		bad_msg += "double requires a script, you passed an instance:  " + _str(thing)
+
+	if(bad_msg != ""):
+		_lgr.error(bad_msg)
+
+	return bad_msg == ""
+
+
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+func double(thing, double_strat=null, not_used_anymore=null):
+	if(!_are_double_parameters_valid(thing, double_strat, not_used_anymore)):
 		return null
 
-	double_info.make_partial = false
-
-	return _smart_double(double_info)
+	return _smart_double(thing, double_strat, false)
 
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
-func partial_double(thing, p2=null, p3=null):
-	var double_info = DoubleInfo.new(thing, p2, p3)
-	if(!double_info.is_valid):
-		_lgr.error('partial_double requires a class or path, you passed an instance:  ' + _str(thing))
+func partial_double(thing, double_strat=null, not_used_anymore=null):
+	if(!_are_double_parameters_valid(thing, double_strat, not_used_anymore)):
 		return null
 
-	double_info.make_partial = true
-
-	return _smart_double(double_info)
+	return _smart_double(thing, double_strat, true)
 
 # ------------------------------------------------------------------------------
 # Doubles a Godot singleton
@@ -1354,37 +1286,45 @@ func partial_double_singleton(singleton_name):
 # Specifically double a scene
 # ------------------------------------------------------------------------------
 func double_scene(path, strategy=null):
-	var override_strat = _utils.nvl(strategy, gut.get_doubler().get_strategy())
-	return gut.get_doubler().double_scene(path, override_strat)
+	_lgr.deprecated('test.double_scene has been removed.', 'double')
+	return null
+
+	# var override_strat = _utils.nvl(strategy, gut.get_doubler().get_strategy())
+	# return gut.get_doubler().double_scene(path, override_strat)
 
 # ------------------------------------------------------------------------------
 # Specifically double a script
 # ------------------------------------------------------------------------------
 func double_script(path, strategy=null):
-	var override_strat = _utils.nvl(strategy, gut.get_doubler().get_strategy())
-	return gut.get_doubler().double(path, override_strat)
+	_lgr.deprecated('test.double_script has been removed.', 'double')
+	return null
+
+	# var override_strat = _utils.nvl(strategy, gut.get_doubler().get_strategy())
+	# return gut.get_doubler().double(path, override_strat)
 
 # ------------------------------------------------------------------------------
 # Specifically double an Inner class in a a script
 # ------------------------------------------------------------------------------
 func double_inner(path, subpath, strategy=null):
+	_lgr.deprecated('double_inner should not be used.  Use register_inner_classes and double instead.', 'double')
+	return null
+
 	var override_strat = _utils.nvl(strategy, gut.get_doubler().get_strategy())
 	return gut.get_doubler().double_inner(path, subpath, override_strat)
 
 
 # ------------------------------------------------------------------------------
-# Add a method that the doubler will ignore.  You can pass this the path to a
-# script or scene or a loaded script or scene.  When running tests, these
-# ignores are cleared after every test.
+# Add a method that the doubler will ignore.  You can pass this a loaded script
+# or scene.  These ignores are cleared after every test.
 # ------------------------------------------------------------------------------
 func ignore_method_when_doubling(thing, method_name):
-	var double_info = DoubleInfo.new(thing)
-	var r = double_info.resource
+	if(typeof(thing) == TYPE_STRING):
+		_lgr.error('ignore_method_when_doubling no longer supports paths to scripts or scenes.  Load them and pass them instead.')
+		return
 
-	if(double_info.is_scene()):
-		var inst = thing.instantiate()
-		if(inst.get_script()):
-			r = inst.get_script()
+	var r = thing
+	if(thing is PackedScene):
+		r = _utils.get_scene_script_object(thing)
 
 	gut.get_doubler().add_ignored_method(r, method_name)
 
@@ -1449,7 +1389,7 @@ func replace_node(base_node, path_or_node, with_this):
 	var to_replace = base_node.get_node(path)
 	var parent = to_replace.get_parent()
 	var replace_name = to_replace.get_name()
-
+ 
 	parent.remove_child(to_replace)
 	parent.add_child(with_this)
 	with_this.set_name(replace_name)
@@ -1563,14 +1503,13 @@ func compare_deep(v1, v2, max_differences=null):
 	return result
 
 # ------------------------------------------------------------------------------
-# Peforms a shallow compare on both values, a CompareResult instnace is returned.
-# The optional max_differences paramter sets the max_differences to be displayed.
+# REMOVED
 # ------------------------------------------------------------------------------
 func compare_shallow(v1, v2, max_differences=null):
-	var result = _compare.shallow(v1, v2)
-	if(max_differences != null):
-		result.max_differences = max_differences
-	return result
+	_fail('compare_shallow has been removed.  Use compare_deep or just compare using == instead.')
+	_lgr.error('compare_shallow has been removed.  Use compare_deep or just compare using == instead.')
+	return null
+
 
 # ------------------------------------------------------------------------------
 # Performs a deep compare and asserts the  values are equal
@@ -1593,25 +1532,34 @@ func assert_ne_deep(v1, v2):
 		_fail(result.get_short_summary())
 
 # ------------------------------------------------------------------------------
-# Performs a shallow compare and asserts the values are equal
+# REMOVED
 # ------------------------------------------------------------------------------
 func assert_eq_shallow(v1, v2):
-	var result = compare_shallow(v1, v2)
-	if(result.are_equal):
-		_pass(result.get_short_summary())
-	else:
-		_fail(result.summary)
+	_fail('assert_eq_shallow has been removed.  Use assert_eq/assert_same/assert_eq_deep')
 
 # ------------------------------------------------------------------------------
-# Performs a shallow compare and asserts the values are not equal
+# REMOVED
 # ------------------------------------------------------------------------------
 func assert_ne_shallow(v1, v2):
-	var result = compare_shallow(v1, v2)
-	if(!result.are_equal):
-		_pass(result.get_short_summary())
-	else:
-		_fail(result.get_short_summary())
+	_fail('assert_eq_shallow has been removed.  Use assert_eq/assert_same/assert_eq_deep')
 
+
+# ------------------------------------------------------------------------------
+# Assert wrapper for is_same
+# ------------------------------------------------------------------------------
+func assert_same(v1, v2, text=''):
+	var disp = "[" + _str(v1) + "] expected to be same as  [" + _str(v2) + "]:  " + text
+	if(is_same(v1, v2)):
+		_pass(disp)
+	else:
+		_fail(disp)
+
+func assert_not_same(v1, v2, text=''):
+	var disp = "[" + _str(v1) + "] expected to not be same as  [" + _str(v2) + "]:  " + text
+	if(is_same(v1, v2)):
+		_fail(disp)
+	else:
+		_pass(disp)
 
 # ------------------------------------------------------------------------------
 # Checks the passed in version string (x.x.x) against the engine version to see
@@ -1645,3 +1593,11 @@ func skip_if_godot_version_ne(expected):
 	if(should_skip):
 		_pass(str('Skipping ', _utils.godot_version(), ' is not ', expected))
 	return should_skip
+
+
+# ------------------------------------------------------------------------------
+# Registers all the inner classes in a script with the doubler.  This is required
+# before you can double any inner class.
+# ------------------------------------------------------------------------------
+func register_inner_classes(base_script):
+	gut.get_doubler().inner_class_registry.register(base_script)
