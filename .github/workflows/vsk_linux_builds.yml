@@ -257,9 +257,6 @@ jobs:
           workflow_conclusion: success
           name: linux-editor
 
-      - name: Generate build constants
-        uses: ./.github/actions/vsk-generate-constants
-
       - name: Export Linux v-sekai-game
         run: |
           mkdir -p .godot/editor .godot/imported export_linuxbsd
@@ -306,9 +303,6 @@ jobs:
         with:
           workflow: vsk_linux_builds.yml
           name: linux-editor-shared-library
-
-      - name: Generate build constants
-        uses: ./.github/actions/vsk-generate-constants
 
       - name: Export Linux v-sekai-game
         run: |
@@ -357,9 +351,6 @@ jobs:
           workflow: vsk_linux_builds.yml
           workflow_conclusion: success
           name: windows-editor-shared-library
-
-      - name: Generate build constants
-        uses: ./.github/actions/vsk-generate-constants
 
       - name: Export Windows v-sekai-game
         run: |
