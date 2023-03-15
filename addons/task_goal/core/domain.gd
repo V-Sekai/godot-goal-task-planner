@@ -23,7 +23,12 @@ const verbose: int = 0
 ##	_m_verify_g is a method that GTPyhop uses to check whether a
 ##	unigoal method has achieved the goal for which it was used.
 func _m_verify_g(
-	state: Dictionary, method: String, state_var: String, arg: String, desired_val: Variant, depth: int
+	state: Dictionary,
+	method: String,
+	state_var: String,
+	arg: String,
+	desired_val: Variant,
+	depth: int
 ) -> Array:
 	if state[state_var][arg] != desired_val:
 		assert(
@@ -34,7 +39,12 @@ func _m_verify_g(
 			)
 		)
 	if verbose >= 3:
-		print("Depth %s: method %s achieved\n" % [depth, method] + "Goal %s[%s] = %s" % [state_var, arg, desired_val])
+		print(
+			(
+				"Depth %s: method %s achieved\n" % [depth, method]
+				+ "Goal %s[%s] = %s" % [state_var, arg, desired_val]
+			)
+		)
 	return []  # i.e., don't create any subtasks or subgoals
 
 
@@ -75,9 +85,6 @@ func _m_verify_mg(state: Dictionary, method: String, multigoal: Multigoal, depth
 
 ## dictionary that maps each action name to the corresponding function
 var _action_dict = {}
-
-## dictionary that maps each command name to the corresponding function
-var _command_dict = {}
 
 ## dictionary that maps each task name to a list of relevant methods
 ## _verify_g and _verify_mg are described later in this file.

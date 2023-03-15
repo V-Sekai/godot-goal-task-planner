@@ -120,48 +120,6 @@ func pay_driver(state: Dictionary, p: String, y: String):
 
 
 ###############################################################################
-# Commands:
-
-
-# this does the same thing as the action model
-func c_walk(state, p, x, y):
-	if is_a(p, "person") and is_a(x, "location") and is_a(y, "location"):
-		if state.loc[p] == x:
-			state.loc[p] = y
-			return state
-
-
-# c_call_taxi, version used in simple_tasks1
-# this is like the action model except that the taxi doesn't always arrive
-func c_call_taxi(state, p, x):
-	if is_a(p, "person") and is_a(x, "location"):
-		var random_generator: RandomNumberGenerator = RandomNumberGenerator.new()
-		var taxi = "taxi%s" % [1 + random_generator.randfn(2)]
-		print("Action> the taxi is chosen randomly. This time it is %s." % [taxi])
-		state.loc[taxi] = x
-		state.loc[p] = taxi
-		return state
-
-
-# c_ride_taxi, version used in simple_tasks1
-# this does the same thing as the action model
-func c_ride_taxi(state, p, y):
-	# if p is a person, p is in a taxi, and y is a location:
-	if is_a(p, "person") and is_a(state.loc[p], "taxi") and is_a(y, "location"):
-		var taxi = state.loc[p]
-		var x = state.loc[taxi]
-		if is_a(x, "location") and x != y:
-			state.loc[taxi] = y
-			state.owe[p] = taxi_rate(distance(x, y))
-			return state
-
-
-# this does the same thing as the action model
-func c_pay_driver(state: Dictionary, p: String, y: String):
-	return pay_driver(state, p, y)
-
-
-###############################################################################
 # Methods:
 
 
@@ -193,21 +151,20 @@ func _ready():
 	goal2.state["loc"] = {"bob": "park"}
 	goal3.state["loc"] = {"alice": "park", "bob": "park"}
 	planner.declare_actions(
-		[Callable(self, "walk"), Callable(self, "call_taxi"), Callable(self, "ride_taxi"), Callable(self, "pay_driver")]
-	)
-	planner.declare_commands(
 		[
-			Callable(self, "c_walk"),
-			Callable(self, "c_call_taxi"),
-			Callable(self, "c_ride_taxi"),
-			Callable(self, "c_pay_driver")
+			Callable(self, "walk"),
+			Callable(self, "call_taxi"),
+			Callable(self, "ride_taxi"),
+			Callable(self, "pay_driver")
 		]
 	)
 
-	planner.declare_unigoal_methods("loc", [Callable(self, "travel_by_foot"), Callable(self, "travel_by_taxi")])
+	planner.declare_unigoal_methods(
+		"loc", [Callable(self, "travel_by_foot"), Callable(self, "travel_by_taxi")]
+	)
 
 	# GTPyhop provides a built-in multigoal method called m_split_multigoal to
-	# separate a multigoal G into a collection of unigoals. It returns a list of
+	# separate a multigoal G into a�collection of unigoals. It returns a list of
 	# goals [g1, ..., gn, G], where g1, ..., gn are the unigoals in G that aren't
 	# true in the current state. Since G is at the end of the list, seek_plan
 	# will first plan for g1, ..., gn and then call m_split_multigoal again, in

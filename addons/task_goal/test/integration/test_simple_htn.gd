@@ -116,51 +116,6 @@ func pay_driver(state, p, y):
 
 
 ###############################################################################
-# Commands:
-
-
-# this does the same thing as the action model
-func c_walk(state, p, x, y):
-	if is_a(p, "person") and is_a(x, "location") and is_a(y, "location"):
-		if state.loc[p] == x:
-			state.loc[p] = y
-			return state
-
-
-# c_call_taxi, version used in simple_tasks1
-# this is like the action model except that the taxi doesn't always arrive
-func c_call_taxi(state, p, x):
-	if is_a(p, "person") and is_a(x, "location"):
-		var rand: RandomNumberGenerator = RandomNumberGenerator.new()
-		if rand.randf_range(2, 0) > 0:
-			state.loc["taxi1"] = x
-			state.loc[p] = "taxi1"
-#			print("Action> c_call_taxi succeeded.  This happens with Pr = 1/2.")
-			return state
-		else:
-#			print("Action> c_call_taxi failed.  This happens with Pr = 1/2.")
-			pass
-
-
-# c_ride_taxi, version used in simple_tasks1
-# this does the same thing as the action model
-func c_ride_taxi(state, p, y):
-	# if p is a person, p is in a taxi, and y is a location:
-	if is_a(p, "person") and is_a(state.loc[p], "taxi") and is_a(y, "location"):
-		var taxi = state.loc[p]
-		var x = state.loc[taxi]
-		if is_a(x, "location") and x != y:
-			state.loc[taxi] = y
-			state.owe[p] = taxi_rate(distance(x, y))
-			return state
-
-
-# this does the same thing as the action model
-func c_pay_driver(state, p, y):
-	return pay_driver(state, p, y)
-
-
-###############################################################################
 # Methods:
 
 
@@ -189,18 +144,20 @@ func test_simple_gtn():
 	planner._domains.push_back(the_domain)
 	planner.current_domain = the_domain
 	planner.declare_actions(
-		[Callable(self, "walk"), Callable(self, "call_taxi"), Callable(self, "ride_taxi"), Callable(self, "pay_driver")]
-	)
-	planner.declare_commands(
 		[
-			Callable(self, "c_walk"),
-			Callable(self, "c_call_taxi"),
-			Callable(self, "c_ride_taxi"),
-			Callable(self, "c_pay_driver")
+			Callable(self, "walk"),
+			Callable(self, "call_taxi"),
+			Callable(self, "ride_taxi"),
+			Callable(self, "pay_driver")
 		]
 	)
 	planner.declare_task_methods(
-		"travel", [Callable(self, "do_nothing"), Callable(self, "travel_by_foot"), Callable(self, "travel_by_taxi")]
+		"travel",
+		[
+			Callable(self, "do_nothing"),
+			Callable(self, "travel_by_foot"),
+			Callable(self, "travel_by_taxi")
+		]
 	)
 
 	###############################################################################
@@ -243,7 +200,9 @@ func test_simple_gtn():
 #	print("-- If verbose=3, the planner will print even more information.")
 #
 #	print("Find a plan that will first get Alice to the park, then get Bob to the park.")
-	var plan = planner.find_plan(state1.duplicate(true), [["travel", "alice", "park"], ["travel", "bob", "park"]])
+	var plan = planner.find_plan(
+		state1.duplicate(true), [["travel", "alice", "park"], ["travel", "bob", "park"]]
+	)
 
 #	print("Plan %s" % [plan])
 	assert_eq(
@@ -263,7 +222,9 @@ func test_simple_gtn():
 #happen repeatedly until either the taxi arrives or run_lazy_lookahead decides
 #it has tried too many times."""
 #	)
-	var new_state = planner.run_lazy_lookahead(state1.duplicate(true), [["travel", "alice", "park"]])
+	var new_state = planner.run_lazy_lookahead(
+		state1.duplicate(true), [["travel", "alice", "park"]]
+	)
 
 #	print("")
 #	print("If run_lazy_lookahead succeeded, then Alice is now at the park,")

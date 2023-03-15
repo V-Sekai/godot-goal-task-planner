@@ -40,7 +40,11 @@ func bar_concert_night(state, variable, value):
 
 
 func m_bar_concert_night(state, variable, value):
-	if variable in state.world and variable == "day" and (state.world["day"] % 7 == 1 or state.world["day"] % 7 == 2):
+	if (
+		variable in state.world
+		and variable == "day"
+		and (state.world["day"] % 7 == 1 or state.world["day"] % 7 == 2)
+	):
 		return [["bar_concert_night", null, null]]
 	return false
 
@@ -74,7 +78,10 @@ func seb_travel_bar(state: Dictionary) -> Variant:
 func m_met_mia(state: Dictionary, variable: String, value: Variant) -> Variant:
 	if variable in state.world and variable == "met_mia" and state.world["met_mia"] == false:
 		return [
-			Multigoal.new("entities_together", {"at": {"seb": "coffee_shop", "mia": "coffee_shop"}}), ["seb_met_mia"]
+			Multigoal.new(
+				"entities_together", {"at": {"seb": "coffee_shop", "mia": "coffee_shop"}}
+			),
+			["seb_met_mia"]
 		]
 	return false
 
@@ -171,14 +178,24 @@ func test_move_to_band_practice():
 
 
 func test_together_goal():
-	var plan = planner.find_plan(state1.duplicate(true), [["entity_met_entity", "seb", "mia", "coffee_shop"]])
-	assert_eq(plan, [["travel_location", "seb", "coffee_shop"], ["travel_location", "mia", "coffee_shop"]], "")
+	var plan = planner.find_plan(
+		state1.duplicate(true), [["entity_met_entity", "seb", "mia", "coffee_shop"]]
+	)
+	assert_eq(
+		plan,
+		[["travel_location", "seb", "coffee_shop"], ["travel_location", "mia", "coffee_shop"]],
+		""
+	)
 
 
 func test_play_game():
 	var plan = planner.find_plan(state1.duplicate(true), [["play_game"]])
 	assert_eq(
 		plan,
-		[["travel_location", "seb", "coffee_shop"], ["travel_location", "mia", "coffee_shop"], ["seb_met_mia"]],
+		[
+			["travel_location", "seb", "coffee_shop"],
+			["travel_location", "mia", "coffee_shop"],
+			["seb_met_mia"]
+		],
 		""
 	)

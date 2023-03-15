@@ -82,7 +82,11 @@ func find_airport(state, l):
 
 
 func m_drive_truck(state, t, l):
-	if t in state.trucks and l in state.locations and state.in_city[state.truck_at[t]] == state.in_city[l]:
+	if (
+		t in state.trucks
+		and l in state.locations
+		and state.in_city[state.truck_at[t]] == state.in_city[l]
+	):
 		return [["drive_truck", t, l]]
 
 
@@ -115,7 +119,11 @@ func m_unload_plane(state, o, a):
 
 
 func move_within_city(state, o, l):
-	if o in state.packages and state.at[o] in state.locations and state.in_city[state.at[o]] == state.in_city[l]:
+	if (
+		o in state.packages
+		and state.at[o] in state.locations
+		and state.in_city[state.at[o]] == state.in_city[l]
+	):
 		var t = find_truck(state, o)
 		if t:
 			return [["truck_at", t, state.at[o]], ["at", o, t], ["truck_at", t, l], ["at", o, l]]
@@ -131,12 +139,21 @@ func move_between_airports(state, o, a):
 	):
 		var plane = find_plane(state, o)
 		if plane:
-			return [["plane_at", plane, state.at[o]], ["at", o, plane], ["plane_at", plane, a], ["at", o, a]]
+			return [
+				["plane_at", plane, state.at[o]],
+				["at", o, plane],
+				["plane_at", plane, a],
+				["at", o, a]
+			]
 	return false
 
 
 func move_between_city(state, o, l):
-	if o in state.packages and state.at[o] in state.locations and state.in_city[state.at[o]] != state.in_city[l]:
+	if (
+		o in state.packages
+		and state.at[o] in state.locations
+		and state.in_city[state.at[o]] != state.in_city[l]
+	):
 		var a1 = find_airport(state, state.at[o])
 		var a2 = find_airport(state, l)
 		if a1 and a2:

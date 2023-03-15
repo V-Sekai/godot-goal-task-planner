@@ -1,3 +1,4 @@
 # Godot 4+ specific ignores
 .godot/
 task_goal_planner/results
+TEST.xml

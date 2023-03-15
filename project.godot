@@ -20,3 +20,7 @@ gdscript/warnings/inference_on_variant=1
 gdscript/warnings/native_method_override=1
 gdscript/warnings/get_node_default_without_onready=1
 gdscript/warnings/onready_with_export=1
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/gut/plugin.cfg")

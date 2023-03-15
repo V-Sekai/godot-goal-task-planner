@@ -45,7 +45,6 @@ func print_domain(domain: Object = null) -> void:
 		domain = current_domain
 	print("Domain name: %s" % resource_name)
 	print_actions(domain)
-	print_commands(domain)
 	print_methods(domain)
 
 
@@ -57,16 +56,6 @@ func print_actions(domain: Object = null) -> void:
 		print("-- Actions:", ", ".join(domain._action_dict.keys()))
 	else:
 		print("-- There are no actions --")
-
-
-## Print the names of all the commands
-func print_commands(domain: Object = null) -> void:
-	if domain == null:
-		domain = current_domain
-	if domain._command_dict:
-		print("-- Commands:", ", ".join(domain._command_dict.keys()))
-	else:
-		print("-- There are no commands --")
 
 
 ## Print a table of the task_methods for each tasks
@@ -137,27 +126,6 @@ func declare_actions(actions):
 	for action in actions:
 		current_domain._action_dict[action.get_method()] = action
 	return current_domain._action_dict
-
-
-##	declare_commands adds each member of 'commands' to the current domain's
-##	list of commands.  Each member of 'commands' should be a function whose
-##	name has the form c_foo, where foo is the name of an action. For example,
-##	this says that c_pickup and c_putdown are commands:
-##		declare_commands(c_pickup,c_putdown)
-##
-##	declare_commands can be called several times to add more commands.
-##
-##	You can see the current domain's list of commands by executing
-##		current_domain.display()
-func declare_commands(commands):
-	if current_domain == null:
-		print("Cannot declare commands until a domain has been created.")
-		return []
-	var command_array: PackedStringArray = PackedStringArray()
-	for cmd in commands:
-		command_array.push_back(cmd.get_method())
-		current_domain._command_dict[cmd.get_method()] = cmd
-	return current_domain._command_dict
 
 
 ##	'task_name' should be a character string, and 'methods' should be a list
@@ -340,7 +308,9 @@ func _refine_task_and_continue(state, task1, todo_list, plan, depth) -> Variant:
 	for method in relevant:
 		if verbose >= 3:
 			print("Depth %s trying %s: " % [depth, method.get_method()])
-		var subtasks: Variant = method.get_object().callv(method.get_method(), [state] + task1.slice(1))
+		var subtasks: Variant = method.get_object().callv(
+			method.get_method(), [state] + task1.slice(1)
+		)
 		# Can't just say "if subtasks:", because that's wrong if subtasks == []
 		if subtasks is Array:
 			if verbose >= 3:
@@ -386,7 +356,9 @@ func _refine_unigoal_and_continue(state, goal1, todo_list, plan, depth) -> Varia
 				print("Depth %s subgoals: %s" % [depth, subgoals])
 			var verification = []
 			if verify_goals:
-				verification = [["_verify_g", str(method.get_method()), state_var_name, arg, val, depth]]
+				verification = [
+					["_verify_g", str(method.get_method()), state_var_name, arg, val, depth]
+				]
 			else:
 				verification = []
 			todo_list = subgoals + verification + todo_list
@@ -517,7 +489,12 @@ func _item_to_string(item):
 ##	no corresponding command definition, it uses the action definition instead.
 func run_lazy_lookahead(state: Dictionary, todo_list: Array, max_tries: int = 10):
 	if verbose >= 1:
-		print("RunLazyLookahead> run_lazy_lookahead, verbose = %s, max_tries = %s" % [verbose, max_tries])
+		print(
+			(
+				"RunLazyLookahead> run_lazy_lookahead, verbose = %s, max_tries = %s"
+				% [verbose, max_tries]
+			)
+		)
 		print("RunLazyLookahead> initial state: %s" % [state.keys()])
 		print("RunLazyLookahead> To do:", todo_list)
 
@@ -535,28 +512,32 @@ func run_lazy_lookahead(state: Dictionary, todo_list: Array, max_tries: int = 10
 			return state
 		if plan == []:
 			if verbose >= 1:
-				print("RunLazyLookahead> Empty plan => success\n" + "after {tries} calls to find_plan.")
+				print(
+					(
+						"RunLazyLookahead> Empty plan => success\n"
+						+ "after {tries} calls to find_plan."
+					)
+				)
 			if verbose >= 2:
 				print("> final state %s" % [state])
 			return state
 		for action in plan:
-			var command_name = "c_" + action[0]
-			var command_func: Callable = current_domain._command_dict.get(command_name)
-			if command_func == null:
-				if verbose >= 1:
-					print("RunLazyLookahead> %s not defined, using {action[0]} instead\n" % [command_name])
-				command_func = current_domain._action_dict.get(action[0])
-
+			var action_name = current_domain._action_dict.get(action[0])
 			if verbose >= 1:
-				print("RunLazyLookahead> Command: %s" % [[command_name] + action.slice(1)])
-			var new_state = _apply_command_and_continue(state, command_func, action.slice(1))
+				print("RunLazyLookahead> Command: %s" % [[action_name] + action.slice(1)])
+			var new_state = _apply_command_and_continue(state, action_name, action.slice(1))
 			if new_state is Dictionary:
 				if verbose >= 2:
 					print(new_state)
 				state = new_state
 			else:
 				if verbose >= 1:
-					print("RunLazyLookahead> WARNING: command %s failed; will call find_plan." % [command_name])
+					print(
+						(
+							"RunLazyLookahead> WARNING: action %s failed; will call find_plan."
+							% [action_name]
+						)
+					)
 					break
 		# if state != False then we're here because the plan ended
 		if verbose >= 1 and state != null:
