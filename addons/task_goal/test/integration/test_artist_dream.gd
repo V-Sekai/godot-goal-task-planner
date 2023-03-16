@@ -307,31 +307,31 @@ func _ready():
 	var task_list = action_with_time_constraints(state, 'reserve_practice_room', time_interval_mia, mia, 'atstart')
 	plan.append(task_list)
 
-	task_list = action_with_time_constraints(state, 'attend_audition', time_interval_mia, mia, 'atstart')
+	task_list = action_with_time_constraints(state, 'attend_audition', time_interval_mia, mia, 'atend')
 	plan.append(task_list)
 
-	task_list = action_with_time_constraints(state, 'practice_craft', time_interval_mia, mia, 'atstart')
+	task_list = action_with_time_constraints(state, 'practice_craft', time_interval_mia, mia, 'overall')
 	plan.append(task_list)
 
-	task_list = action_with_time_constraints(state, 'network', time_interval_mia, mia, 'atstart')
+	task_list = action_with_time_constraints(state, 'network', time_interval_mia, mia, 'overall')
 	plan.append(task_list)
 
-	task_list = action_with_time_constraints(state, 'achieve_dream', time_interval_mia, mia, 'atstart')
+	task_list = action_with_time_constraints(state, 'achieve_dream', time_interval_mia, mia, 'atend')
 	plan.append(task_list)
 
 	task_list = action_with_time_constraints(state, 'reserve_practice_room', time_interval_sebastian, sebastian, 'atstart')
 	plan.append(task_list)
 
-	task_list = action_with_time_constraints(state, 'attend_audition', time_interval_sebastian, sebastian, 'atstart')
+	task_list = action_with_time_constraints(state, 'attend_audition', time_interval_sebastian, sebastian, 'atend')
 	plan.append(task_list)
 
-	task_list = action_with_time_constraints(state, 'practice_craft', time_interval_sebastian, sebastian, 'atstart')
+	task_list = action_with_time_constraints(state, 'practice_craft', time_interval_sebastian, sebastian, 'overall')
 	plan.append(task_list)
 
-	task_list = action_with_time_constraints(state, 'network', time_interval_sebastian, sebastian, 'atstart')
+	task_list = action_with_time_constraints(state, 'network', time_interval_sebastian, sebastian, 'overall')
 	plan.append(task_list)
 
-	task_list = action_with_time_constraints(state, 'achieve_dream', time_interval_sebastian, sebastian, 'atstart')
+	task_list = action_with_time_constraints(state, 'achieve_dream', time_interval_sebastian, sebastian, 'atend')
 	plan.append(task_list)
 	
 	
