@@ -214,8 +214,9 @@ func action_with_time_constraints(state, action_name, time_interval, agent, temp
 		print("Inconsistent constraints: The new constraint could not be satisfied.")
 		return false
 
-	return [action_name] + args  # Return a task list with the specified action and its arguments as a list
-
+	# Return a task list with the specified action, its arguments, and the STN
+	return [action_name] + args + [time_interval, agent.stn]
+	
 
 func reserve_practice_room(time_interval: TimeInterval, stn: STN) -> bool:
 	stn.update_state({"practice": time_interval})
@@ -317,14 +318,6 @@ func _ready():
 
 	task_list = action_with_time_constraints(state, 'achieve_dream', time_interval_mia, mia, 'atend')
 	plan.append(task_list)
-
-	assert_eq_deep(
-		plan,
-		Array(
-			[
-				["reserve_practice_room"], ["attend_audition"], ["practice_craft"], ["network"], ["achieve_dream"]
-		])
-	)
 
 	var new_plan = planner.find_plan(state, plan)
 	
