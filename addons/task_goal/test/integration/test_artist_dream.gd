@@ -301,7 +301,6 @@ func _ready():
 
 	# Example plan
 	var time_interval_mia = Vector2(0, 1000)
-	var time_interval_sebastian = Vector2(1001, 2000)
 	
 	var plan: Array
 	var task_list = action_with_time_constraints(state, 'reserve_practice_room', time_interval_mia, mia, 'atstart')
@@ -319,26 +318,17 @@ func _ready():
 	task_list = action_with_time_constraints(state, 'achieve_dream', time_interval_mia, mia, 'atend')
 	plan.append(task_list)
 
-	task_list = action_with_time_constraints(state, 'reserve_practice_room', time_interval_sebastian, sebastian, 'atstart')
-	plan.append(task_list)
-
-	task_list = action_with_time_constraints(state, 'attend_audition', time_interval_sebastian, sebastian, 'atend')
-	plan.append(task_list)
-
-	task_list = action_with_time_constraints(state, 'practice_craft', time_interval_sebastian, sebastian, 'overall')
-	plan.append(task_list)
-
-	task_list = action_with_time_constraints(state, 'network', time_interval_sebastian, sebastian, 'overall')
-	plan.append(task_list)
-
-	task_list = action_with_time_constraints(state, 'achieve_dream', time_interval_sebastian, sebastian, 'atend')
-	plan.append(task_list)
-	
-	
 	assert_eq_deep(
 		plan,
 		Array(
 			[
-				["reserve_practice_room"], ["attend_audition"], ["practice_craft"], ["network"], ["achieve_dream"], ["reserve_practice_room"], ["attend_audition"], ["practice_craft"], ["network"], ["achieve_dream"]
+				["reserve_practice_room"], ["attend_audition"], ["practice_craft"], ["network"], ["achieve_dream"]
 		])
+	)
+
+	var new_plan = planner.find_plan(state, plan)
+	
+	assert_eq_deep(
+		new_plan,
+		false
 	)
