@@ -360,7 +360,6 @@ func _ready():
 #
 	# var new_plan = planner.find_plan(state, plan)
 
-
 	# assert_eq_deep(
 	# 	new_plan,
 	# 	false
