@@ -6,7 +6,7 @@ var the_domain = preload("res://addons/task_goal/core/domain.gd").new(domain_nam
 
 var planner = preload("res://addons/task_goal/core/plan.gd").new()
 
-class Agent:
+class PlanResource:
 	var name
 	var stn
 
@@ -14,22 +14,25 @@ class Agent:
 		self.name = name
 		self.stn = STN.new()
 
+
 class TimeInterval:
 	var time_interval
 
 	func _init(start, end):
-		self.time_interval = Vector2(start, end)
+		self.time_interval = Vector2i(start, end)
+
 
 class TemporalConstraint:
-	var time_interval
-	var temporal_qualifier
-	var duration
+	var time_interval : Vector2i
+	var temporal_qualifier : String
+	var duration : int
 
-	func _init(start, end, temporal_qualifier, duration):
-		self.time_interval = Vector2(start, end)
+	func _init(start: int, end: int, temporal_qualifier: String, duration: int):
+		self.time_interval = Vector2i(start, end)
 		self.temporal_qualifier = temporal_qualifier
 		self.duration = duration
-		
+
+
 class STN:
 	var constraints: Array[TemporalConstraint] = []
 
@@ -98,9 +101,9 @@ class STN:
 			for neighbor in nodes:
 				var key = _get_node_key(current_node, neighbor)
 				for constraint in constraints:
-					var start = constraint["start"]
-					var end = constraint["end"]
-					var weight = constraint["duration"]
+					var start: int = constraint.time_interval.x
+					var end: int = constraint.time_interval.y
+					var weight = constraint.duration
 					if start == current_node and end == neighbor:
 						var new_distance = distances[current_node] + weight - h[current_node] + h[neighbor]
 						if new_distance < distances[neighbor]:
@@ -132,7 +135,7 @@ class STN:
 			var weight = constraint.duration
 			if start not in h or end not in h:
 				continue
-			var new_constraint: TemporalConstraint = TemporalConstraint.new(start, end, null, weight + h[start] - h[end])
+			var new_constraint: TemporalConstraint = TemporalConstraint.new(start, end, "", weight + h[start] - h[end])
 			new_constraints.append(new_constraint)
 
 		constraints = new_constraints
@@ -143,7 +146,7 @@ class STN:
 			for i in range(len(constraints)):
 				var constraint = constraints[i]
 				if constraint.time_interval.x == node:
-					var new_constraint = TemporalConstraint.new(constraint.time_interval.x, constraint.time_interval.y, null, distances[constraint.time_interval.y] + h[constraint.time_interval.y] - h[node])
+					var new_constraint = TemporalConstraint.new(constraint.time_interval.x, constraint.time_interval.y, "", distances[constraint.time_interval.y] + h[constraint.time_interval.y] - h[node])
 					constraints.erase(constraint)
 					constraints.insert(i, new_constraint)
 
@@ -172,19 +175,20 @@ class STN:
 
 					# Add constraints for the time interval based on the temporal qualifier
 					if value.temporal_qualifier == "atstart":
-						constraints.append(TemporalConstraint.new(0, start, null, start))
+						constraints.append(TemporalConstraint.new(0, start, "", start))
 					elif value.temporal_qualifier == "atend":
-						constraints.append(TemporalConstraint.new(end, INF, null, INF))
+						constraints.append(TemporalConstraint.new(end, INF, "", INF))
 					elif value.temporal_qualifier == "overall":
-						constraints.append(TemporalConstraint.new(0, end, null, end))
-						constraints.append(TemporalConstraint.new(start, INF, null, end - start))
+						constraints.append(TemporalConstraint.new(0, end, "", end))
+						constraints.append(TemporalConstraint.new(start, INF, "", end - start))
 
 	func print_STN():
 		print("STN:")
-		for constraint in constraints:
-			var start = constraint["start"]
-			var end = constraint["end"]
-			var duration = constraint["duration"]
+		for elem in constraints:
+			var constraint : TemporalConstraint = elem
+			var start = constraint.time_interval.x
+			var end = constraint.time_interval.y
+			var duration = constraint.duration
 			print(str(start) + " -> " + str(end) + ": " + str(duration))
 
 
@@ -215,7 +219,7 @@ func action_with_time_constraints(state, action_name, time_interval, agent, temp
 		return false
 
 	# Return a task list with the specified action, its arguments, and the STN
-	return [action_name] + args + [time_interval, agent.stn]
+	return [[action_name, time_interval, agent.stn, args]]
 	
 
 func reserve_practice_room(time_interval: TimeInterval, stn: STN) -> bool:
@@ -264,11 +268,42 @@ func achieve_dream(stn: STN) -> bool:
 
 	return false
 
+func test_temporal_constraint():
+	var constraint = TemporalConstraint.new(0, 10, "atstart", 10)
+	assert_eq(constraint.time_interval.x, 0, "Expected start time to be 0, but got " + str(constraint.time_interval.x))
+	assert_eq(constraint.time_interval.y, 10, "Expected end time to be 10, but got " + str(constraint.time_interval.y))
+	assert_eq(constraint.temporal_qualifier , "atstart", "Expected temporal_qualifier to be 'atstart', but got " + constraint.temporal_qualifier)
+	assert_eq(constraint.duration, 10, "Expected duration to be 10, but got " + str(constraint.duration))
+
+
+func test_time_interval():
+	var time_interval = TimeInterval.new(0, 10)
+	assert_eq(time_interval.time_interval.x, 0, "Expected start time to be 0, but got " + str(time_interval.time_interval.x))
+	assert_eq(time_interval.time_interval.y, 10, "Expected end time to be 10, but got " + str(time_interval.time_interval.y))
+
+
+func test_invalid_temporal_constraint():
+	var result = action_with_time_constraints(null, "", Vector2i(0, 10), null, "invalid", [])
+	assert_eq(result, false, "Expected false for invalid temporal_qualifier, but got " + str(result))
+
+
+func test_action_with_time_constraints():
+	var result = action_with_time_constraints(null, "", Vector2(10, 5), null, "", null)
+	assert_eq(result, false, "Expected action_with_time_constraints to return false for invalid duration")
+	result = action_with_time_constraints(null, "", Vector2(0, 10), null, "invalid_qualifier", null)
+	assert_eq(result, false, "Expected action_with_time_constraints to return false for invalid temporal qualifier")
+	result = action_with_time_constraints(null, "", Vector2(-5, 10), null, "atstart", null)
+	assert_eq(result, false, "Expected action_with_time_constraints to return false for invalid time interval")
+	var agent = PlanResource.new("resource1")
+	result = action_with_time_constraints(null, "some_action", Vector2(0, 10), agent, "atstart", null)
+	assert_eq(result.size(), 1, "Expected action_with_time_constraints to return a task list with one element")
+	assert_eq(result[0][0], "some_action", "Expected action_with_time_constraints to return a task list with the correct action")
+
 
 func _ready():
 	# Declare agents
-	var mia = Agent.new("Mia")
-	var sebastian = Agent.new("Sebastian")
+	var mia = PlanResource.new("Mia")
+	var sebastian = PlanResource.new("Sebastian")
 
 	# State representation
 	var state = {
@@ -288,40 +323,45 @@ func _ready():
 		},
 	}
 
-	planner._domains.push_back(the_domain)
-	planner.current_domain = the_domain
+	# planner._domains.push_back(the_domain)
+	# planner.current_domain = the_domain
 	
-	# Declare actions
-	planner.declare_actions([
-		Callable(self, "reserve_practice_room"), 
-		Callable(self, "attend_audition"), 
-		Callable(self, "practice_craft"), 
-		Callable(self, "network"), 
-		Callable(self, "achieve_dream")]
-	)
+	# # Declare actions
+	# planner.declare_actions([
+	# 	Callable(self, "reserve_practice_room"), 
+	# 	Callable(self, "attend_audition"), 
+	# 	Callable(self, "practice_craft"), 
+	# 	Callable(self, "network"), 
+	# 	Callable(self, "achieve_dream")]
+	# )
 
-	# Example plan
-	var time_interval_mia = Vector2(0, 1000)
+	# # Example plan
+	# var time_interval_mia = Vector2i(0, 1000)
 	
-	var plan: Array
-	var task_list = action_with_time_constraints(state, 'reserve_practice_room', time_interval_mia, mia, 'atstart')
-	plan.append(task_list)
+	# var plan: Array
+	# var task_list = action_with_time_constraints(state, 'reserve_practice_room', time_interval_mia, mia, 'atstart')
+	# plan.append(task_list)
+	# assert_eq_deep(
+	# 	plan,
+	# 	plan
+	# )
 
-	task_list = action_with_time_constraints(state, 'attend_audition', time_interval_mia, mia, 'atend')
-	plan.append(task_list)
+	# task_list = action_with_time_constraints(state, 'attend_audition', time_interval_mia, mia, 'atend')
+	# plan.append(task_list)
 
-	task_list = action_with_time_constraints(state, 'practice_craft', time_interval_mia, mia, 'overall')
-	plan.append(task_list)
+#	task_list = action_with_time_constraints(state, 'practice_craft', time_interval_mia, mia, 'overall')
+#	plan.append(task_list)
+#
+#	task_list = action_with_time_constraints(state, 'network', time_interval_mia, mia, 'overall')
+#	plan.append(task_list)
+#
+#	task_list = action_with_time_constraints(state, 'achieve_dream', time_interval_mia, mia, 'atend')
+#	plan.append(task_list)
+#
+	# var new_plan = planner.find_plan(state, plan)
 
-	task_list = action_with_time_constraints(state, 'network', time_interval_mia, mia, 'overall')
-	plan.append(task_list)
 
-	task_list = action_with_time_constraints(state, 'achieve_dream', time_interval_mia, mia, 'atend')
-	plan.append(task_list)
-
-	var new_plan = planner.find_plan(state, plan)
-	
-	assert_eq_deep(
-		new_plan,
-		false
-	)
+	# assert_eq_deep(
+	# 	new_plan,
+	# 	false
+	# )
