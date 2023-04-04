@@ -7,76 +7,130 @@ var the_domain = preload("res://addons/task_goal/core/domain.gd").new(domain_nam
 var planner = preload("res://addons/task_goal/core/plan.gd").new()
 
 class PlanResource:
-	var name
+	extends Resource
 	var stn
 
 	func _init(name):
-		self.name = name
+		self.set_name(name)
 		self.stn = STN.new()
 
-
-class TimeInterval:
-	var time_interval
-
-	func _init(start, end):
-		self.time_interval = Vector2i(start, end)
+enum TemporalQualifier {
+	AT_START,
+	AT_END,
+	OVERALL,
+}
 
 
 class TemporalConstraint:
-	var time_interval : Vector2i
-	var temporal_qualifier : String
-	var duration : int
+	extends Resource
+	var time_interval: Vector2i
+	var duration: int
+	var temporal_qualifier: TemporalQualifier
+	var direct_successors: Array
 
-	func _init(start: int, end: int, temporal_qualifier: String, duration: int):
-		self.time_interval = Vector2i(start, end)
-		self.temporal_qualifier = temporal_qualifier
+	func _init(start: int, duration: int, qualifier: TemporalQualifier, resource: String):
+		time_interval = Vector2i(start, start + duration)
 		self.duration = duration
+		temporal_qualifier = qualifier
+		resource_name = resource
+		direct_successors = []
+
+	func to_string() -> String:
+		return "Constraint Name: %s Time Interval: %s Duration: %s Temporal Qualifier: %s" % [resource_name, time_interval, duration, temporal_qualifier]
+
+	func add_direct_successor(successor_index: int, time_difference: int) -> void:
+		direct_successors.append({"index": successor_index, "time_difference": time_difference})
 
 
 class STN:
+	extends Resource	
+	var nodes: Array = []
 	var constraints: Array[TemporalConstraint] = []
+	var stn_matrix: Array = []
+	var num_nodes: int = 0
+	var node_intervals: Array = []
 
-	func add_constraint(start: int, end: int, duration: int, temporal_qualifier: String) -> void:
-		var constraint = TemporalConstraint.new(start, end, temporal_qualifier, duration)
+
+	func get_node_index(node_intervals: Array, node_interval: Vector2i) -> int:
+		for i in range(node_intervals.size()):
+			if node_interval == node_intervals[i]:
+				return i
+		return -1
+
+
+	func add_temporal_constraint(constraint: TemporalConstraint) -> bool:
+		var interval = Vector2i(constraint.time_interval.x, constraint.time_interval.y)
+		if interval not in node_intervals:
+			node_intervals.append(interval)
+			num_nodes += 1
+			stn_matrix.resize(num_nodes)
+			for i in range(num_nodes):
+				var array: Array
+				array.resize(num_nodes)
+				array.fill(0)
+				stn_matrix[i] = array
+
+		var left = get_node_index(node_intervals, Vector2i(constraint.time_interval.x, constraint.time_interval.x))
+		var right = get_node_index(node_intervals, Vector2i(constraint.time_interval.y, constraint.time_interval.y))
+		if left == -1 or right == -1:
+			return false
+
+		var distance = constraint.duration
+
+		# Check if this constraint has already been propagated
+		if stn_matrix[left][right] <= distance:
+			return false
+
+		# Update the constraint
+		stn_matrix[left][right] = distance
+		stn_matrix[right][left] = -distance
+
+		# Enforce temporal qualifiers
+		match constraint.qualifier:
+			TemporalQualifier.AT_START:
+				for j in range(right, num_nodes):
+					if stn_matrix[left][j] > distance:
+						stn_matrix[left][j] = distance
+						stn_matrix[j][left] = -distance
+						propagate_constraints()
+					if stn_matrix[right][j] > distance:
+						stn_matrix[right][j] = distance - stn_matrix[left][right]
+						stn_matrix[j][right] = -stn_matrix[right][j]
+						propagate_constraints()
+			TemporalQualifier.AT_END:
+				for j in range(0, left + 1):
+					if stn_matrix[j][right] > -distance:
+						stn_matrix[j][right] = -distance
+						stn_matrix[right][j] = -stn_matrix[j][right]
+						propagate_constraints()
+					if stn_matrix[j][left] > -distance:
+						stn_matrix[j][left] = -distance + stn_matrix[left][right]
+						stn_matrix[left][j] = -stn_matrix[j][left]
+						propagate_constraints()
+			TemporalQualifier.OVERALL:
+				for j in range(num_nodes):
+					if stn_matrix[j][right] > stn_matrix[j][left] + distance:
+						stn_matrix[j][right] = stn_matrix[j][left] + distance
+						stn_matrix[right][j] = -stn_matrix[j][right]
+						propagate_constraints()
+					if stn_matrix[j][left] > stn_matrix[j][right] - distance:
+						stn_matrix[j][left] = stn_matrix[j][right] - distance
+						stn_matrix[left][j] = -stn_matrix[j][left]
+						propagate_constraints()
+
 		constraints.append(constraint)
-
-
+		return true
+			
 	func _get_node_key(node1, node2):
 		return str(node1) + '_' + str(node2)
 
+	func get_temporal_constraint_by_name(resource: PlanResource, constraint_name: String) -> TemporalConstraint:
+		for constraint in resource.stn.constraints:
+			if constraint.resource_name == constraint_name:
+				return constraint
+		return null
 
-	func _bellman_ford(nodes: Array) -> Dictionary:
-		var distances = {}
-		for node in nodes:
-			distances[node] = INF
-
-		distances[0] = 0
-
-		for i in range(len(nodes)):
-			for constraint in constraints:
-				var start = constraint.time_interval.x
-				var end = constraint.time_interval.y
-				var weight = constraint.duration
-				if start not in distances:
-					continue
-				if end not in distances:
-					distances[end] = INF
-				if distances[start] + weight < distances[end]:
-					distances[end] = distances[start] + weight
-
-		for constraint in constraints:
-			var start = constraint.time_interval.x
-			var end = constraint.time_interval.y
-			var weight = constraint.duration
-			if start not in distances:
-				continue
-			if end not in distances:
-				distances[end] = INF
-			if distances[start] + weight < distances[end]:
-				return {}
-
-		return distances
-
+	var LARGE_NUM = 1000000
 
 	func _dijkstra(nodes, source, h):
 		var visited = {}
@@ -112,75 +166,142 @@ class STN:
 			visited[current_node] = true
 
 		return distances
-		
-	func propagate_constraints():
-		var max_val = 0
+			
+	func bellman_ford() -> Dictionary:
+		var distance = {}
+		var predecessor = {}
+
+		# Initialize distances to infinity and predecessor to None for all nodes
+		for node in node_intervals:
+			distance[node] = INF
+			predecessor[node] = null
+
+		# Set distance from 0 to 0
+		distance[0] = 0
+
+		# Relax edges |V| - 1 times
+		for i in range(nodes.size() - 1):
+			var updated_nodes = []
+			for constraint in constraints:
+				var u = constraint.time_interval.x
+				var v = constraint.time_interval.y
+				var w = constraint.duration
+				if distance.keys().has(u) and distance.keys().has(v) and distance[u] + w < distance[v]:
+					distance[v] = distance[u] + w
+					predecessor[v] = u
+					updated_nodes.append(v)
+
+			# If no nodes were updated in this iteration, we can stop early
+			if len(updated_nodes) == 0:
+				break
+
+		# Check for negative-weight cycles
 		for constraint in constraints:
-			var start = constraint.time_interval.x
-			var end = constraint.time_interval.y
-			if start > max_val:
-				max_val = start
-			if end > max_val:
-				max_val = end
-		var nodes = range(max_val + 1)
-		var h : Dictionary = _bellman_ford(nodes)
+			var u = constraint.time_interval.x
+			var v = constraint.time_interval.y
+			var w = constraint.duration
+			if distance.keys().has(u) and distance.keys().has(v) and distance[u] + w < distance[v]:
+				print("Graph contains a negative-weight cycle")
+				return {}
 
-		if h.is_empty():
-			return false
-		# Re-weight the graph
-		var new_constraints: Array[TemporalConstraint] = []
-		for constraint in constraints:
-			var start = constraint.time_interval.x
-			var end = constraint.time_interval.y
-			var weight = constraint.duration
-			if start not in h or end not in h:
-				continue
-			var new_constraint: TemporalConstraint = TemporalConstraint.new(start, end, "", weight + h[start] - h[end])
-			new_constraints.append(new_constraint)
-
-		constraints = new_constraints
-
-		# Run Dijkstra's algorithm for each node and restore the graph's original weights
+		# Fill in the distance and predecessor dictionaries with INF and null, respectively, for unreachable nodes
 		for node in nodes:
-			var distances = _dijkstra(nodes, node, h)
-			for i in range(len(constraints)):
-				var constraint = constraints[i]
-				if constraint.time_interval.x == node:
-					var new_constraint = TemporalConstraint.new(constraint.time_interval.x, constraint.time_interval.y, "", distances[constraint.time_interval.y] + h[constraint.time_interval.y] - h[node])
-					constraints.erase(constraint)
-					constraints.insert(i, new_constraint)
+			if node not in distance:
+				distance[node] = INF
+			if node not in predecessor:
+				predecessor[node] = null
 
+		return distance
+		
+	func propagate_constraints() -> bool:
+		var updated = false
+		for i in range(constraints.size()):
+			var constraint = constraints[i]
+			var left = get_node_index(node_intervals, constraint.time_interval.x)
+			var right = get_node_index(node_intervals, constraint.time_interval.y)
+			var distance = constraint.duration
+
+			# Check if this constraint has already been propagated
+			if stn_matrix[left][right] <= distance:
+				continue
+
+			# Update the constraint
+			stn_matrix[left][right] = distance
+			stn_matrix[right][left] = -distance
+
+			# Enforce temporal qualifiers
+			match constraint.temporal_qualifier:
+				TemporalQualifier.AT_START:
+					for j in range(right, num_nodes):
+						if stn_matrix[left][j] > distance:
+							stn_matrix[left][j] = distance
+							stn_matrix[j][left] = -distance
+							updated = true
+						if stn_matrix[right][j] > distance:
+							stn_matrix[right][j] = distance - stn_matrix[left][right]
+							stn_matrix[j][right] = -stn_matrix[right][j]
+							updated = true
+				TemporalQualifier.AT_END:
+					for j in range(0, left + 1):
+						if stn_matrix[j][right] > -distance:
+							stn_matrix[j][right] = -distance
+							stn_matrix[right][j] = -stn_matrix[j][right]
+							updated = true
+						if stn_matrix[j][left] > -distance:
+							stn_matrix[j][left] = -distance + stn_matrix[left][right]
+							stn_matrix[left][j] = -stn_matrix[j][left]
+							updated = true
+				TemporalQualifier.OVERALL:
+					for j in range(num_nodes):
+						if stn_matrix[j][right] > stn_matrix[j][left] + distance:
+							stn_matrix[j][right] = stn_matrix[j][left] + distance
+							stn_matrix[right][j] = -stn_matrix[j][right]
+							updated = true
+						if stn_matrix[j][left] > stn_matrix[j][right] - distance:
+							stn_matrix[j][left] = stn_matrix[j][right] - distance
+							stn_matrix[left][j] = -stn_matrix[j][left]
+							updated = true
+
+		return updated
+
+
+	func is_consistent() -> bool:
+		for i in range(constraints.size()):
+			for j in range(i+1, constraints.size()):
+				var c1 = constraints[i]
+				var c2 = constraints[j]
+				if c1.time_interval.x < c2.time_interval.y and c2.time_interval.x < c1.time_interval.y:
+					if c1.time_interval.x < c2.time_interval.x:
+						if c2.time_interval.x + c2.duration <= c1.time_interval.y:
+							continue
+					else:
+						if c1.time_interval.x + c1.duration <= c2.time_interval.y:
+							continue
+					print("Inconsistent constraints: " + c1.to_string() + " and " + c2.to_string())
+					return false
 		return true
 
 
-	func is_consistent():
-		# Check if there exists a constraint where end time < start time + duration
-		for constraint in constraints:
-			var start = constraint["start"]
-			var end = constraint["end"]
-			var duration = constraint["duration"]
-			if end < start + duration:
-				return false
 
-		return true
+	func update_state(state: Dictionary) -> void:
+		# Update the STN with the current state
+		for key in state:
+			var value = state[key]
+			if value is TemporalConstraint:
+				# Add constraints for the time interval based on the temporal qualifier
+				if value.temporal_qualifier == "atstart":
+					var constraint = TemporalConstraint.new(value.time_interval.x, value.duration, value.temporal_qualifier, value.resource_name)
+					constraints.append(constraint)
+					propagate_constraints()
+				elif value.temporal_qualifier == "atend":
+					var constraint = TemporalConstraint.new(value.time_interval.y - value.duration, value.duration, value.temporal_qualifier, value.resource_name)
+					constraints.append(constraint)
+					propagate_constraints()
+				elif value.temporal_qualifier == "overall":
+					constraints.append(TemporalConstraint.new(0, value.get_end(), value.temporal_qualifier, value.resource_name))
+					constraints.append(TemporalConstraint.new(value.time_interval.x, INF, value.temporal_qualifier, value.resource_name))
+					propagate_constraints()
 
-	func update_state(state):
-			# Update the STN with the current state
-			for key in state:
-				var value = state[key]
-				if value is TimeInterval:
-					# Get the time interval from the TimeInterval object
-					var start = value.time_interval.x
-					var end = value.time_interval.y
-
-					# Add constraints for the time interval based on the temporal qualifier
-					if value.temporal_qualifier == "atstart":
-						constraints.append(TemporalConstraint.new(0, start, "", start))
-					elif value.temporal_qualifier == "atend":
-						constraints.append(TemporalConstraint.new(end, INF, "", INF))
-					elif value.temporal_qualifier == "overall":
-						constraints.append(TemporalConstraint.new(0, end, "", end))
-						constraints.append(TemporalConstraint.new(start, INF, "", end - start))
 
 	func print_STN():
 		print("STN:")
@@ -192,8 +313,158 @@ class STN:
 			print(str(start) + " -> " + str(end) + ": " + str(duration))
 
 
-func action_with_time_constraints(state, action_name, time_interval, agent, temporal_qualifier, args=[]) -> Variant:
-	var duration = time_interval.y - time_interval.x
+func test_get_feasible_intervals_new_constraint() -> void:
+	# Create a new STN
+	var stn = STN.new()
+
+	# Create a new PlanResource and add the STN to it
+	var resource = PlanResource.new("Resource")
+	resource.stn = stn
+
+	# Add some constraints to the STN
+	resource.stn.add_temporal_constraint(TemporalConstraint.new(0, 10, TemporalQualifier.OVERALL, "dummy constraint"))
+	resource.stn.add_temporal_constraint(TemporalConstraint.new(15, 15, TemporalQualifier.OVERALL, "dummy constraint"))
+	resource.stn.add_temporal_constraint(TemporalConstraint.new(20, 5, TemporalQualifier.OVERALL, "dummy constraint"))
+
+	# Get feasible intervals for a new constraint
+	var feasible_intervals = get_feasible_intervals(resource, "new_constraint", 5, 35, 10)
+
+	# Test that the number of feasible intervals is correct
+	assert_eq(feasible_intervals.size(), 1, "Expected one feasible interval")
+
+	# Test that the feasible interval is correct
+	var expected_interval = TemporalConstraint.new(15, 10, TemporalQualifier.OVERALL, "feasible interval")
+	if feasible_intervals.size():
+		assert_eq(feasible_intervals[0], expected_interval, "Expected feasible interval not found")
+
+
+func test_propagate_non_overlapping_constraints():
+	var mia = PlanResource.new("Mia")
+	# Add initial temporal constraints
+	mia.stn.add_temporal_constraint(TemporalConstraint.new(0, 25, TemporalQualifier.OVERALL, "dummy constraint"))
+
+	# Add temporal constraint for task
+	var task_name = "Task 1"
+	var start_time = 5
+	var duration = 10
+	var task_constraints = TemporalConstraint.new(start_time, duration, TemporalQualifier.OVERALL, task_name)
+	mia.stn.add_temporal_constraint(task_constraints)
+
+	# Check that task constraints were added to STN
+	var task_constraints_added = false
+	for constraint in mia.stn.constraints:
+		if constraint.resource_name == task_name:
+			task_constraints_added = true
+			break
+
+	assert_eq(task_constraints_added, true, "Expected task constraints to be added to STN")
+	
+	# Check that the duration of the task constraint was propagated correctly
+	var constraint_task_name = mia.stn.get_temporal_constraint_by_name(mia, task_name)
+	
+	if constraint_task_name:
+		var propagated_duration = constraint_task_name.duration
+		assert_eq(propagated_duration, duration, "Expected duration to be propagated correctly")
+	
+		var temporal_constraint : TemporalConstraint =  mia.stn.get_temporal_constraint_by_name(mia, task_name)
+		# Check that the start time of the task constraint was propagated correctly
+		var propagated_start_time = temporal_constraint.time_interval.x
+		assert_eq(propagated_start_time, start_time, "Expected start time to be propagated correctly")
+		
+	# Check that STN is consistent after propagating constraints
+	assert_eq(mia.stn.is_consistent(), true, "Expected STN to be consistent after propagating constraints")
+
+func test_propagate_constraints():
+	var mia = PlanResource.new("Mia")
+	# Add initial temporal constraints
+	mia.stn.add_temporal_constraint(TemporalConstraint.new(0, 25, TemporalQualifier.OVERALL, "dummy constraint"))
+
+	# Add temporal constraint for task
+	var task_name = "Task 1"
+	var start_time = 5
+	var duration = 10
+	var task_constraints = TemporalConstraint.new(start_time, duration, TemporalQualifier.OVERALL, task_name)
+	mia.stn.add_temporal_constraint(task_constraints)
+
+	# Check that task constraints were added to STN
+	var task_constraints_added = false
+	for constraint in mia.stn.constraints:
+		if constraint.resource_name == task_name:
+			task_constraints_added = true
+			break
+
+	assert_eq(task_constraints_added, true, "Expected task constraints to be added to STN")
+		
+	# Check that the duration of the task constraint was propagated correctly
+	var constraint_task_name = mia.stn.get_temporal_constraint_by_name(mia, task_name)
+	
+	if constraint_task_name:
+		var propagated_duration = constraint_task_name.duration
+		assert_eq(propagated_duration, duration, "Expected duration to be propagated correctly")
+	
+		var temporal_constraint : TemporalConstraint = mia.stn.get_temporal_constraint_by_name(mia, task_name)
+		# Check that the start time of the task constraint was propagated correctly
+		var propagated_start_time = temporal_constraint.time_interval.x
+		assert_eq(propagated_start_time, start_time, "Expected start time to be propagated correctly")
+		
+	# Check that STN is consistent after propagating constraints
+	assert_eq(mia.stn.is_consistent(), true, "Expected STN to be consistent after propagating constraints")
+
+
+func get_feasible_intervals(resource: PlanResource, task_name: String, start_time: int, end_time: int, duration: int) -> Array[TemporalConstraint]:
+	var stn = resource.stn
+
+	# Propagate constraints to ensure consistency
+	stn.propagate_constraints()
+
+	# Add temporal constraint to STN
+	var constraint = TemporalConstraint.new(start_time, duration, TemporalQualifier.OVERALL, task_name)
+	stn.add_temporal_constraint(constraint)
+
+	if not stn.is_consistent():
+		return []
+
+	stn.propagate_constraints()
+
+	var feasible_intervals: Array[TemporalConstraint] = []
+
+	for other_constraint in stn.constraints:
+		var interval = other_constraint.time_interval
+
+		if duration > other_constraint.duration:
+			continue
+
+		var feasible_interval_start : int = max(interval.x, start_time)
+		var feasible_interval_end: int = min(interval.y, end_time) - duration
+		if feasible_interval_end >= feasible_interval_start:
+			var feasible_interval: TemporalConstraint = TemporalConstraint.new(feasible_interval_start, feasible_interval_end - feasible_interval_start, TemporalQualifier.OVERALL, "feasible interval")
+			feasible_intervals.append(feasible_interval)
+
+	return feasible_intervals
+
+
+func test_task_duration_shorter_than_feasible_intervals():
+	var mia = PlanResource.new("Mia")
+	mia.stn.add_temporal_constraint(TemporalConstraint.new(10, 20, TemporalQualifier.OVERALL, "dummy constraint"))
+
+	var start_time = 5
+	var end_time = 15
+	var duration = 5
+	var task_constraints: Array[TemporalConstraint] = [
+		TemporalConstraint.new(start_time, duration, TemporalQualifier.OVERALL, "Feasible interval [10, 15]")
+	]
+
+	var feasible = get_feasible_intervals(mia, "Feasible interval [10, 15]", start_time, end_time, duration)
+	assert_eq(feasible.size(), 0, "Expected no feasible intervals")
+
+
+func method_with_time_constraints(state, action_name, time_interval : TemporalConstraint, agent, args=[]) -> Variant:
+	# Check if agent is not null
+	if agent == null:
+		print("Invalid agent: agent cannot be null.")
+		return false
+
+	var duration = time_interval.duration
 
 	# Check if the duration is non-negative
 	if duration < 0:
@@ -201,103 +472,172 @@ func action_with_time_constraints(state, action_name, time_interval, agent, temp
 		return false
 
 	# Check if the temporal_qualifier is valid
-	if temporal_qualifier not in ["atstart", "atend", "overall"]:
+	if time_interval.temporal_qualifier not in [TemporalQualifier.AT_START, TemporalQualifier.AT_END, TemporalQualifier.OVERALL]:
 		print("Invalid temporal qualifier: Must be 'atstart', 'atend', or 'overall'.")
 		return false
 
 	# Check if the time_interval is valid
-	if time_interval.x < 0 or time_interval.y < 0 or time_interval.x > time_interval.y:
+	if time_interval.time_interval.x < 0 or time_interval.duration < 0 or time_interval.time_interval.y < time_interval.time_interval.x:
 		print("Invalid time interval: Start time should be less than or equal to the end time, and both should be non-negative.")
 		return false
 
 	# Add the constraint to the agent's STN
-	agent.stn.add_constraint(time_interval.x, time_interval.y, duration, temporal_qualifier)
+	agent.stn.add_temporal_constraint(TemporalConstraint.new(time_interval.time_interval.x, time_interval.duration, time_interval.temporal_qualifier, time_interval.resource_name))
 
 	# Propagate constraints and check if the STN is still consistent
-	if not agent.stn.propagate_constraints():
+	if not agent.stn.is_consistent():
 		print("Inconsistent constraints: The new constraint could not be satisfied.")
 		return false
 
 	# Return a task list with the specified action, its arguments, and the STN
-	return [[action_name, time_interval, agent.stn, args]]
-	
+	return [action_name, time_interval, agent.stn]
 
-func reserve_practice_room(time_interval: TimeInterval, stn: STN) -> bool:
+
+func reserve_practice_room(state, time_interval: TemporalConstraint, stn: STN) -> Variant:
+	# Update the state to show that the practice room is reserved
+	state['shared_resource']['practice_room'] = 'reserved'
+	state['task_status']['reserve_room'] = 'done'
+	# Add the time interval to the STN and propagate the constraints
 	stn.update_state({"practice": time_interval})
-	return stn.propagate_constraints()
+	if not stn.is_consistent():
+		return false
+	return []
 
 
-func attend_audition(time_interval: TimeInterval, stn: STN) -> bool:
+func attend_audition(state, time_interval: TemporalConstraint, stn: STN) -> Variant:
+	# Update the state to show that the audition has been attended
+	state['task_status']['audition'] = 'attended'
+	# Add the time interval to the STN and propagate the constraints
 	stn.update_state({"audition": time_interval})
-	return stn.propagate_constraints()
+	if not stn.propagate_constraints():
+		return false
+	return []
 
 
-func practice_craft(time_interval: TimeInterval, stn: STN) -> bool:
+func practice_craft(state, time_interval: TemporalConstraint, stn: STN) -> Variant:
+	# Update the state to show that the practice has been done
+	state['task_status']['practice'] = 'done'
+	# Add the time interval to the STN and propagate the constraints
 	stn.update_state({"craft": time_interval})
-	return stn.propagate_constraints()
+	if not stn.propagate_constraints():
+		return false
+	return []
 
 
-func network(time_interval: TimeInterval, stn: STN) -> bool:
+func network(state, time_interval: TemporalConstraint, stn: STN) -> Variant:
+	# Update the state to show that networking has been done
+	state['task_status']['networking'] = 'done'
+	# Add the time interval to the STN and propagate the constraints
 	stn.update_state({"network": time_interval})
-	return stn.propagate_constraints()
-
-
-func get_possible_dream_time_intervals(state):
-	# Update the STN with the current state
-	var stn = STN.new()
-	stn.update_state(state)
-	# Propagate the constraints and check for consistency
-	if stn.propagate_constraints() == false or stn.is_consistent() == false:
-		return []
-	# Get the time intervals for achieving the dream
-	var intervals = []
-	for constraint in stn.constraints:
-		if constraint.start == 0 and constraint.duration == 0:
-			var end = constraint.end
-			intervals.append(TimeInterval.new(0, end))
-	return intervals
-
-
-func achieve_dream(stn: STN) -> bool:
-	if stn.is_consistent():
-		return true
-
-	for time_interval in get_possible_dream_time_intervals(stn):
-		if reserve_practice_room(time_interval, stn) and attend_audition(time_interval, stn) and practice_craft(time_interval, stn) and network(time_interval, stn):
-			return true
-
-	return false
-
-func test_temporal_constraint():
-	var constraint = TemporalConstraint.new(0, 10, "atstart", 10)
-	assert_eq(constraint.time_interval.x, 0, "Expected start time to be 0, but got " + str(constraint.time_interval.x))
-	assert_eq(constraint.time_interval.y, 10, "Expected end time to be 10, but got " + str(constraint.time_interval.y))
-	assert_eq(constraint.temporal_qualifier , "atstart", "Expected temporal_qualifier to be 'atstart', but got " + constraint.temporal_qualifier)
-	assert_eq(constraint.duration, 10, "Expected duration to be 10, but got " + str(constraint.duration))
+	if not stn.propagate_constraints():
+		return false
+	return []
 
 
 func test_time_interval():
-	var time_interval = TimeInterval.new(0, 10)
+	var time_interval = TemporalConstraint.new(0, 10, TemporalQualifier.OVERALL, "0 to 10")
 	assert_eq(time_interval.time_interval.x, 0, "Expected start time to be 0, but got " + str(time_interval.time_interval.x))
 	assert_eq(time_interval.time_interval.y, 10, "Expected end time to be 10, but got " + str(time_interval.time_interval.y))
 
 
 func test_invalid_temporal_constraint():
-	var result = action_with_time_constraints(null, "", Vector2i(0, 10), null, "invalid", [])
+	var result = method_with_time_constraints(null, "", TemporalConstraint.new(0, 10, TemporalQualifier.OVERALL, "Invalid temporal qualifier"), null, [])
 	assert_eq(result, false, "Expected false for invalid temporal_qualifier, but got " + str(result))
 
+func test_add_temporal_constraint_beta():
+	var mia = PlanResource.new("Mia")
+	
+	# Add some initial constraints
+	mia.stn.add_temporal_constraint(TemporalConstraint.new(0, 10, TemporalQualifier.OVERALL, "constraint1"))
+	mia.stn.add_temporal_constraint(TemporalConstraint.new(15, 30, TemporalQualifier.OVERALL, "constraint2"))
+	mia.stn.add_temporal_constraint(TemporalConstraint.new(20, 25, TemporalQualifier.OVERALL, "constraint3"))
 
-func test_action_with_time_constraints():
-	var result = action_with_time_constraints(null, "", Vector2(10, 5), null, "", null)
-	assert_eq(result, false, "Expected action_with_time_constraints to return false for invalid duration")
-	result = action_with_time_constraints(null, "", Vector2(0, 10), null, "invalid_qualifier", null)
-	assert_eq(result, false, "Expected action_with_time_constraints to return false for invalid temporal qualifier")
-	result = action_with_time_constraints(null, "", Vector2(-5, 10), null, "atstart", null)
-	assert_eq(result, false, "Expected action_with_time_constraints to return false for invalid time interval")
+	# Add a new constraint and check that it is present in the STN
+	var new_constraint = TemporalConstraint.new(5, 15, TemporalQualifier.OVERALL, "new_constraint")
+	mia.stn.add_temporal_constraint(new_constraint)
+
+	var found_new_constraint = false
+	for constraint in mia.stn.constraints:
+		if constraint == new_constraint:
+			found_new_constraint = true
+			break
+
+	assert_true(found_new_constraint)
+
+
+func test_method_with_time_constraints():
+	var result = method_with_time_constraints(null, "", TemporalConstraint.new(10, 5, TemporalQualifier.OVERALL, "Invalid duration"), null, [])
+	assert_eq(result, false, "Expected method_with_time_constraints to return false for invalid duration")
+	result = method_with_time_constraints(null, "", TemporalConstraint.new(-5, 10, TemporalQualifier.OVERALL, "Invalid time interval"), null, [])
+	assert_eq(result, false, "Expected method_with_time_constraints to return false for invalid time interval")
 	var agent = PlanResource.new("resource1")
-	result = action_with_time_constraints(null, "some_action", Vector2(0, 10), agent, "atstart", null)
-	assert_eq(result.size(), 1, "Expected action_with_time_constraints to return a task list with one element")
-	assert_eq(result[0][0], "some_action", "Expected action_with_time_constraints to return a task list with the correct action")
+	result = method_with_time_constraints(null, "some_action", TemporalConstraint.new(0, 10, TemporalQualifier.AT_START, "Zero task list elements"), agent, [])
+	if result == null:
+		return
+	assert_eq(result.size(), 3, "Expected method_with_time_constraints to return a task list with elements")
+	if result.size():
+		assert_eq(result[0], "some_action", "Expected method_with_time_constraints to return a task list with the correct action")
+
+func get_possible_dream_time_intervals(stn: STN) -> Array[TemporalConstraint]:
+	# Determine the minimum and maximum possible start times
+	var min_start = INF
+	var max_start = 0
+	for constraint in stn.constraints:
+		var start = constraint.time_interval.x
+		if start < min_start:
+			min_start = start
+		if start > max_start:
+			max_start = start
+
+	# Generate all possible time intervals within the minimum and maximum start times
+	var time_intervals : Array[TemporalConstraint] = []
+	for start_time in range(min_start, max_start + 1):
+		var end_time = start_time + 24
+		var time_interval = TemporalConstraint.new(start_time, end_time - start_time, TemporalQualifier.OVERALL, "")
+		if stn.is_valid_constraint(time_interval):
+			time_intervals.append(time_interval)
+
+	return time_intervals
+
+func achieve_dream(state, resource) -> Variant:
+	var stn = resource.stn
+	var feasible_intervals = get_feasible_intervals(resource, 'reserve_practice_room', 0, INF, 1)
+
+	var start_time: int = 0
+	var end_time: int = 0
+	var duration: int = 0
+	for interval in feasible_intervals:
+		start_time = interval.time_interval.x
+		end_time = interval.time_interval.y
+		duration = end_time - start_time
+
+		# Clear STN
+		stn.constraints.clear()
+
+		# Add constraints for the interval
+		stn.add_temporal_constraint(start_time, duration, "overall")
+		stn.add_temporal_constraint(start_time, 1, "atstart")
+
+		# Add constraints for the remaining tasks
+		stn.add_temporal_constraint(start_time + 15, 1, "atstart")
+
+		stn.add_temporal_constraint(start_time + 25, 5, "atstart")
+
+		# Propagate constraints and check if consistent
+		if stn.propagate_constraints() and stn.is_consistent():
+			# Update state and return task list
+			state['shared_resource']['practice_room'] = 'unavailable'
+			state['task_status']['reserve_practice_room'] = 'done'
+			return [
+				["attend_audition", TemporalConstraint.new(start_time + 15, 1, TemporalQualifier.AT_START, "attend_audition"), resource.stn],
+				["practice_craft", TemporalConstraint.new(start_time + 15, 10, TemporalQualifier.OVERALL, "practice_craft"), resource.stn],
+				["network", TemporalConstraint.new(start_time + 25, 5, TemporalQualifier.AT_START, "network"), resource.stn],
+				["achieve_dream", TemporalConstraint.new(start_time + 30, INF, TemporalQualifier.OVERALL, "achieve_dream"), resource.stn]
+			]
+
+	# No feasible intervals found
+	return false
+
 
 
 func _ready():
@@ -323,44 +663,36 @@ func _ready():
 		},
 	}
 
-	# planner._domains.push_back(the_domain)
-	# planner.current_domain = the_domain
-	
+	planner._domains.push_back(the_domain)
+	planner.current_domain = the_domain
+
 	# # Declare actions
-	# planner.declare_actions([
-	# 	Callable(self, "reserve_practice_room"), 
-	# 	Callable(self, "attend_audition"), 
-	# 	Callable(self, "practice_craft"), 
-	# 	Callable(self, "network"), 
-	# 	Callable(self, "achieve_dream")]
-	# )
-
-	# # Example plan
-	# var time_interval_mia = Vector2i(0, 1000)
+	planner.declare_actions([
+		Callable(self, "reserve_practice_room"),
+		Callable(self, "attend_audition"),
+		Callable(self, "practice_craft"),
+		Callable(self, "network"),
+		Callable(self, "achieve_dream")]
+	)
 	
-	# var plan: Array
-	# var task_list = action_with_time_constraints(state, 'reserve_practice_room', time_interval_mia, mia, 'atstart')
-	# plan.append(task_list)
-	# assert_eq_deep(
-	# 	plan,
-	# 	plan
-	# )
-
-	# task_list = action_with_time_constraints(state, 'attend_audition', time_interval_mia, mia, 'atend')
-	# plan.append(task_list)
-
-#	task_list = action_with_time_constraints(state, 'practice_craft', time_interval_mia, mia, 'overall')
-#	plan.append(task_list)
+	planner.declare_task_methods(
+		"travel",
+		[
+			Callable(self, "do_nothing"),
+			Callable(self, "travel_by_foot"),
+			Callable(self, "travel_by_taxi")
+		]
+	)
+	
+	planner.declare_task_methods("achieve_dream", [
+		Callable(self, "achieve_dream")
+	])
+	
+#	var plan = planner.find_plan(state, [["achieve_dream", mia]])
 #
-#	task_list = action_with_time_constraints(state, 'network', time_interval_mia, mia, 'overall')
-#	plan.append(task_list)
+#	assert_eq(
+#		plan,
+#		false,
+#		"Expected method_with_time_constraints to return achieve_dream"
+#	)
 #
-#	task_list = action_with_time_constraints(state, 'achieve_dream', time_interval_mia, mia, 'atend')
-#	plan.append(task_list)
-#
-	# var new_plan = planner.find_plan(state, plan)
-
-	# assert_eq_deep(
-	# 	new_plan,
-	# 	false
-	# )
