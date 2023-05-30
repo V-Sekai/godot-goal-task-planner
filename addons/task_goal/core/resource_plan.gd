@@ -8,19 +8,19 @@ var the_domain = preload("res://addons/task_goal/core/domain.gd").new(domain_nam
 
 var planner = preload("res://addons/task_goal/core/plan.gd").new()
 
-var stn : STN
+var simple_temporal_network : SimpleTemporalNetwork
 
 func _init(name):
 	self.set_name(name)
-	self.stn = STN.new()
+	self.simple_temporal_network = SimpleTemporalNetwork.new()
 
 func get_feasible_intervals(start_time: int, end_time: int, duration: int) -> Array[TemporalConstraint]:
 	# Propagate constraints to ensure consistency
-	stn.propagate_constraints()
+	simple_temporal_network.propagate_constraints()
 
 	var feasible_intervals: Array[TemporalConstraint] = []
 	
-	for other_constraint in stn.constraints:
+	for other_constraint in simple_temporal_network.constraints:
 		var interval = other_constraint.time_interval
 
 		var feasible_interval_start : int = max(interval.x, start_time)

@@ -20,40 +20,27 @@ func _init(start: int, duration: int, qualifier: TemporalQualifier, resource: St
 	resource_name = resource
 	direct_successors = []
 
-func get_debug() -> String:
-	return "Constraint Name: %s Time Interval: %s Duration: %s Temporal Qualifier: %s" % [resource_name, time_interval, duration, temporal_qualifier]
-
 func add_direct_successor(successor_index: int, time_difference: int) -> void:
 	direct_successors.append({"index": successor_index, "time_difference": time_difference})
 
 func method_with_time_constraints(state, action_name, time_interval : TemporalConstraint, agent, args=[]) -> Variant:
-	# Check if agent is not null
-	if agent == null:
+	if not agent:
 		print("Invalid agent: agent cannot be null.")
 		return false
 
 	var duration = time_interval.duration
 
-	# Check if the duration is non-negative
 	if duration < 0:
 		print("Invalid duration: Duration should be non-negative.")
 		return false
 
-	# Check if the temporal_qualifier is valid
-	if time_interval.temporal_qualifier not in [TemporalQualifier.AT_START, TemporalQualifier.AT_END, TemporalQualifier.OVERALL]:
-		print("Invalid temporal qualifier: Must be 'atstart', 'atend', or 'overall'.")
-		return false
-
-	# Check if the time_interval is valid
-	if time_interval.time_interval.x < 0 or time_interval.duration < 0 or time_interval.time_interval.y < time_interval.time_interval.x:
+	if time_interval.time_interval.x < 0 or time_interval.time_interval.y < time_interval.time_interval.x:
 		print("Invalid time interval: Start time should be less than or equal to the end time, and both should be non-negative.")
 		return false
 
-	# Add the constraint to the agent's STN
-	agent.stn.add_temporal_constraint(TemporalConstraint.new(time_interval.time_interval.x, time_interval.duration, time_interval.temporal_qualifier, time_interval.resource_name))
+	agent.simple_temporal_network.add_temporal_constraint(TemporalConstraint.new(time_interval.time_interval.x, time_interval.duration, time_interval.temporal_qualifier, time_interval.resource_name))
 
-	# Propagate constraints and check if the STN is still consistent
-	if not agent.stn.is_consistent():
+	if not agent.simple_temporal_network.is_consistent():
 		print("Inconsistent constraints: The new constraint could not be satisfied.")
 		return false
 
