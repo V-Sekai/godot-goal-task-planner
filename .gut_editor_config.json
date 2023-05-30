@@ -17,7 +17,7 @@
  "inner_class": null,
  "junit_xml_file": "",
  "junit_xml_timestamp": false,
- "log_level": 3,
+ "log_level": 2,
  "opacity": 100,
  "paint_after": 0.1,
  "panel_options": {
@@ -31,7 +31,7 @@
  "post_run_script": "",
  "pre_run_script": "",
  "prefix": "test_",
- "selected": "test_artist_dream.gd",
+ "selected": "test_temporal.gd",
  "should_exit": false,
  "should_exit_on_success": false,
  "should_maximize": false,
