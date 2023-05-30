@@ -13,6 +13,7 @@ var duration: int
 var temporal_qualifier: TemporalQualifier
 var direct_successors: Array
 
+
 func _init(start: int, duration: int, qualifier: TemporalQualifier, resource: String):
 	time_interval = Vector2i(start, start + duration)
 	self.duration = duration
@@ -20,8 +21,10 @@ func _init(start: int, duration: int, qualifier: TemporalQualifier, resource: St
 	resource_name = resource
 	direct_successors = []
 
+
 func add_direct_successor(successor_index: int, time_difference: int) -> void:
 	direct_successors.append({"index": successor_index, "time_difference": time_difference})
+
 
 func method_with_time_constraints(state, action_name, time_interval : TemporalConstraint, agent, args=[]) -> Variant:
 	if not agent:
@@ -47,10 +50,25 @@ func method_with_time_constraints(state, action_name, time_interval : TemporalCo
 	# Return a task list with the specified action, its arguments, and the STN
 	return [action_name, time_interval, agent.stn]
 
+
 func deep_equal(other: Object) -> bool:
 	if other is TemporalConstraint:
 		return self.time_interval == other.time_interval and \
 				self.duration == other.duration and \
-				self.qualifier == other.qualifier and \
-				self.description == other.description
+				self.temporal_qualifier == other.temporal_qualifier and \
+				self.resource_name == other.resource_name
 	return false
+
+
+static func compare(a: TemporalConstraint, b: TemporalConstraint) -> int:
+	if a.time_interval.x < b.time_interval.x:
+		return -1
+	elif a.time_interval.x > b.time_interval.x:
+		return 1
+	else:
+		if a.time_interval.y < b.time_interval.y:
+			return -1
+		elif a.time_interval.y > b.time_interval.y:
+			return 1
+		else:
+			return 0
