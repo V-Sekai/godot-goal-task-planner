@@ -1,11 +1,9 @@
-extends Resource
-
 # SPDX-FileCopyrightText: 2021 University of Maryland
 # SPDX-License-Identifier: BSD-3-Clause-Clear
-
-# GT Project, version 1.1
 # Author: Dana Nau <nau@umd.edu>, July 7, 2021
 # Author: K. S. Ernest (iFire) Lee <ernest.lee@chibifire.com>, August 28, 2022
+
+extends Resource
 
 ## Task Goal is an automated planning system that can plan for both tasks and
 ## goals.
@@ -58,7 +56,6 @@ func print_actions(domain: Object = null) -> void:
 		print("-- There are no actions --")
 
 
-## Print a table of the task_methods for each tasks
 func _print_task_methods(domain) -> void:
 	if domain._task_method_dict:
 		print("")
@@ -73,7 +70,6 @@ func _print_task_methods(domain) -> void:
 		print("-- There are no task methods --")
 
 
-## Print a table of the unigoal_methods for each state_variable_name
 func _print_unigoal_methods(domain: Resource) -> void:
 	if domain._unigoal_method_dict:
 		print("Blackboard var name:    Relevant unigoal methods:")
@@ -88,7 +84,6 @@ func _print_unigoal_methods(domain: Resource) -> void:
 		print("-- There are no unigoal methods --")
 
 
-## Print the names of all the multigoal_methods
 func _print_multigoal_methods(domain: Resource) -> void:
 	if domain._multigoal_method_list:
 		var string_array: PackedStringArray = PackedStringArray()
@@ -271,10 +266,6 @@ func m_split_multigoal(state, multigoal):
 var verify_goals = true
 
 
-#	_apply_action_and_continue is called only when task1's name matches an
-#	action name. It applies the action by retrieving the action's function
-#	definition and calling it on the arguments, then calls seek_plan
-#	recursively on todo_list.
 func _apply_action_and_continue(state, task1, todo_list, plan, depth) -> Variant:
 	if verbose >= 3:
 		print("Depth %s action %s: " % [depth, task1])
@@ -290,14 +281,6 @@ func _apply_action_and_continue(state, task1, todo_list, plan, depth) -> Variant
 	return false
 
 
-##	"""
-##	If task1 is in the task-method dictionary, then iterate through the list
-##	of relevant methods to find one that's applicable, apply it to get
-##	additional todo_list items, and call seek_plan recursively on
-##			[the additional items] + todo_list.
-##
-##	If the call to seek_plan fails, go on to the next method in the list.
-##	"""
 func _refine_task_and_continue(state, task1, todo_list, plan, depth) -> Variant:
 	var relevant: Array = current_domain._task_method_dict[task1[0]]
 	if verbose >= 3:
@@ -324,13 +307,6 @@ func _refine_task_and_continue(state, task1, todo_list, plan, depth) -> Variant:
 	return false
 
 
-##	If goal1 is in the unigoal-method dictionary, then iterate through the
-##	list of relevant methods to find one that's applicable, apply it to get
-##	additional todo_list items, and call seek_plan recursively on
-##		  [the additional items] + [verify_g] + todo_list,
-##
-##	where [verify_g] verifies whether the method actually achieved goal1.
-##	If the call to seek_plan fails, go on to the next method in the list.
 func _refine_unigoal_and_continue(state, goal1, todo_list, plan, depth) -> Variant:
 	if verbose >= 3:
 		print("Depth %s goal %s: " % [depth, goal1])
@@ -370,13 +346,6 @@ func _refine_unigoal_and_continue(state, goal1, todo_list, plan, depth) -> Varia
 	return false
 
 
-##	If goal1 is a multigoal, then iterate through the list of multigoal
-##	methods to find one that's applicable, apply it to get additional
-##	todo_list items, and call seek_plan recursively on
-##		  [the additional items] + [verify_mg] + todo_list,
-##
-##	where [verify_mg] verifies whether the method actually achieved goal1.
-##	If the call to seek_plan fails, go on to the next method in the list.
 func _refine_multigoal_and_continue(
 	state: Dictionary, goal1: Multigoal, todo_list: Array, plan: Array, depth: int
 ) -> Variant:
@@ -472,59 +441,51 @@ func _item_to_string(item):
 	return str(item)
 
 
-##	An adaptation of the run_lazy_lookahead algorithm from Ghallab et al.
-##	(2016), Automated Planning and Acting. It works roughly like this:
-##		loop:
-##			plan = find_plan(state, todo_list)
-##			if plan = [] then return state    // the new current state
-##			for each action in plan:
-##				try to execute the corresponding command
-##				if the command fails, continue the outer loop
-##	Arguments:
-##	  - 'state' is a state;
-##	  - 'todo_list' is a list of tasks, goals, and multigoals;
-##	  - max_tries is a bound on how many times to execute the outer loop.
+## An adaptation of the run_lazy_lookahead algorithm from Ghallab et al.
+## (2016), Automated Planning and Acting. It works roughly like this:
+##   loop:
+##       plan = find_plan(state, todo_list)
+##       if plan = [] then return state    // the new current state
+##       for each action in plan:
+##           try to execute the corresponding command
+##           if the command fails, continue the outer loop
+## Arguments:
+##   - 'state' is a state;
+##   - 'todo_list' is a list of tasks, goals, and multigoals;
+##   - max_tries is a bound on how many times to execute the outer loop.
 ##
-##	Note: whenever run_lazy_lookahead encounters an action for which there is
-##	no corresponding command definition, it uses the action definition instead.
+## Note: whenever run_lazy_lookahead encounters an action for which there is
+## no corresponding command definition, it uses the action definition instead.
 func run_lazy_lookahead(state: Dictionary, todo_list: Array, max_tries: int = 10):
 	if verbose >= 1:
-		print(
-			(
-				"RunLazyLookahead> run_lazy_lookahead, verbose = %s, max_tries = %s"
-				% [verbose, max_tries]
-			)
-		)
+		print("RunLazyLookahead> run_lazy_lookahead, verbose = %s, max_tries = %s" % [verbose, max_tries])
 		print("RunLazyLookahead> initial state: %s" % [state.keys()])
 		print("RunLazyLookahead> To do:", todo_list)
 
+	var ordinals = {1: "st", 2: "nd", 3: "rd"}
+
 	for tries in range(1, max_tries + 1):
 		if verbose >= 1:
-			var ordinals = {1: "st", 2: "nd", 3: "rd"}
-			if ordinals.get(tries):
-				print("RunLazyLookahead> %s%s call to find_plan:" % [tries, ordinals.get(tries)])
-			else:
-				print("RunLazyLookahead> %s call to find_plan:" % [tries])
+			print("RunLazyLookahead> %s%s call to find_plan:" % [tries, ordinals.get(tries, "")])
+
 		var plan = find_plan(state, todo_list)
-		if (plan is Array and not plan.size()) or (plan is bool and plan == false) or plan == null:
+		if plan == null or plan.is_empty():
 			if verbose >= 1:
 				print("run_lazy_lookahead: find_plan has failed")
 			return state
-		if plan == []:
+
+		if plan.empty():
 			if verbose >= 1:
-				print(
-					(
-						"RunLazyLookahead> Empty plan => success\n"
-						+ "after {tries} calls to find_plan."
-					)
-				)
+				print("RunLazyLookahead> Empty plan => success\nafter {tries} calls to find_plan.")
 			if verbose >= 2:
 				print("> final state %s" % [state])
 			return state
+
 		for action in plan:
 			var action_name = current_domain._action_dict.get(action[0])
 			if verbose >= 1:
 				print("RunLazyLookahead> Command: %s" % [[action_name] + action.slice(1)])
+
 			var new_state = _apply_command_and_continue(state, action_name, action.slice(1))
 			if new_state is Dictionary:
 				if verbose >= 2:
@@ -532,14 +493,9 @@ func run_lazy_lookahead(state: Dictionary, todo_list: Array, max_tries: int = 10
 				state = new_state
 			else:
 				if verbose >= 1:
-					print(
-						(
-							"RunLazyLookahead> WARNING: action %s failed; will call find_plan."
-							% [action_name]
-						)
-					)
-					break
-		# if state != False then we're here because the plan ended
+					print("RunLazyLookahead> WARNING: action %s failed; will call find_plan." % [action_name])
+				break
+
 		if verbose >= 1 and state != null:
 			print("RunLazyLookahead> Plan ended; will call find_plan again.")
 
@@ -547,14 +503,14 @@ func run_lazy_lookahead(state: Dictionary, todo_list: Array, max_tries: int = 10
 		print("RunLazyLookahead> Too many tries, giving up.")
 	if verbose >= 2:
 		print("RunLazyLookahead> final state %s" % state)
+
 	return state
 
 
-##	_apply_command_and_continue applies 'command' by retrieving its
-##	function definition and calling it on the arguments.
 func _apply_command_and_continue(state: Dictionary, command: Callable, args: Array) -> Variant:
 	if verbose >= 3:
 		print("_apply_command_and_continue %s, args = %s" % [command.get_method(), args])
+
 	var next_state = command.get_object().callv(command.get_method(), [state] + args)
 	if next_state:
 		if verbose >= 3:
