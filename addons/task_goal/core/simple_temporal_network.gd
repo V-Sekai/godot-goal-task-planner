@@ -9,7 +9,7 @@ var node_intervals: Array = []
 var node_indices: Dictionary = {} 
 
 func to_dictionary()  -> Dictionary:
-	return { "constraints": constraints, "matrix": stn_matrix, "number_of_nodes": num_nodes, "node_intervals": node_intervals }
+	return { "resource_name": resource_name, "constraints": constraints, "matrix": stn_matrix, "number_of_nodes": num_nodes, "node_intervals": node_intervals }
 
 
 func get_node_index(node_interval: Vector2i) -> int:
