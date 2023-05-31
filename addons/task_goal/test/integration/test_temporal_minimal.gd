@@ -28,7 +28,6 @@ func _create_resource_with_initial_constraint() -> SimpleTemporalNetwork:
 	var initial_constraint = TemporalConstraint.new(0, 25, TemporalConstraint.TemporalQualifier.OVERALL, "dummy constraint")
 	simple_temporal_network.add_temporal_constraint(initial_constraint)
 
-	# Print the initial constraint and STN constraints after adding it
 	print("Initial constraint: ", initial_constraint.to_dictionary())
 	for c in simple_temporal_network.constraints:
 		print("STN constraints after adding initial constraint: ", c.to_dictionary())
@@ -61,6 +60,6 @@ func test_propagate_constraints() -> void:
 	for c in simple_temporal_network.constraints:
 		constrains_array.append(c.to_dictionary())
 	assert_eq_deep(constrains_array, [
-		{ "time_interval": Vector2i(0, 25), "duration": 25, "temporal_qualifier": 2, "direct_successors": []},
-		{ "time_interval": Vector2i(5, 15), "duration": 10, "temporal_qualifier": 2, "direct_successors": []}]
+		{ "time_interval": Vector2i(0, 25), "duration": 25, "temporal_qualifier": 2},
+		{ "time_interval": Vector2i(5, 15), "duration": 10, "temporal_qualifier": 2}]
 	)

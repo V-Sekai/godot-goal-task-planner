@@ -129,4 +129,3 @@ func is_consistent_with(constraint: TemporalConstraint) -> bool:
 	temp_stn.node_intervals = node_intervals.duplicate()
 
 	return temp_stn.add_temporal_constraint(constraint) and temp_stn.is_consistent()
-
