@@ -31,7 +31,7 @@ func _init_matrix() -> void:
 
 func add_temporal_constraint(constraint: TemporalConstraint) -> bool:
 	constraints.append(constraint)
-	print("Adding constraint:", constraint.to_dictionary())  # Add this line to print the input constraint
+	print("Adding constraint:", constraint.to_dictionary())
 	var interval: Vector2i = constraint.time_interval
 	if interval not in node_indices:
 		node_indices[interval] = num_nodes
@@ -48,14 +48,24 @@ func add_temporal_constraint(constraint: TemporalConstraint) -> bool:
 	print("Distance:", distance)
 	print("STN Matrix before updating:", stn_matrix)
 
-	if node + 1 >= stn_matrix.size():  # Add this check to ensure the index is within bounds
+	if node + 1 >= stn_matrix.size():
 		return false
 
 	if typeof(stn_matrix[node + 1]) != TYPE_ARRAY:
 		stn_matrix[node + 1] = []
 
-	stn_matrix[node][node + 1] = distance
-	stn_matrix[node + 1][node] = -distance
+	match constraint.temporal_qualifier:
+		# AT_START, we set the distance between nodes to the maximum of the existing distance and the new constraint's duration.
+		TemporalConstraint.TemporalQualifier.AT_START:
+			stn_matrix[node][node + 1] = max(distance, stn_matrix[node][node + 1])
+			stn_matrix[node + 1][node] = -stn_matrix[node][node + 1]
+		# For AT_END, we set the distance between nodes to the minimum of the negation of the new constraint's duration and the existing distance. 
+		TemporalConstraint.TemporalQualifier.AT_END:
+			stn_matrix[node][node + 1] = min(-distance, stn_matrix[node][node + 1])
+			stn_matrix[node + 1][node] = -stn_matrix[node][node + 1]
+		_:
+			stn_matrix[node][node + 1] = distance
+			stn_matrix[node + 1][node] = -distance
 
 	if not propagate_constraints():  # Check if the propagation was successful
 		print("Failed to add constraint:", constraint.to_dictionary(), "Node:", node)
@@ -71,6 +81,7 @@ func add_temporal_constraint(constraint: TemporalConstraint) -> bool:
 	print("STN Matrix after updating:", stn_matrix)
 
 	return true
+
 
 
 func get_temporal_constraint_by_name(constraint_name: String) -> TemporalConstraint:
@@ -117,7 +128,7 @@ func update_state(state: Dictionary) -> void:
 	for key in state:
 		var value = state[key]
 		if value is TemporalConstraint:
-			var constraint = TemporalConstraint.new(value.time_interval.x, value.duration, value.temporal_qualifier, value.resource_name)
+			var constraint = TemporalConstraint.new(value.time_interval.x, value.time_interval.y, value.duration, value.temporal_qualifier, value.resource_name)
 			add_temporal_constraint(constraint)
 
 

@@ -25,7 +25,7 @@ func _validate_task_constraints(simple_temporal_network, task_name: String, star
 
 func _create_resource_with_initial_constraint() -> SimpleTemporalNetwork:
 	var simple_temporal_network: SimpleTemporalNetwork = SimpleTemporalNetwork.new()
-	var initial_constraint = TemporalConstraint.new(0, 25, TemporalConstraint.TemporalQualifier.OVERALL, "dummy constraint")
+	var initial_constraint = TemporalConstraint.new(0, 25, 25, TemporalConstraint.TemporalQualifier.OVERALL, "dummy constraint")
 	simple_temporal_network.add_temporal_constraint(initial_constraint)
 
 	print("Initial constraint: ", initial_constraint.to_dictionary())
@@ -41,7 +41,7 @@ func test_propagate_constraints() -> void:
 	var task_name = "Task 1"
 	var start_time = 5
 	var duration = 10
-	var task_constraints = TemporalConstraint.new(start_time, duration, TemporalConstraint.TemporalQualifier.OVERALL, task_name)
+	var task_constraints = TemporalConstraint.new(start_time, start_time + duration, duration, TemporalConstraint.TemporalQualifier.OVERALL, task_name)
 
 	print("Task constraints: %s" % task_constraints.to_dictionary())
 
@@ -64,25 +64,16 @@ func test_propagate_constraints() -> void:
 		{ "resource_name": "Task 1", "time_interval": Vector2i(5, 15), "duration": 10, "temporal_qualifier": 2}]
 	)
 
-
 func test_propagate_constraints_variation_1() -> void:
-	var simple_temporal_network = _create_resource_with_initial_constraint()
-
+	var simple_temporal_network: SimpleTemporalNetwork = SimpleTemporalNetwork.new()
 	var task_constraints_data = [
-		{"task_name": "Task 2", "start_time": 8, "duration": 12},
-		{"task_name": "Task 3", "start_time": 5, "duration": 15},
-		{"task_name": "Task 4", "start_time": 10, "duration": 8},
-		{"task_name": "Task 5", "start_time": 3, "duration": 20},
-		{"task_name": "Task 6", "start_time": 7, "duration": 14},
-		{"task_name": "Task 7", "start_time": 12, "duration": 10},
-		{"task_name": "Task 8", "start_time": 9, "duration": 11},
-		{"task_name": "Task 9", "start_time": 6, "duration": 13},
-		{"task_name": "Task 10", "start_time": 4, "duration": 18},
-		{"task_name": "Task 11", "start_time": 11, "duration": 9}
+		{"task_name": "Task 2", "duration": 12},
+		{"task_name": "Task 3", "duration": 15},
+		{"task_name": "Task 4", "duration": 8},
 	]
 
 	for data in task_constraints_data:
-		var task_constraints: TemporalConstraint = TemporalConstraint.new(data.start_time, data.duration, TemporalConstraint.TemporalQualifier.OVERALL, data.task_name)
+		var task_constraints: TemporalConstraint = TemporalConstraint.new(0, 100, data.duration, TemporalConstraint.TemporalQualifier.AT_START, data.task_name)
 		simple_temporal_network.add_temporal_constraint(task_constraints)
 
 	print("STN after adding all constraints: %s" % str(simple_temporal_network.to_dictionary()))
@@ -92,4 +83,5 @@ func test_propagate_constraints_variation_1() -> void:
 		constrains_array.append(c.to_dictionary())
 	print("STN constraints after adding task constraints: ", constrains_array)
 
-	assert_eq_deep(constrains_array, [{ "resource_name": "dummy constraint", "time_interval": Vector2i(0, 25), "duration": 25, "temporal_qualifier": 2 }, { "resource_name": "Task 2", "time_interval": Vector2i(8, 20), "duration": 12, "temporal_qualifier": 2 }, { "resource_name": "Task 3", "time_interval": Vector2i(5, 20), "duration": 15, "temporal_qualifier": 2 }, { "resource_name": "Task 4", "time_interval": Vector2i(10, 18), "duration": 8, "temporal_qualifier": 2 }, { "resource_name": "Task 5", "time_interval": Vector2i(3, 23), "duration": 20, "temporal_qualifier": 2 }, { "resource_name": "Task 6", "time_interval": Vector2i(7, 21), "duration": 14, "temporal_qualifier": 2 }, { "resource_name": "Task 7", "time_interval": Vector2i(12, 22), "duration": 10, "temporal_qualifier": 2 }, { "resource_name": "Task 8", "time_interval": Vector2i(9, 20), "duration": 11, "temporal_qualifier": 2 }, { "resource_name": "Task 9", "time_interval": Vector2i(6, 19), "duration": 13, "temporal_qualifier": 2 }, { "resource_name": "Task 10", "time_interval": Vector2i(4, 22), "duration": 18, "temporal_qualifier": 2 }, { "resource_name": "Task 11", "time_interval": Vector2i(11, 20), "duration": 9, "temporal_qualifier": 2 }])
+	assert_eq_deep(constrains_array,  [{ "resource_name": "Task 2", "time_interval": Vector2i(0, 100), "duration": 12, "temporal_qualifier": 0 }, { "resource_name": "Task 3", "time_interval": Vector2i(0, 100), "duration": 15, "temporal_qualifier": 0 }, { "resource_name": "Task 4", "time_interval": Vector2i(0, 100), "duration": 8, "temporal_qualifier": 0 }]) 
+

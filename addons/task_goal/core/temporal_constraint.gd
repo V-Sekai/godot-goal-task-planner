@@ -12,8 +12,8 @@ var time_interval: Vector2i
 var duration: int
 var temporal_qualifier: TemporalQualifier
 
-func _init(start: int, duration: int, qualifier: TemporalQualifier, resource: String):
-	time_interval = Vector2i(start, start + duration)
+func _init(start: int, end: int, duration: int, qualifier: TemporalQualifier, resource: String):
+	time_interval = Vector2i(start, end)
 	self.duration = duration
 	temporal_qualifier = qualifier
 	resource_name = resource
