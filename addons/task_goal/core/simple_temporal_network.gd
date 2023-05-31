@@ -74,7 +74,6 @@ func add_temporal_constraint(constraint: TemporalConstraint) -> bool:
 		return false
 
 	print("Adding constraint: %s" % constraint.to_dictionary())
-	constraints.append(constraint)  # Move this line after the propagation check
 	for c in constraints:
 		print("Constraints after adding: %s" % c.to_dictionary())
 
