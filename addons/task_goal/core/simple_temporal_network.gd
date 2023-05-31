@@ -71,40 +71,7 @@ func add_temporal_constraint(constraint: TemporalConstraint) -> bool:
 	print("STN Matrix after updating:", stn_matrix)
 
 	return true
-	
-func remove_temporal_constraint(constraint_name: String) -> bool:
-	var constraint_to_remove = get_temporal_constraint_by_name(constraint_name)
-	if constraint_to_remove == null:
-		print("Constraint not found:", constraint_name)
-		return false
-	
-	var interval = constraint_to_remove.time_interval
-	var node_index: int = int(node_indices[interval])
 
-	if node_index == -1:
-		print("Failed to remove constraint:", constraint_to_remove.to_dictionary(), "Node:", node_index)
-		return false
-
-	if node_index >= 0 and node_index < len(stn_matrix) - 1:
-		stn_matrix[node_index][node_index + 1] = INF
-		stn_matrix[node_index + 1][node_index] = -INF
-	else:
-		print("Invalid node index:", node_index)
-		return false
-
-	if not propagate_constraints():
-		print("Failed to remove constraint:", constraint_to_remove.to_dictionary(), "Node:", node_index)
-		stn_matrix[node_index][node_index + 1] = constraint_to_remove.duration
-		stn_matrix[node_index + 1][node_index] = -constraint_to_remove.duration
-		return false
-
-	constraints.erase(constraint_to_remove)
-
-	print("Removed constraint:", constraint_to_remove.to_dictionary())
-	for c in constraints:
-		print("Constraints after removing:", c.to_dictionary())
-
-	return true
 
 func get_temporal_constraint_by_name(constraint_name: String) -> TemporalConstraint:
 	for constraint in constraints:
