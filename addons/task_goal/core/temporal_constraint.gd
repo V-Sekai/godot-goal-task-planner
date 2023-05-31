@@ -50,7 +50,6 @@ func method_with_time_constraints(state, action_name, time_interval : TemporalCo
 		print("Inconsistent constraints: The new constraint could not be satisfied.")
 		return false
 
-	# Return a task list with the specified action, its arguments, and the STN
 	return [action_name, time_interval, agent.stn]
 
 
