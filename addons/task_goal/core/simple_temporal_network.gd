@@ -31,7 +31,6 @@ func _init_matrix() -> void:
 
 func add_temporal_constraint(constraint: TemporalConstraint) -> bool:
 	constraints.append(constraint)
-	print("Adding constraint:", constraint.to_dictionary())
 	var interval: Vector2i = constraint.time_interval
 	if interval not in node_indices:
 		node_indices[interval] = num_nodes
@@ -40,13 +39,9 @@ func add_temporal_constraint(constraint: TemporalConstraint) -> bool:
 		_init_matrix()
 	var node: int = node_indices[interval]
 	if node == -1:
-		print("Failed to add constraint:", constraint.to_dictionary(), "Node:", node)
 		return false
 
-	var distance = constraint.duration
-	print("Node:", node)
-	print("Distance:", distance)
-	print("STN Matrix before updating:", stn_matrix)
+	var distance: float = constraint.duration
 
 	if node + 1 >= stn_matrix.size():
 		return false
@@ -55,11 +50,9 @@ func add_temporal_constraint(constraint: TemporalConstraint) -> bool:
 		stn_matrix[node + 1] = []
 
 	match constraint.temporal_qualifier:
-		# AT_START, we set the distance between nodes to the maximum of the existing distance and the new constraint's duration.
 		TemporalConstraint.TemporalQualifier.AT_START:
 			stn_matrix[node][node + 1] = max(distance, stn_matrix[node][node + 1])
 			stn_matrix[node + 1][node] = -stn_matrix[node][node + 1]
-		# For AT_END, we set the distance between nodes to the minimum of the negation of the new constraint's duration and the existing distance. 
 		TemporalConstraint.TemporalQualifier.AT_END:
 			stn_matrix[node][node + 1] = min(-distance, stn_matrix[node][node + 1])
 			stn_matrix[node + 1][node] = -stn_matrix[node][node + 1]
@@ -67,20 +60,12 @@ func add_temporal_constraint(constraint: TemporalConstraint) -> bool:
 			stn_matrix[node][node + 1] = distance
 			stn_matrix[node + 1][node] = -distance
 
-	if not propagate_constraints():  # Check if the propagation was successful
-		print("Failed to add constraint:", constraint.to_dictionary(), "Node:", node)
+	if not propagate_constraints():
 		stn_matrix[node][node + 1] = INF
 		stn_matrix[node + 1][node] = -INF
 		return false
 
-	print("Adding constraint: %s" % constraint.to_dictionary())
-	for c in constraints:
-		print("Constraints after adding: %s" % c.to_dictionary())
-
-	print("STN Matrix after updating:", stn_matrix)
-
 	return true
-
 
 
 func get_temporal_constraint_by_name(constraint_name: String) -> TemporalConstraint:
@@ -118,7 +103,7 @@ func is_consistent() -> bool:
 				else:
 					if c1.time_interval.x + c1.duration <= c2.time_interval.y:
 						continue
-				print("Inconsistent constraints: " + c1.to_string() + " and " + c2.to_string())
+				print("Inconsistent constraints: " + str(c1.to_dictionary()) + " and " + str(c2.to_dictionary()))
 				return false
 	return true
 
