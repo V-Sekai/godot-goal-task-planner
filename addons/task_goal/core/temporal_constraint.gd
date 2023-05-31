@@ -21,6 +21,9 @@ func _init(start: int, duration: int, qualifier: TemporalQualifier, resource: St
 	resource_name = resource
 	direct_successors = []
 
+func to_dictionary() -> Dictionary:
+	return { "time_interval" : time_interval, "duration": duration, "temporal_qualifier": temporal_qualifier, "direct_successors": direct_successors}
+
 
 func add_direct_successor(successor_index: int, time_difference: int) -> void:
 	direct_successors.append({"index": successor_index, "time_difference": time_difference})

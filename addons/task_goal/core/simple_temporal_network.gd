@@ -6,40 +6,73 @@ var constraints: Array = []
 var stn_matrix: Array = []
 var num_nodes: int = 0
 var node_intervals: Array = []
+var node_indices: Dictionary = {} 
+
+func to_dictionary()  -> Dictionary:
+	return { "constraints": constraints, "matrix": stn_matrix, "number_of_nodes": num_nodes, "node_intervals": node_intervals }
 
 
 func get_node_index(node_interval: Vector2i) -> int:
 	return node_intervals.find(node_interval)
 
 
+func _init_matrix() -> void:
+	stn_matrix.resize(num_nodes)
+	for i in range(num_nodes):
+		if stn_matrix[i] == null:
+			stn_matrix[i] = []
+		stn_matrix[i].resize(num_nodes)
+		for j in range(num_nodes):
+			if i == j:
+				stn_matrix[i][j] = 0
+			else:
+				stn_matrix[i][j] = INF
+
+
 func add_temporal_constraint(constraint: TemporalConstraint) -> bool:
+	constraints.append(constraint)
+	print("Adding constraint:", constraint.to_dictionary())  # Add this line to print the input constraint
 	var interval: Vector2i = constraint.time_interval
-	if interval not in node_intervals:
+	if interval not in node_indices:
+		node_indices[interval] = num_nodes
 		node_intervals.append(interval)
 		num_nodes += 1
-		stn_matrix.resize(num_nodes)
-		for i in range(num_nodes):
-			if stn_matrix[i] == null:
-				stn_matrix[i] = []
-			stn_matrix[i].resize(num_nodes)
-
-	var node: int = get_node_index(interval)
-	if node == -1 or node + 1 >= num_nodes:
+		_init_matrix()
+	var node: int = node_indices[interval]
+	if node == -1:
+		print("Failed to add constraint:", constraint.to_dictionary(), "Node:", node)
 		return false
 
 	var distance = constraint.duration
+	print("Node:", node)
+	print("Distance:", distance)
+	print("STN Matrix before updating:", stn_matrix)
 
-	if stn_matrix[node][node + 1] <= distance:
-		print("Constraint has already been propagated")
-		return true
+	if node + 1 >= stn_matrix.size():  # Add this check to ensure the index is within bounds
+		return false
+
+	if typeof(stn_matrix[node + 1]) != TYPE_ARRAY:
+		stn_matrix[node + 1] = []
 
 	stn_matrix[node][node + 1] = distance
 	stn_matrix[node + 1][node] = -distance
 
-	propagate_constraints()
-	constraints.append(constraint)
+	if not propagate_constraints():  # Check if the propagation was successful
+		print("Failed to add constraint:", constraint.to_dictionary(), "Node:", node)
+		stn_matrix[node][node + 1] = INF
+		stn_matrix[node + 1][node] = -INF
+		return false
+
+	print("Adding constraint: %s" % constraint.to_dictionary())
+	constraints.append(constraint)  # Move this line after the propagation check
+	for c in constraints:
+		print("Constraints after adding: %s" % c.to_dictionary())
+
+	print("STN Matrix after updating:", stn_matrix)
+
 	return true
 	
+
 
 func get_temporal_constraint_by_name(constraint_name: String) -> TemporalConstraint:
 	for constraint in constraints:
@@ -49,36 +82,20 @@ func get_temporal_constraint_by_name(constraint_name: String) -> TemporalConstra
 
 
 func propagate_constraints() -> bool:
-	var updated = false
-	for constraint in constraints:
-		var node = get_node_index(constraint.time_interval)
-		if node == -1:
-			continue
+	for k in range(num_nodes):
+		for i in range(num_nodes):
+			for j in range(num_nodes):
+				if stn_matrix[i][k] != INF and stn_matrix[k][j] != INF:
+					if stn_matrix[i][j] == INF or stn_matrix[i][k] + stn_matrix[k][j] < stn_matrix[i][j]:
+						stn_matrix[i][j] = stn_matrix[i][k] + stn_matrix[k][j]
 
-		var distance = constraint.duration
+	for i in range(num_nodes):
+		if stn_matrix[i][i] != INF and stn_matrix[i][i] < 0:
+			print("Negative diagonal value at index", i)  # Add this line to print the problematic index
+			return false
 
-		if stn_matrix[node][node + 1] <= distance:
-			continue
-
-		stn_matrix[node][node + 1] = distance
-		stn_matrix[node + 1][node] = -distance
-
-		for j in range(num_nodes):
-			var update_distance = min(stn_matrix[j][node + 1], stn_matrix[j][node] + distance)
-			if update_distance < stn_matrix[j][node + 1]:
-				stn_matrix[j][node + 1] = update_distance
-				stn_matrix[node + 1][j] = -update_distance
-				updated = true
-			
-			update_distance = min(stn_matrix[j][node], stn_matrix[j][node + 1] - distance)
-			if update_distance < stn_matrix[j][node]:
-				stn_matrix[j][node] = update_distance
-				stn_matrix[node][j] = -update_distance
-				updated = true
-
-	return updated
+	return true
 	
-
 
 func is_consistent() -> bool:
 	for i in range(constraints.size()):
@@ -104,15 +121,6 @@ func update_state(state: Dictionary) -> void:
 			var constraint = TemporalConstraint.new(value.time_interval.x, value.duration, value.temporal_qualifier, value.resource_name)
 			add_temporal_constraint(constraint)
 
-func get_feasible_intervals(start_time: int, end_time: int, new_constraint: TemporalConstraint) -> Array:
-	var feasible_intervals = []
-	
-	for i in range(start_time, end_time - new_constraint.duration + 1):
-		var temp_constraint = TemporalConstraint.new(i, i + new_constraint.duration, new_constraint.temporal_qualifier, new_constraint.resource_name)
-		if is_consistent_with(temp_constraint):
-			feasible_intervals.append(temp_constraint)
-	
-	return feasible_intervals
 
 func is_consistent_with(constraint: TemporalConstraint) -> bool:
 	var temp_stn = SimpleTemporalNetwork.new()
