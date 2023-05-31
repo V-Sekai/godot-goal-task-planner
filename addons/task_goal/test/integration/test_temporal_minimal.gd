@@ -44,14 +44,12 @@ func test_propagate_constraints() -> void:
 	var duration = 10
 	var task_constraints = TemporalConstraint.new(start_time, duration, TemporalConstraint.TemporalQualifier.OVERALL, task_name)
 	
-	# Print the task constraints before adding them to STN
 	print("Task constraints: %s" % task_constraints.to_dictionary())
 
 	print("STN before adding initial constraint: %s" % str(simple_temporal_network.to_dictionary()))
 	simple_temporal_network.add_temporal_constraint(task_constraints)
 	print("STN after adding initial constraint: %s" % str(simple_temporal_network.to_dictionary()))
 
-	# Print the STN constraints after adding task constraints
 	var constrains_array = []
 	for c in simple_temporal_network.constraints:
 		constrains_array.append(c.to_dictionary())
