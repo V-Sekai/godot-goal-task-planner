@@ -2,10 +2,10 @@ extends Resource
 
 class_name SimpleTemporalNetwork
 
-var constraints: Array = []
-var stn_matrix: Array = []
+var constraints: Array[TemporalConstraint] = []
+var stn_matrix: Array[Array] = []
 var num_nodes: int = 0
-var node_intervals: Array = []
+var node_intervals: Array[Vector2i] = []
 var node_indices: Dictionary = {} 
 
 func to_dictionary()  -> Dictionary:

@@ -11,7 +11,7 @@ func _validate_task_constraints(simple_temporal_network, task_name: String, star
 	assert_true(task_constraints_added, "Expected task constraints to be added to STN")
 
 	var constraint_task_name = simple_temporal_network.get_temporal_constraint_by_name(task_name)
-	
+
 	if constraint_task_name:
 		var propagated_duration = constraint_task_name.duration
 		assert_eq(propagated_duration, duration, "Expected duration to be propagated correctly")
@@ -42,7 +42,7 @@ func test_propagate_constraints() -> void:
 	var start_time = 5
 	var duration = 10
 	var task_constraints = TemporalConstraint.new(start_time, duration, TemporalConstraint.TemporalQualifier.OVERALL, task_name)
-	
+
 	print("Task constraints: %s" % task_constraints.to_dictionary())
 
 	print("STN before adding initial constraint: %s" % str(simple_temporal_network.to_dictionary()))
@@ -56,7 +56,7 @@ func test_propagate_constraints() -> void:
 	constrains_array.clear()
 
 	_validate_task_constraints(simple_temporal_network, task_name, start_time, duration)
-	
+
 	for c in simple_temporal_network.constraints:
 		constrains_array.append(c.to_dictionary())
 	assert_eq_deep(constrains_array, [
