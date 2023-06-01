@@ -56,7 +56,7 @@ func get_possible_dream_time_intervals(stn: SimpleTemporalNetwork) -> Array[Temp
 	var time_intervals : Array[TemporalConstraint] = []
 	for start_time in range(min_start, max_start + 1):
 		var end_time = start_time + 24
-		var time_interval = TemporalConstraint.new(start_time, end_time - start_time, TemporalConstraint.TemporalQualifier.OVERALL, "")
+		var time_interval = TemporalConstraint.new(start_time, end_time, end_time - start_time, TemporalConstraint.TemporalQualifier.OVERALL, "")
 		if stn.is_valid_constraint(time_interval):
 			time_intervals.append(time_interval)
 

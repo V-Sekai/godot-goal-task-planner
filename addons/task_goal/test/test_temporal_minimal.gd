@@ -6,7 +6,7 @@ func test_propagate_constraints() -> void:
 	# Add 10 game temporal constraints
 	for i in range(1, 12):
 		var game_task_name = "Game Task %d" % i
-		var game_start_time = i * 10
+		var game_start_time = i * 50
 		var game_duration = 10
 		var game_task_constraints = TemporalConstraint.new(game_start_time, game_start_time + game_duration, game_duration, TemporalConstraint.TemporalQualifier.AT_END, game_task_name)
 		simple_temporal_network.add_temporal_constraint(game_task_constraints)
