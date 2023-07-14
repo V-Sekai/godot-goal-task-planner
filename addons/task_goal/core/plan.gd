@@ -271,7 +271,7 @@ func _apply_action_and_continue(state, task1, todo_list, plan, depth, stn) -> Va
 		print("Depth %s action %s: " % [depth, task1])
 	var action: Callable = current_domain._action_dict[task1[0]]
 	var newstate = action.get_object().callv(action.get_method(), [state] + task1.slice(1))
-	if newstate:
+	if newstate and stn.is_consistent():
 		if verbose >= 3:
 			print("Applied")
 			print(newstate)
@@ -295,7 +295,7 @@ func _refine_task_and_continue(state, task1, todo_list, plan, depth, stn) -> Var
 			method.get_method(), [state] + task1.slice(1)
 		)
 		# Can't just say "if subtasks:", because that's wrong if subtasks == []
-		if subtasks is Array:
+		if subtasks is Array and stn.is_consistent():
 			if verbose >= 3:
 				print("Applicable")
 				print("Depth %s subtasks: %s" % [depth, subtasks])
@@ -334,7 +334,7 @@ func _refine_unigoal_and_continue(state, goal1, todo_list, plan, depth, stn) -> 
 
 		var subgoals: Variant = method.get_object().callv(method.get_method(), [state] + [arg, val])
 
-		if subgoals is Array:
+		if subgoals is Array and stn.is_consistent():
 			if verbose >= 3:
 				print("Depth %s subgoals: %s" % [depth, subgoals])
 
@@ -374,7 +374,7 @@ func _refine_multigoal_and_continue(
 		if verbose >= 3:
 			print("Depth %s trying method %s: " % [depth, method.get_method()])
 		var subgoals: Variant = method.get_object().callv(method.get_method(), [state, goal1])
-		if subgoals is Array:
+		if subgoals is Array and stn.is_consistent():
 			if verbose >= 3:
 				print("Applicable")
 				print("Depth %s subgoals: %s" % [depth, subgoals])

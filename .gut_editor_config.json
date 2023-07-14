@@ -31,7 +31,7 @@
  "post_run_script": "",
  "pre_run_script": "",
  "prefix": "test_",
- "selected": "test_temporal_logistics.gd",
+ "selected": "test_temporal_logistics_small.gd",
  "should_exit": true,
  "should_exit_on_success": false,
  "should_maximize": false,
