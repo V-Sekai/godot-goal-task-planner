@@ -474,7 +474,7 @@ func run_lazy_lookahead(state: Dictionary, todo_list: Array, max_tries: int = 10
 				print("run_lazy_lookahead: find_plan has failed")
 			return state
 
-		if plan.empty():
+		if plan.is_empty():
 			if verbose >= 1:
 				print("RunLazyLookahead> Empty plan => success\nafter {tries} calls to find_plan.")
 			if verbose >= 2:
