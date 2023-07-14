@@ -1,6 +1,6 @@
 extends GutTest
 
-func test_propagate_constraints() -> void:
+func test_propagate_project_constraints() -> void:
 	var simple_temporal_network: SimpleTemporalNetwork = SimpleTemporalNetwork.new()
 	
 	# Add 10 game temporal constraints

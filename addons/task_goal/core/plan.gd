@@ -266,7 +266,7 @@ func m_split_multigoal(state, multigoal):
 var verify_goals = true
 
 
-func _apply_action_and_continue(state, task1, todo_list, plan, depth) -> Variant:
+func _apply_action_and_continue(state, task1, todo_list, plan, depth, stn) -> Variant:
 	if verbose >= 3:
 		print("Depth %s action %s: " % [depth, task1])
 	var action: Callable = current_domain._action_dict[task1[0]]
@@ -275,13 +275,13 @@ func _apply_action_and_continue(state, task1, todo_list, plan, depth) -> Variant
 		if verbose >= 3:
 			print("Applied")
 			print(newstate)
-		return seek_plan(newstate, todo_list, plan + [task1], depth + 1)
+		return seek_plan(newstate, todo_list, plan + [task1], depth + 1, stn)
 	if verbose >= 3:
 		print("Not applicable")
 	return false
 
 
-func _refine_task_and_continue(state, task1, todo_list, plan, depth) -> Variant:
+func _refine_task_and_continue(state, task1, todo_list, plan, depth, stn) -> Variant:
 	var relevant: Array = current_domain._task_method_dict[task1[0]]
 	if verbose >= 3:
 		var string_array: PackedStringArray = []
@@ -299,7 +299,7 @@ func _refine_task_and_continue(state, task1, todo_list, plan, depth) -> Variant:
 			if verbose >= 3:
 				print("Applicable")
 				print("Depth %s subtasks: %s" % [depth, subtasks])
-			var result: Variant = seek_plan(state, subtasks + todo_list, plan, depth + 1)
+			var result: Variant = seek_plan(state, subtasks + todo_list, plan, depth + 1, stn)
 			if result is Array:
 				return result
 	if verbose >= 3:
@@ -307,47 +307,60 @@ func _refine_task_and_continue(state, task1, todo_list, plan, depth) -> Variant:
 	return false
 
 
-func _refine_unigoal_and_continue(state, goal1, todo_list, plan, depth) -> Variant:
+func _refine_unigoal_and_continue(state, goal1, todo_list, plan, depth, stn) -> Variant:
 	if verbose >= 3:
 		print("Depth %s goal %s: " % [depth, goal1])
+
 	var state_var_name: String = goal1[0]
 	var arg: String = goal1[1]
 	var val: Variant = goal1[2]
+
 	if state.get(state_var_name).get(arg) == val:
 		if verbose >= 3:
 			print("Already achieved")
-		return seek_plan(state, todo_list, plan, depth + 1)
+		return seek_plan(state, todo_list, plan, depth + 1, stn)
+
 	var relevant = current_domain._unigoal_method_dict[state_var_name]
+
 	if verbose >= 3:
 		var string_array: PackedStringArray = []
 		for m in relevant:
 			string_array.push_back(m.get_method())
 		print("Methods %s " % string_array)
+
 	for method in relevant:
 		if verbose >= 3:
 			print("Depth %s trying method %s: " % [depth, method.get_method()])
+
 		var subgoals: Variant = method.get_object().callv(method.get_method(), [state] + [arg, val])
+
 		if subgoals is Array:
 			if verbose >= 3:
 				print("Depth %s subgoals: %s" % [depth, subgoals])
+
 			var verification = []
+
 			if verify_goals:
 				verification = [
 					["_verify_g", str(method.get_method()), state_var_name, arg, val, depth]
 				]
 			else:
 				verification = []
+
 			todo_list = subgoals + verification + todo_list
-			var result: Variant = seek_plan(state, todo_list, plan, depth + 1)
+			var result: Variant = seek_plan(state, todo_list, plan, depth + 1, stn)
+
 			if result is Array:
 				return result
+
 	if verbose >= 3:
 		print("Depth %s could not achieve goal %s" % [depth, goal1])
+
 	return false
 
 
 func _refine_multigoal_and_continue(
-	state: Dictionary, goal1: Multigoal, todo_list: Array, plan: Array, depth: int
+	state: Dictionary, goal1: Multigoal, todo_list: Array, plan: Array, depth: int, stn
 ) -> Variant:
 	if verbose >= 3:
 		print("Depth %s multigoal %s: " % [depth, goal1])
@@ -371,7 +384,7 @@ func _refine_multigoal_and_continue(
 			else:
 				verification = []
 			todo_list = subgoals + verification + todo_list
-			var result: Variant = seek_plan(state, todo_list, plan, depth + 1)
+			var result: Variant = seek_plan(state, todo_list, plan, depth + 1, stn)
 			if result is Array:
 				return result
 		else:
@@ -382,16 +395,7 @@ func _refine_multigoal_and_continue(
 		print("Depth %s could not achieve multigoal %s" % [depth, goal1])
 	return false
 
-
-##	find_plan tries to find a plan that accomplishes the items in todo_list,
-##	starting from the given state, using whatever methods and actions you
-##	declared previously. If successful, it returns the plan. Otherwise it
-##	returns the empty array. Arguments:
-##
-## 'state' is a state;
-##
-## 	'todo_list' is a list of goals, tasks, and actions.
-func find_plan(state: Dictionary, todo_list: Array) -> Variant:
+func find_plan(state: Dictionary, todo_list: Array, stn: SimpleTemporalNetwork = SimpleTemporalNetwork.new()) -> Variant:
 	if verbose >= 1:
 		var todo_array: Array = []
 		for x in todo_list:
@@ -399,41 +403,43 @@ func find_plan(state: Dictionary, todo_list: Array) -> Variant:
 		var todo_string = "[" + ", ".join(todo_array) + "]"
 		print("FindPlan> find_plan, verbose=%s:" % verbose)
 		print("    state = %s\n    todo_list = %s" % [state, todo_string])
-	var result: Variant = seek_plan(state, todo_list, [], 0)
+		
+	var result: Variant = seek_plan(state, todo_list, [], 0, stn)
+	
 	if verbose >= 1:
 		print("FindPlan> result = ", result, "\n")
+		
 	return result
 
 
-##	Workhorse for find_plan. Arguments:
-##	 - state is the current state
-##	 - todo_list is the current list of goals, tasks, and actions
-##	 - plan is the current partial plan
-##	 - depth is the recursion depth, for use in debugging
-func seek_plan(state: Dictionary, todo_list: Array, plan: Array, depth: int) -> Variant:
+func seek_plan(state: Dictionary, todo_list: Array, plan: Array, depth: int, stn: SimpleTemporalNetwork) -> Variant:
 	if verbose >= 2:
 		var todo_array: PackedStringArray = []
 		for x in todo_list:
 			todo_array.push_back(_item_to_string(x))
 		var todo_string = "[" + ", ".join(todo_array) + "]"
 		print("Depth %s todo_list %s" % [depth, todo_string])
+		
 	if todo_list.is_empty():
 		if verbose >= 3:
 			print("depth %s no more tasks or goals, return plan" % [depth])
 		return plan
+	
 	var item1 = todo_list.front()
 	todo_list.pop_front()
 
 	if item1 is Multigoal:
-		return _refine_multigoal_and_continue(state, item1, todo_list, plan, depth)
+		return _refine_multigoal_and_continue(state, item1, todo_list, plan, depth, stn)
 	elif item1 is Array:
 		if item1[0] in current_domain._action_dict.keys():
-			return _apply_action_and_continue(state, item1, todo_list, plan, depth)
+			return _apply_action_and_continue(state, item1, todo_list, plan, depth, stn)
 		elif item1[0] in current_domain._task_method_dict.keys():
-			return _refine_task_and_continue(state, item1, todo_list, plan, depth)
+			return _refine_task_and_continue(state, item1, todo_list, plan, depth, stn)
 		elif item1[0] in current_domain._unigoal_method_dict.keys():
-			return _refine_unigoal_and_continue(state, item1, todo_list, plan, depth)
+			return _refine_unigoal_and_continue(state, item1, todo_list, plan, depth, stn)
+
 	assert(false, "Depth %s: %s isn't an action, task, unigoal, or multigoal\n" % [depth, item1])
+	
 	return false
 
 
@@ -456,7 +462,7 @@ func _item_to_string(item):
 ##
 ## Note: whenever run_lazy_lookahead encounters an action for which there is
 ## no corresponding command definition, it uses the action definition instead.
-func run_lazy_lookahead(state: Dictionary, todo_list: Array, max_tries: int = 10):
+func run_lazy_lookahead(state: Dictionary, todo_list: Array, stn, max_tries: int = 10):
 	if verbose >= 1:
 		print("RunLazyLookahead> run_lazy_lookahead, verbose = %s, max_tries = %s" % [verbose, max_tries])
 		print("RunLazyLookahead> initial state: %s" % [state.keys()])
@@ -468,7 +474,7 @@ func run_lazy_lookahead(state: Dictionary, todo_list: Array, max_tries: int = 10
 		if verbose >= 1:
 			print("RunLazyLookahead> %s%s call to find_plan:" % [tries, ordinals.get(tries, "")])
 
-		var plan = find_plan(state, todo_list)
+		var plan = find_plan(state, todo_list, stn)
 		if plan == null or plan.is_empty():
 			if verbose >= 1:
 				print("run_lazy_lookahead: find_plan has failed")

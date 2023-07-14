@@ -28,42 +28,70 @@ func _init_matrix() -> void:
 			else:
 				stn_matrix[i][j] = INF
 
+func add_temporal_constraint(from_constraint: TemporalConstraint, to_constraint: TemporalConstraint = null, min_gap: float = 0, max_gap: float = 0) -> bool:
+	if not from_constraint is TemporalConstraint:
+		return false
 
-func add_temporal_constraint(constraint: TemporalConstraint) -> bool:
-	constraints.append(constraint)
-	var interval: Vector2i = constraint.time_interval
-	if interval not in node_indices:
-		node_indices[interval] = num_nodes
-		node_intervals.append(interval)
+	if to_constraint != null and not to_constraint is TemporalConstraint:
+		return false
+
+	if not min_gap is float or min_gap < 0:
+		return false
+
+	if not max_gap is float or max_gap < 0:
+		return false
+	
+	constraints.append(from_constraint)
+	constraints.append(to_constraint)
+
+	var from_interval: Vector2i = from_constraint.time_interval
+	if from_interval not in node_indices:
+		node_indices[from_interval] = num_nodes
+		node_intervals.append(from_interval)
 		num_nodes += 1
 		_init_matrix()
-	var node: int = node_indices[interval]
-	if node == -1:
+	var from_node: int = node_indices[from_interval]
+	if from_node == -1:
 		return false
 
-	var distance: float = constraint.duration
+	if to_constraint != null:
+		var to_interval: Vector2i = to_constraint.time_interval
+		if to_interval not in node_indices:
+			node_indices[to_interval] = num_nodes
+			node_intervals.append(to_interval)
+			num_nodes += 1
+			_init_matrix()
+		var to_node: int = node_indices[to_interval]
+		if to_node == -1:
+			return false
 
-	if node + 1 >= stn_matrix.size():
-		return false
+		var distance: float = from_constraint.duration
 
-	if typeof(stn_matrix[node + 1]) != TYPE_ARRAY:
-		stn_matrix[node + 1] = []
+		if from_node + 1 >= stn_matrix.size() or to_node + 1 >= stn_matrix.size():
+			return false
 
-	match constraint.temporal_qualifier:
-		TemporalConstraint.TemporalQualifier.AT_START:
-			stn_matrix[node][node + 1] = max(distance, stn_matrix[node][node + 1])
-			stn_matrix[node + 1][node] = -stn_matrix[node][node + 1]
-		TemporalConstraint.TemporalQualifier.AT_END:
-			stn_matrix[node][node + 1] = min(-distance, stn_matrix[node][node + 1])
-			stn_matrix[node + 1][node] = -stn_matrix[node][node + 1]
-		_:
-			stn_matrix[node][node + 1] = distance
-			stn_matrix[node + 1][node] = -distance
+		if typeof(stn_matrix[from_node + 1]) != TYPE_ARRAY:
+			stn_matrix[from_node + 1] = []
+		if typeof(stn_matrix[to_node + 1]) != TYPE_ARRAY:
+			stn_matrix[to_node + 1] = []
 
-	if not propagate_constraints():
-		stn_matrix[node][node + 1] = INF
-		stn_matrix[node + 1][node] = -INF
-		return false
+		stn_matrix[from_node][from_node + 1] = max(distance, stn_matrix[from_node][from_node + 1])
+		stn_matrix[from_node + 1][from_node] = -stn_matrix[from_node][from_node + 1]
+		stn_matrix[to_node][to_node + 1] = min(-distance, stn_matrix[to_node][to_node + 1])
+		stn_matrix[to_node + 1][to_node] = -stn_matrix[to_node][to_node + 1]
+
+		if not propagate_constraints():
+			stn_matrix[from_node][from_node + 1] = INF
+			stn_matrix[from_node + 1][from_node] = -INF
+			stn_matrix[to_node][to_node + 1] = INF
+			stn_matrix[to_node + 1][to_node] = -INF
+			return false
+	else:
+		if from_node + 1 >= stn_matrix.size():
+			return false
+
+		if typeof(stn_matrix[from_node + 1]) != TYPE_ARRAY:
+			stn_matrix[from_node + 1] = []
 
 	return true
 
