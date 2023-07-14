@@ -85,7 +85,7 @@ func propagate_constraints() -> bool:
 
 	for i in range(num_nodes):
 		if stn_matrix[i][i] != INF and stn_matrix[i][i] < 0:
-			print("Negative diagonal value at index", i)  # Add this line to print the problematic index
+			print("Negative diagonal value at index %s" % i)
 			return false
 
 	return true
@@ -94,8 +94,8 @@ func propagate_constraints() -> bool:
 func is_consistent() -> bool:
 	for i in range(constraints.size()):
 		for j in range(i+1, constraints.size()):
-			var c1 = constraints[i]
-			var c2 = constraints[j]
+			var c1 := constraints[i]
+			var c2 := constraints[j]
 			if c1.time_interval.x < c2.time_interval.y and c2.time_interval.x < c1.time_interval.y:
 				if c1.time_interval.x < c2.time_interval.x:
 					if c2.time_interval.x + c2.duration <= c1.time_interval.y:

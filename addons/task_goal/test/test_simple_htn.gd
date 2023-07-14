@@ -7,9 +7,9 @@ extends GutTest
 #"""
 
 var domain_name = "simple_htn"
-var the_domain = preload("../../core/domain.gd").new("plan")
+var the_domain = preload("../core/domain.gd").new("plan")
 
-var planner = preload("../../core/plan.gd").new()
+var planner = preload("../core/plan.gd").new()
 
 ################################################################################
 # states and rigid relations
