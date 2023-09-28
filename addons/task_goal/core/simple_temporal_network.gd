@@ -123,7 +123,11 @@ func is_consistent() -> bool:
 	for i in range(constraints.size()):
 		for j in range(i+1, constraints.size()):
 			var c1 := constraints[i]
+			if c1 == null:
+				return false
 			var c2 := constraints[j]
+			if c2 == null:
+				return false
 			if c1.time_interval.x < c2.time_interval.y and c2.time_interval.x < c1.time_interval.y:
 				if c1.time_interval.x < c2.time_interval.x:
 					if c2.time_interval.x + c2.duration <= c1.time_interval.y:

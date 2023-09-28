@@ -223,7 +223,7 @@ func test_simple_gtn():
 #it has tried too many times."""
 #	)
 	var new_state = planner.run_lazy_lookahead(
-		state1.duplicate(true), [["travel", "alice", "park"]]
+		state1.duplicate(true), [["travel", "alice", "park"]], SimpleTemporalNetwork.new()
 	)
 
 #	print("")

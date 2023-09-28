@@ -6,7 +6,8 @@
   "res://"
  ],
  "disable_colors": false,
- "double_strategy": "partial",
+ "double_strategy": 1,
+ "errors_do_not_cause_failure": false,
  "font_color": "ccccccff",
  "font_name": "CourierPrime",
  "font_size": 16,
@@ -26,17 +27,19 @@
   "hide_output_text": true,
   "hide_result_tree": false,
   "hide_settings": false,
+  "output_font_name": "CourierPrime",
+  "output_font_size": 30,
   "use_colors": false
  },
  "post_run_script": "",
  "pre_run_script": "",
  "prefix": "test_",
- "selected": "test_temporal_logistics_small.gd",
+ "selected": "test_game_project.gd",
  "should_exit": true,
  "should_exit_on_success": false,
  "should_maximize": false,
  "show_help": false,
  "suffix": ".gd",
  "tests": [],
- "unit_test_name": "test_move_goal_1"
+ "unit_test_name": null
 }

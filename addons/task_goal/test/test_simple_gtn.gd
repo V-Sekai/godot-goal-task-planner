@@ -270,7 +270,7 @@ func test_simple_gtn():
 			["walk", "bob", "home_b", "park"]
 		]
 	)
-	var new_state = planner.run_lazy_lookahead(state1, [["loc", "alice", "park"]])
+	var new_state = planner.run_lazy_lookahead(state1, [["loc", "alice", "park"]], SimpleTemporalNetwork.new())
 #	print("Alice is now at the park, so the planner will return an empty plan:")
 	plan = planner.find_plan(new_state, [["loc", "alice", "park"]])
 	assert_eq(plan, [])

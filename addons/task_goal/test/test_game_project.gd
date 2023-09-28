@@ -32,6 +32,8 @@ func test_propagate_constraints() -> void:
 
 	var constraints_array = []
 	for c in simple_temporal_network.constraints:
+		if c == null:
+			continue
 		var dictionary = c.to_dictionary()
 		constraints_array.append(dictionary)
 	
