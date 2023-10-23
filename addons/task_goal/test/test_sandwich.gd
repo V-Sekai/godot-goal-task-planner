@@ -1,3 +1,8 @@
+# Copyright (c) 2018-present. This file is part of V-Sekai https://v-sekai.org/.
+# K. S. Ernest (Fire) Lee & Contributors
+# test_sandwich.gd
+# SPDX-License-Identifier: MIT
+
 extends GutTest
 
 var domain_name := "sandwich_htn"

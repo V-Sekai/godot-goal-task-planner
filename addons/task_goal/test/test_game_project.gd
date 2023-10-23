@@ -1,3 +1,8 @@
+# Copyright (c) 2018-present. This file is part of V-Sekai https://v-sekai.org/.
+# K. S. Ernest (Fire) Lee & Contributors
+# test_game_project.gd
+# SPDX-License-Identifier: MIT
+
 extends GutTest
 
 func test_propagate_constraints() -> void:

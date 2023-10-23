@@ -1,3 +1,7 @@
+# Copyright (c) 2018-present. This file is part of V-Sekai https://v-sekai.org/.
+# K. S. Ernest (Fire) Lee & Contributors
+# domain.gd
+# SPDX-License-Identifier: MIT
 
 # SPDX-FileCopyrightText: 2021 University of Maryland
 # SPDX-License-Identifier: BSD-3-Clause-Clear

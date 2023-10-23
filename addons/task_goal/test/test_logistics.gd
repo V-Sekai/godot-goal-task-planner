@@ -1,3 +1,8 @@
+# Copyright (c) 2018-present. This file is part of V-Sekai https://v-sekai.org/.
+# K. S. Ernest (Fire) Lee & Contributors
+# test_logistics.gd
+# SPDX-License-Identifier: MIT
+
 extends GutTest
 
 #This file is based on the logistics-domain examples included with HGNpyhop:

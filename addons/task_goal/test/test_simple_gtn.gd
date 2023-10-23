@@ -1,3 +1,8 @@
+# Copyright (c) 2018-present. This file is part of V-Sekai https://v-sekai.org/.
+# K. S. Ernest (Fire) Lee & Contributors
+# test_simple_gtn.gd
+# SPDX-License-Identifier: MIT
+
 extends GutTest
 #"""
 #An expanded version of the "travel from home to the park" example in

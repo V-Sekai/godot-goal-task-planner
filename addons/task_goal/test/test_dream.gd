@@ -1,4 +1,7 @@
-
+# Copyright (c) 2018-present. This file is part of V-Sekai https://v-sekai.org/.
+# K. S. Ernest (Fire) Lee & Contributors
+# test_dream.gd
+# SPDX-License-Identifier: MIT
 
 func reserve_practice_room(state, time_interval: TemporalConstraint, stn: SimpleTemporalNetwork) -> Variant:
 	# Update the state to show that the practice room is reserved
