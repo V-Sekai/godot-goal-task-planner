@@ -112,7 +112,7 @@ func propagate_constraints() -> bool:
 	for k in range(num_nodes):
 		for i in range(num_nodes):
 			for j in range(num_nodes):
-				if stn_matrix[i][k] != INF and stn_matrix[k][j] != INF:
+				if i in stn_matrix and k in stn_matrix[i] and stn_matrix[i][k] != INF and k in stn_matrix and j in stn_matrix[k] and stn_matrix[k][j] != INF:
 					if stn_matrix[i][j] == INF or stn_matrix[i][k] + stn_matrix[k][j] < stn_matrix[i][j]:
 						stn_matrix[i][j] = stn_matrix[i][k] + stn_matrix[k][j]
 
@@ -125,7 +125,11 @@ func propagate_constraints() -> bool:
 	
 
 func is_consistent() -> bool:
+	var skip = false
 	for i in range(constraints.size()):
+		if skip:
+			skip = false
+			continue
 		for j in range(i+1, constraints.size()):
 			var c1 := constraints[i]
 			if c1 == null:
@@ -136,10 +140,12 @@ func is_consistent() -> bool:
 			if c1.time_interval.x < c2.time_interval.y and c2.time_interval.x < c1.time_interval.y:
 				if c1.time_interval.x < c2.time_interval.x:
 					if c2.time_interval.x + c2.duration <= c1.time_interval.y:
-						continue
+						skip = true
+						break
 				else:
 					if c1.time_interval.x + c1.duration <= c2.time_interval.y:
-						continue
+						skip = true
+						break
 				print("Inconsistent constraints: " + str(c1.to_dictionary()) + " and " + str(c2.to_dictionary()))
 				return false
 	return true
