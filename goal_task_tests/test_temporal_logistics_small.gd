@@ -208,4 +208,4 @@ func test_move_goal_1():
 		)
 	)
 	assert_eq(plan, [["drive_truck", "truck1", "location1"], ["load_truck", "package1", "truck1"], ["drive_truck", "truck1", "airport1"], ["unload_truck", "package1", "airport1"], ["fly_plane", "plane2", "airport1"], ["load_plane", "package1", "plane2"], ["fly_plane", "plane2", "airport2"], ["unload_plane", "package1", "airport2"]])
-	print(stn.to_dictionary())
+	gut.p(stn.to_dictionary())

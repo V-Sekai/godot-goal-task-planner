@@ -24,7 +24,7 @@
  "panel_options": {
   "font_name": "CourierPrime",
   "font_size": 30,
-  "hide_output_text": true,
+  "hide_output_text": false,
   "hide_result_tree": false,
   "hide_settings": false,
   "output_font_name": "CourierPrime",

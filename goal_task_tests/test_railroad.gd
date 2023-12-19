@@ -11,37 +11,37 @@ var planner := preload("res://addons/task_goal/core/plan.gd").new()
 
 
 func move_train_1(state: Dictionary) -> Dictionary:
-	print("Moving train 1...")
+	gut.p("Moving train 1...")
 	# Update state to reflect the movement of train 1
 	return state
 
 
 func move_train_2(state: Dictionary) -> Dictionary:
-	print("Moving train 2...")
+	gut.p("Moving train 2...")
 	# Update state to reflect the movement of train 2
 	return state
 
 
 func move_train_3(state: Dictionary) -> Dictionary:
-	print("Moving train 3...")
+	gut.p("Moving train 3...")
 	# Update state to reflect the movement of train 3
 	return state
 
 
 func move_train_4(state: Dictionary) -> Dictionary:
-	print("Moving train 4...")
+	gut.p("Moving train 4...")
 	# Update state to reflect the movement of train 4
 	return state
 
 
 func move_train_5(state: Dictionary) -> Dictionary:
-	print("Moving train 5...")
+	gut.p("Moving train 5...")
 	# Update state to reflect the movement of train 5
 	return state
 
 
 func move_train_6(state: Dictionary) -> Dictionary:
-	print("Moving train 6...")
+	gut.p("Moving train 6...")
 	# Update state to reflect the movement of train 6
 	return state
 

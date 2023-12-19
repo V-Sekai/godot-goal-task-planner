@@ -149,18 +149,18 @@ func test_simple_gtn():
 	###############################################################################
 	# Running the examples
 
-#	print("-----------------------------------------------------------------------")
-#	print("Created the domain '%s'. To run the examples, type this:" % domain_name)
-#	print("%s.main()" % domain_name)
+#	gut.p("-----------------------------------------------------------------------")
+#	gut.p("Created the domain '%s'. To run the examples, type this:" % domain_name)
+#	gut.p("%s.main()" % domain_name)
 
 	planner.current_domain = the_domain
 #	planner.print_domain()
 
 	var state1 = state0.duplicate(true)
 
-#	print("Initial state is %s" % state1)
+#	gut.p("Initial state is %s" % state1)
 #
-#	print(
+#	gut.p(
 #		"""
 #Use find_plan to plan how to get Alice from home to the park.
 #We'll do it several times with different values for 'verbose'.
@@ -173,22 +173,22 @@ func test_simple_gtn():
 		["pay_driver", "alice", "park"],
 	]
 
-#	print("-- If verbose=0, the planner will return the solution but print nothing.")
+#	gut.p("-- If verbose=0, the planner will return the solution but print nothing.")
 	var result = planner.find_plan(state1.duplicate(true), [["travel", "alice", "park"]])
-#	print("Result %s" % [result])
+#	gut.p("Result %s" % [result])
 	assert_eq(result, expected)
-#	print("-- If verbose=1, the planner will print the problem and solution,")
-#	print("-- and then return the solution.\n")
+#	gut.p("-- If verbose=1, the planner will print the problem and solution,")
+#	gut.p("-- and then return the solution.\n")
 #
-#	print("-- If verbose=2, the planner will print the problem, a note at each")
-#	print("-- recursive call, and the solution. Then it will return the solution.")
+#	gut.p("-- If verbose=2, the planner will print the problem, a note at each")
+#	gut.p("-- recursive call, and the solution. Then it will return the solution.")
 #
-#	print("-- If verbose=3, the planner will print even more information.")
+#	gut.p("-- If verbose=3, the planner will print even more information.")
 #
-#	print("Find a plan that will first get Alice to the park, then get Bob to the park.")
+#	gut.p("Find a plan that will first get Alice to the park, then get Bob to the park.")
 	var plan = planner.find_plan(state1.duplicate(true), [["travel", "alice", "park"], ["travel", "bob", "park"]])
 
-#	print("Plan %s" % [plan])
+#	gut.p("Plan %s" % [plan])
 	assert_eq(
 		plan,
 		[
@@ -199,7 +199,7 @@ func test_simple_gtn():
 		]
 	)
 #
-#	print(
+#	gut.p(
 #		"""Next, we'll use run_lazy_lookahead to try to get Alice to the park. With
 #Pr = 1/2, the taxi won't arrive. In this case, run_lazy_lookahead will call
 #find_plan again, and find_plan will return the same plan as before. This will
@@ -208,10 +208,10 @@ func test_simple_gtn():
 #	)
 	var new_state = planner.run_lazy_lookahead(state1.duplicate(true), [["travel", "alice", "park"]], SimpleTemporalNetwork.new())
 
-#	print("")
-#	print("If run_lazy_lookahead succeeded, then Alice is now at the park,")
-#	print("so the planner will return an empty plan: ")
+#	gut.p("")
+#	gut.p("If run_lazy_lookahead succeeded, then Alice is now at the park,")
+#	gut.p("so the planner will return an empty plan: ")
 
 	plan = planner.find_plan(new_state, [["travel", "alice", "park"]])
-#	print("Plan %s" % [plan])
+#	gut.p("Plan %s" % [plan])
 	assert_eq(plan, [])

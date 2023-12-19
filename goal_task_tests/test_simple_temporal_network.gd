@@ -57,5 +57,15 @@ func test_update_state():
 
 func test_is_consistent_with():
 	var constraint = TemporalConstraint.new(1, 2, 3, TemporalConstraint.TemporalQualifier.AT_START, "resource")
+	stn.add_temporal_constraint(constraint)
 	var result = stn.is_consistent_with(constraint)
 	assert_true(result, "is_consistent_with should return true when the network is consistent with the given constraint")
+
+
+func test_print_constraints_and_check_consistency():
+	var constraint = TemporalConstraint.new(1, 2, 3, TemporalConstraint.TemporalQualifier.AT_START, "resource")
+	stn.add_temporal_constraint(constraint)
+	for i in range(stn.constraints.size()):
+		gut.p("Constraint " + str(i) + ": " + str(stn.constraints[i].to_dictionary()), gut.LOG_LEVEL_ALL_ASSERTS)
+	var result = stn.is_consistent()
+	assert_true(result, "is_consistent should return true when the network is consistent")

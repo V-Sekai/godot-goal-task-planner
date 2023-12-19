@@ -48,8 +48,10 @@ func add_temporal_constraint(from_constraint: TemporalConstraint, to_constraint:
 	if not max_gap is float or max_gap < 0:
 		return false
 
-	constraints.append(from_constraint)
-	constraints.append(to_constraint)
+	if from_constraint:
+		constraints.append(from_constraint)
+	if to_constraint:
+		constraints.append(to_constraint)
 
 	var from_interval: Vector2i = from_constraint.time_interval
 	if from_interval not in node_indices:

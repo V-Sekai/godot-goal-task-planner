@@ -176,16 +176,16 @@ func test_simple_gtn():
 	planner.current_domain = the_domain
 #	planner.print_domain()
 
-#	print("The initial state is")
-#	print(state0.duplicate(true))
+#	gut.p("The initial state is")
+#	gut.p(state0.duplicate(true))
 
-#	print(
+#	gut.p(
 #		"""
 #Next, several planning problems using the above domain and initial state.
 #"""
 #	)
 
-#	print(
+#	gut.p(
 #		"""
 #Below, we give find_plan the goal of having alice be at the park.
 #We do it several times with different values for 'verbose'.
@@ -208,7 +208,7 @@ func test_simple_gtn():
 # achieved its goal.
 # If verbose=3, the planner prints even more information.
 
-#	print(
+#	gut.p(
 #		"""
 #Next, we give find_plan a sequence of two goals: first for Alice to be at the
 #park, then for Bob to be at the park. Since this is a sequence, it doesn't
@@ -228,9 +228,9 @@ func test_simple_gtn():
 		]
 	)
 
-#	print(state1)
+#	gut.p(state1)
 
-#	print(
+#	gut.p(
 #		"""
 #A multigoal g looks similar to a state, but usually it includes just a few of
 #the state variables rather than all of them. It specifies *desired* values
@@ -241,9 +241,9 @@ func test_simple_gtn():
 #"""
 #	)
 
-#	print("Goal 3 state %s" % [goal3.state])
+#	gut.p("Goal 3 state %s" % [goal3.state])
 #
-#	print(
+#	gut.p(
 #		"""
 #Next, we'll call find_plan on goal3, with verbose=2. In the printout,
 #_verify_mg is a task used by the planner to check whether a multigoal
@@ -252,9 +252,9 @@ func test_simple_gtn():
 #	)
 	state1 = state0.duplicate(true)
 	plan = planner.find_plan(state1, [goal3])
-#	print("Plan %s" % [plan])
+#	gut.p("Plan %s" % [plan])
 	assert_eq(plan, [["call_taxi", "alice", "home_a"], ["ride_taxi", "alice", "park"], ["pay_driver", "alice", "park"], ["walk", "bob", "home_b", "park"]])
 	var new_state = planner.run_lazy_lookahead(state1, [["loc", "alice", "park"]], SimpleTemporalNetwork.new())
-#	print("Alice is now at the park, so the planner will return an empty plan:")
+#	gut.p("Alice is now at the park, so the planner will return an empty plan:")
 	plan = planner.find_plan(new_state, [["loc", "alice", "park"]])
 	assert_eq(plan, [])

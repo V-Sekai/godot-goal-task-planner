@@ -11,31 +11,31 @@ var planner := preload("res://addons/task_goal/core/plan.gd").new()
 
 
 func take_lettuce(state: Dictionary) -> Dictionary:
-	print("Taking lettuce...")
+	gut.p("Taking lettuce...")
 	state["lettuce"] -= 1
 	return state
 
 
 func take_tomato(state: Dictionary) -> Dictionary:
-	print("Taking tomato...")
+	gut.p("Taking tomato...")
 	state["tomato"] -= 1
 	return state
 
 
 func take_cheese(state: Dictionary) -> Dictionary:
-	print("Taking cheese...")
+	gut.p("Taking cheese...")
 	state["cheese"] -= 1
 	return state
 
 
 func take_bread(state: Dictionary) -> Dictionary:
-	print("Taking bread...")
+	gut.p("Taking bread...")
 	state["bread"] -= 1
 	return state
 
 
 func assemble_sandwich(state: Dictionary) -> Dictionary:
-	print("Assembling sandwich...")
+	gut.p("Assembling sandwich...")
 	if state["lettuce"] >= 1 and state["tomato"] >= 1 and state["cheese"] >= 1 and state["bread"] >= 2:
 		state["sandwich"] += 1
 		state["lettuce"] -= 1
