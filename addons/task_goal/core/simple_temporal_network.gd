@@ -37,6 +37,10 @@ func _init_matrix() -> void:
 
 func add_temporal_constraint(from_constraint: TemporalConstraint, to_constraint: TemporalConstraint = null, min_gap: float = 0, max_gap: float = 0) -> bool:
 	if not from_constraint is TemporalConstraint:
+		print("Constraint is not a TemporalConstraint instance")
+		return false
+
+	if not from_constraint is TemporalConstraint:
 		return false
 
 	if to_constraint != null and not to_constraint is TemporalConstraint:
@@ -129,6 +133,10 @@ func propagate_constraints() -> bool:
 
 
 func is_consistent() -> bool:
+	if not constraints.size():
+		print("No constraints in the network")
+		return true
+
 	var skip = false
 	for i in range(constraints.size()):
 		if skip:
@@ -164,10 +172,9 @@ func update_state(state: Dictionary) -> void:
 
 
 func is_consistent_with(constraint: TemporalConstraint) -> bool:
-	var temp_stn = SimpleTemporalNetwork.new()
-	temp_stn.constraints = constraints.duplicate()
-	temp_stn.stn_matrix = stn_matrix.duplicate()
-	temp_stn.num_nodes = num_nodes
-	temp_stn.node_intervals = node_intervals.duplicate()
+	if not constraint is TemporalConstraint:
+		print("Constraint is not a TemporalConstraint instance")
+		return false
 
+	var temp_stn = self.duplicate()
 	return temp_stn.add_temporal_constraint(constraint) and temp_stn.is_consistent()
