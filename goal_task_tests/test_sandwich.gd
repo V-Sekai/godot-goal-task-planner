@@ -6,8 +6,8 @@
 extends GutTest
 
 var domain_name := "sandwich_htn"
-var the_domain := preload("../core/domain.gd").new("plan")
-var planner := preload("../core/plan.gd").new()
+var the_domain := preload("res://addons/task_goal/core/domain.gd").new("plan")
+var planner := preload("res://addons/task_goal/core/plan.gd").new()
 
 func take_lettuce(state: Dictionary) -> Dictionary:
 	print("Taking lettuce...")
