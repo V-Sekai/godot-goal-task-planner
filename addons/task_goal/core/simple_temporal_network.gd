@@ -36,75 +36,105 @@ func _init_matrix() -> void:
 
 
 func add_temporal_constraint(from_constraint: TemporalConstraint, to_constraint: TemporalConstraint = null, min_gap: float = 0, max_gap: float = 0) -> bool:
-	if not from_constraint is TemporalConstraint:
-		print("Constraint is not a TemporalConstraint instance")
+	if not validate_constraints(from_constraint, to_constraint, min_gap, max_gap):
 		return false
 
-	if not from_constraint is TemporalConstraint:
+	add_constraints_to_list(from_constraint, to_constraint)
+
+	var from_node: int = process_constraint(from_constraint)
+	if from_node == -1:
 		return false
 
-	if to_constraint != null and not to_constraint is TemporalConstraint:
+	if to_constraint != null:
+		var to_node: int = process_constraint(to_constraint)
+		if to_node == -1:
+			return false
+
+		if not update_matrix(from_node, to_node, from_constraint.duration):
+			reset_matrix(from_node, to_node)
+			return false
+	else:
+		if not update_matrix_single(from_node):
+			return false
+
+	return true
+
+
+## This function validates the constraints and returns a boolean value.
+func validate_constraints(from_constraint: TemporalConstraint, to_constraint: TemporalConstraint, min_gap: float, max_gap: float) -> bool:
+	if not from_constraint is TemporalConstraint or not to_constraint is TemporalConstraint:
+		print("Constraints are not TemporalConstraint instances")
 		return false
 
-	if not min_gap is float or min_gap < 0:
+	if not min_gap is float or min_gap < 0 or not max_gap is float or max_gap < 0:
+		print("Invalid gap values")
 		return false
 
-	if not max_gap is float or max_gap < 0:
-		return false
+	return true
 
+
+## This function adds the constraints to the list.
+func add_constraints_to_list(from_constraint: TemporalConstraint, to_constraint: TemporalConstraint):
 	if from_constraint:
 		constraints.append(from_constraint)
 	if to_constraint:
 		constraints.append(to_constraint)
 
-	var from_interval: Vector2i = from_constraint.time_interval
-	if from_interval not in node_indices:
-		node_indices[from_interval] = num_nodes
-		node_intervals.append(from_interval)
+
+## This function processes the constraint and returns the node index.
+func process_constraint(constraint: TemporalConstraint) -> int:
+	var interval: Vector2i = constraint.time_interval
+	if interval not in node_indices:
+		node_indices[interval] = num_nodes
+		node_intervals.append(interval)
 		num_nodes += 1
 		_init_matrix()
-	var from_node: int = node_indices[from_interval]
-	if from_node == -1:
+	return node_indices[interval]
+
+
+## This function updates the matrix for two nodes and returns a boolean value.
+func update_matrix(from_node: int, to_node: int, distance: float) -> bool:
+	if from_node + 1 >= stn_matrix.size() or to_node + 1 >= stn_matrix.size():
 		return false
 
-	if to_constraint != null:
-		var to_interval: Vector2i = to_constraint.time_interval
-		if to_interval not in node_indices:
-			node_indices[to_interval] = num_nodes
-			node_intervals.append(to_interval)
-			num_nodes += 1
-			_init_matrix()
-		var to_node: int = node_indices[to_interval]
-		if to_node == -1:
-			return false
+	if typeof(stn_matrix[from_node + 1]) != TYPE_ARRAY:
+		stn_matrix[from_node + 1] = []
+	if typeof(stn_matrix[to_node + 1]) != TYPE_ARRAY:
+		stn_matrix[to_node + 1] = []
 
-		var distance: float = from_constraint.duration
+	stn_matrix[from_node][from_node + 1] = max(distance, stn_matrix[from_node][from_node + 1])
+	stn_matrix[from_node + 1][from_node] = -stn_matrix[from_node][from_node + 1]
+	stn_matrix[to_node][to_node + 1] = min(-distance, stn_matrix[to_node][to_node + 1])
+	stn_matrix[to_node + 1][to_node] = -stn_matrix[to_node][to_node + 1]
 
-		if from_node + 1 >= stn_matrix.size() or to_node + 1 >= stn_matrix.size():
-			return false
+	return propagate_constraints()
 
-		if typeof(stn_matrix[from_node + 1]) != TYPE_ARRAY:
-			stn_matrix[from_node + 1] = []
-		if typeof(stn_matrix[to_node + 1]) != TYPE_ARRAY:
-			stn_matrix[to_node + 1] = []
 
-		stn_matrix[from_node][from_node + 1] = max(distance, stn_matrix[from_node][from_node + 1])
-		stn_matrix[from_node + 1][from_node] = -stn_matrix[from_node][from_node + 1]
-		stn_matrix[to_node][to_node + 1] = min(-distance, stn_matrix[to_node][to_node + 1])
-		stn_matrix[to_node + 1][to_node] = -stn_matrix[to_node][to_node + 1]
+## This function resets the matrix for two nodes.
+func reset_matrix(from_node: int, to_node: int):
+	# Check if stn_matrix is initialized.
+	if not stn_matrix:
+		print("Error: stn_matrix is not initialized.")
+		return
 
-		if not propagate_constraints():
-			stn_matrix[from_node][from_node + 1] = INF
-			stn_matrix[from_node + 1][from_node] = -INF
-			stn_matrix[to_node][to_node + 1] = INF
-			stn_matrix[to_node + 1][to_node] = -INF
-			return false
-	else:
-		if from_node + 1 >= stn_matrix.size():
-			return false
+	# Check if indices are valid.
+	if from_node < 0 or from_node + 1 >= stn_matrix.size() or to_node < 0 or to_node + 1 >= stn_matrix.size():
+		print("Error: Index out of range.")
+		return
 
-		if typeof(stn_matrix[from_node + 1]) != TYPE_ARRAY:
-			stn_matrix[from_node + 1] = []
+	stn_matrix[from_node][from_node + 1] = INF
+	stn_matrix[from_node + 1][from_node] = -INF
+	stn_matrix[to_node][to_node + 1] = INF
+	stn_matrix[to_node + 1][to_node] = -INF
+
+
+## This function updates the matrix for a single node and returns a boolean value.
+func update_matrix_single(from_node: int) -> bool:
+	if from_node + 1 >= stn_matrix.size():
+		return false
+
+	if typeof(stn_matrix[from_node + 1]) != TYPE_ARRAY:
+		stn_matrix[from_node + 1] = []
 
 	return true
 

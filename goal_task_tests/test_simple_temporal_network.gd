@@ -1,6 +1,6 @@
 extends "res://addons/gut/test.gd"
 
-var stn = null
+var stn: SimpleTemporalNetwork = null
 
 
 func before_each():
@@ -69,3 +69,39 @@ func test_print_constraints_and_check_consistency():
 		gut.p("Constraint " + str(i) + ": " + str(stn.constraints[i].to_dictionary()), gut.LOG_LEVEL_ALL_ASSERTS)
 	var result = stn.is_consistent()
 	assert_true(result, "is_consistent should return true when the network is consistent")
+
+
+func test_validate_constraints():
+	var from_constraint = TemporalConstraint.new(1, 2, 3, TemporalConstraint.TemporalQualifier.AT_START, "resource")
+	var to_constraint = TemporalConstraint.new(4, 5, 6, TemporalConstraint.TemporalQualifier.AT_END, "resource")
+	assert_true(stn.validate_constraints(from_constraint, to_constraint, 0, 0), "validate_constraints should return true when constraints are valid")
+
+
+func test_add_constraints_to_list():
+	var from_constraint = TemporalConstraint.new(1, 2, 3, TemporalConstraint.TemporalQualifier.AT_START, "resource")
+	stn.add_constraints_to_list(from_constraint, null)
+	assert_eq(stn.constraints.size(), 1, "add_constraints_to_list should add one constraint to the list")
+
+
+func test_process_constraint():
+	var from_constraint = TemporalConstraint.new(1, 2, 3, TemporalConstraint.TemporalQualifier.AT_START, "resource")
+	var node_index = stn.process_constraint(from_constraint)
+	assert_true(node_index != -1, "process_constraint should return a valid node index")
+
+
+func test_update_matrix():
+	var from_node = 0
+	var to_node = 1
+	var duration = 3.0
+	assert_true(stn.update_matrix(from_node, to_node, duration), "update_matrix should return true when matrix is updated successfully")
+
+
+func test_reset_matrix():
+	var from_node = 0
+	var to_node = 1
+	stn.reset_matrix(from_node, to_node)
+
+
+func test_update_matrix_single():
+	var from_node = 0
+	assert_true(stn.update_matrix_single(from_node), "update_matrix_single should return true when matrix is updated successfully")
