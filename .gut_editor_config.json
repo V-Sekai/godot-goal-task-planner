@@ -34,7 +34,7 @@
  "post_run_script": "",
  "pre_run_script": "",
  "prefix": "test_",
- "selected": "test_simple_temporal_network.gd",
+ "selected": "test_simple_gtn.gd",
  "should_exit": true,
  "should_exit_on_success": false,
  "should_maximize": false,
