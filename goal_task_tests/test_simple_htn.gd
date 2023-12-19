@@ -34,11 +34,7 @@ var planner = preload("res://addons/task_goal/core/plan.gd").new()
 }
 
 # prototypical initial state
-var state0: Dictionary = {
-	"loc": {"alice": "home_a", "bob": "home_b", "taxi1": "park", "taxi2": "station"},
-	"cash": {"alice": 20, "bob": 15},
-	"owe": {"alice": 0, "bob": 0}
-}
+var state0: Dictionary = {"loc": {"alice": "home_a", "bob": "home_b", "taxi1": "park", "taxi2": "station"}, "cash": {"alice": 20, "bob": 15}, "owe": {"alice": 0, "bob": 0}}
 
 ###############################################################################
 # Helper functions:
@@ -147,22 +143,8 @@ func travel_by_taxi(state, p, y):
 func test_simple_gtn():
 	planner._domains.push_back(the_domain)
 	planner.current_domain = the_domain
-	planner.declare_actions(
-		[
-			Callable(self, "walk"),
-			Callable(self, "call_taxi"),
-			Callable(self, "ride_taxi"),
-			Callable(self, "pay_driver")
-		]
-	)
-	planner.declare_task_methods(
-		"travel",
-		[
-			Callable(self, "do_nothing"),
-			Callable(self, "travel_by_foot"),
-			Callable(self, "travel_by_taxi")
-		]
-	)
+	planner.declare_actions([Callable(self, "walk"), Callable(self, "call_taxi"), Callable(self, "ride_taxi"), Callable(self, "pay_driver")])
+	planner.declare_task_methods("travel", [Callable(self, "do_nothing"), Callable(self, "travel_by_foot"), Callable(self, "travel_by_taxi")])
 
 	###############################################################################
 	# Running the examples
@@ -204,9 +186,7 @@ func test_simple_gtn():
 #	print("-- If verbose=3, the planner will print even more information.")
 #
 #	print("Find a plan that will first get Alice to the park, then get Bob to the park.")
-	var plan = planner.find_plan(
-		state1.duplicate(true), [["travel", "alice", "park"], ["travel", "bob", "park"]]
-	)
+	var plan = planner.find_plan(state1.duplicate(true), [["travel", "alice", "park"], ["travel", "bob", "park"]])
 
 #	print("Plan %s" % [plan])
 	assert_eq(
@@ -226,9 +206,7 @@ func test_simple_gtn():
 #happen repeatedly until either the taxi arrives or run_lazy_lookahead decides
 #it has tried too many times."""
 #	)
-	var new_state = planner.run_lazy_lookahead(
-		state1.duplicate(true), [["travel", "alice", "park"]], SimpleTemporalNetwork.new()
-	)
+	var new_state = planner.run_lazy_lookahead(state1.duplicate(true), [["travel", "alice", "park"]], SimpleTemporalNetwork.new())
 
 #	print("")
 #	print("If run_lazy_lookahead succeeded, then Alice is now at the park,")

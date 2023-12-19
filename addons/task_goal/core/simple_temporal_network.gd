@@ -11,10 +11,11 @@ var constraints: Array[TemporalConstraint] = []
 var stn_matrix: Array[Array] = []
 var num_nodes: int = 0
 var node_intervals: Array[Vector2i] = []
-var node_indices: Dictionary = {} 
+var node_indices: Dictionary = {}
 
-func to_dictionary()  -> Dictionary:
-	return { "resource_name": resource_name, "constraints": constraints, "matrix": stn_matrix, "number_of_nodes": num_nodes, "node_intervals": node_intervals }
+
+func to_dictionary() -> Dictionary:
+	return {"resource_name": resource_name, "constraints": constraints, "matrix": stn_matrix, "number_of_nodes": num_nodes, "node_intervals": node_intervals}
 
 
 func get_node_index(node_interval: Vector2i) -> int:
@@ -33,6 +34,7 @@ func _init_matrix() -> void:
 			else:
 				stn_matrix[i][j] = INF
 
+
 func add_temporal_constraint(from_constraint: TemporalConstraint, to_constraint: TemporalConstraint = null, min_gap: float = 0, max_gap: float = 0) -> bool:
 	if not from_constraint is TemporalConstraint:
 		return false
@@ -45,7 +47,7 @@ func add_temporal_constraint(from_constraint: TemporalConstraint, to_constraint:
 
 	if not max_gap is float or max_gap < 0:
 		return false
-	
+
 	constraints.append(from_constraint)
 	constraints.append(to_constraint)
 
@@ -122,7 +124,7 @@ func propagate_constraints() -> bool:
 			return false
 
 	return true
-	
+
 
 func is_consistent() -> bool:
 	var skip = false
@@ -130,7 +132,7 @@ func is_consistent() -> bool:
 		if skip:
 			skip = false
 			continue
-		for j in range(i+1, constraints.size()):
+		for j in range(i + 1, constraints.size()):
 			var c1 := constraints[i]
 			if c1 == null:
 				return false

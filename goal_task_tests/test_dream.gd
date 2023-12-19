@@ -5,8 +5,8 @@
 
 func reserve_practice_room(state, time_interval: TemporalConstraint, stn: SimpleTemporalNetwork) -> Variant:
 	# Update the state to show that the practice room is reserved
-	state['shared_resource']['practice_room'] = 'reserved'
-	state['task_status']['reserve_room'] = 'done'
+	state["shared_resource"]["practice_room"] = "reserved"
+	state["task_status"]["reserve_room"] = "done"
 	# Add the time interval to the STN and propagate the constraints
 	stn.update_state({"practice": time_interval})
 	if not stn.is_consistent():
@@ -16,7 +16,7 @@ func reserve_practice_room(state, time_interval: TemporalConstraint, stn: Simple
 
 func attend_audition(state, time_interval: TemporalConstraint, stn: SimpleTemporalNetwork) -> Variant:
 	# Update the state to show that the audition has been attended
-	state['task_status']['audition'] = 'attended'
+	state["task_status"]["audition"] = "attended"
 	# Add the time interval to the STN and propagate the constraints
 	stn.update_state({"audition": time_interval})
 	if not stn.propagate_constraints():
@@ -26,7 +26,7 @@ func attend_audition(state, time_interval: TemporalConstraint, stn: SimpleTempor
 
 func practice_craft(state, time_interval: TemporalConstraint, stn: SimpleTemporalNetwork) -> Variant:
 	# Update the state to show that the practice has been done
-	state['task_status']['practice'] = 'done'
+	state["task_status"]["practice"] = "done"
 	# Add the time interval to the STN and propagate the constraints
 	stn.update_state({"craft": time_interval})
 	if not stn.propagate_constraints():
@@ -36,7 +36,7 @@ func practice_craft(state, time_interval: TemporalConstraint, stn: SimpleTempora
 
 func network(state, time_interval: TemporalConstraint, stn: SimpleTemporalNetwork) -> Variant:
 	# Update the state to show that networking has been done
-	state['task_status']['networking'] = 'done'
+	state["task_status"]["networking"] = "done"
 	# Add the time interval to the STN and propagate the constraints
 	stn.update_state({"network": time_interval})
 	if not stn.propagate_constraints():
@@ -56,7 +56,7 @@ func get_possible_dream_time_intervals(stn: SimpleTemporalNetwork) -> Array[Temp
 			max_start = start
 
 	# Generate all possible time intervals within the minimum and maximum start times
-	var time_intervals : Array[TemporalConstraint] = []
+	var time_intervals: Array[TemporalConstraint] = []
 	for start_time in range(min_start, max_start + 1):
 		var end_time = start_time + 24
 		var time_interval = TemporalConstraint.new(start_time, end_time, end_time - start_time, TemporalConstraint.TemporalQualifier.OVERALL, "")
@@ -64,5 +64,3 @@ func get_possible_dream_time_intervals(stn: SimpleTemporalNetwork) -> Array[Temp
 			time_intervals.append(time_interval)
 
 	return time_intervals
-
-

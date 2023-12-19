@@ -31,11 +31,7 @@ var planner = preload("res://addons/task_goal/core/plan.gd").new()
 }
 
 # prototypical initial state
-var state0: Dictionary = {
-	"loc": {"alice": "home_a", "bob": "home_b", "taxi1": "park", "taxi2": "station"},
-	"cash": {"alice": 20, "bob": 15},
-	"owe": {"alice": 0, "bob": 0}
-}
+var state0: Dictionary = {"loc": {"alice": "home_a", "bob": "home_b", "taxi1": "park", "taxi2": "station"}, "cash": {"alice": 20, "bob": 15}, "owe": {"alice": 0, "bob": 0}}
 
 # initial goal
 var goal1: Multigoal = Multigoal.new("goal1", {"loc": {"alice": "park"}})
@@ -155,18 +151,9 @@ func _ready():
 	goal1.state["loc"] = {"alice": "park"}
 	goal2.state["loc"] = {"bob": "park"}
 	goal3.state["loc"] = {"alice": "park", "bob": "park"}
-	planner.declare_actions(
-		[
-			Callable(self, "walk"),
-			Callable(self, "call_taxi"),
-			Callable(self, "ride_taxi"),
-			Callable(self, "pay_driver")
-		]
-	)
+	planner.declare_actions([Callable(self, "walk"), Callable(self, "call_taxi"), Callable(self, "ride_taxi"), Callable(self, "pay_driver")])
 
-	planner.declare_unigoal_methods(
-		"loc", [Callable(self, "travel_by_foot"), Callable(self, "travel_by_taxi")]
-	)
+	planner.declare_unigoal_methods("loc", [Callable(self, "travel_by_foot"), Callable(self, "travel_by_taxi")])
 
 	# GTPyhop provides a built-in multigoal method called m_split_multigoal to
 	# separate a multigoal G into a�collection of unigoals. It returns a list of
@@ -266,15 +253,7 @@ func test_simple_gtn():
 	state1 = state0.duplicate(true)
 	plan = planner.find_plan(state1, [goal3])
 #	print("Plan %s" % [plan])
-	assert_eq(
-		plan,
-		[
-			["call_taxi", "alice", "home_a"],
-			["ride_taxi", "alice", "park"],
-			["pay_driver", "alice", "park"],
-			["walk", "bob", "home_b", "park"]
-		]
-	)
+	assert_eq(plan, [["call_taxi", "alice", "home_a"], ["ride_taxi", "alice", "park"], ["pay_driver", "alice", "park"], ["walk", "bob", "home_b", "park"]])
 	var new_state = planner.run_lazy_lookahead(state1, [["loc", "alice", "park"]], SimpleTemporalNetwork.new())
 #	print("Alice is now at the park, so the planner will return an empty plan:")
 	plan = planner.find_plan(new_state, [["loc", "alice", "park"]])

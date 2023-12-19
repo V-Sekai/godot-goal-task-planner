@@ -18,19 +18,14 @@ extends Resource
 
 const verbose: int = 0
 
-func _m_verify_g(
-	state: Dictionary,
-	method: String,
-	state_var: String,
-	arg: String,
-	desired_val: Variant,
-	depth: int
-) -> Array:
+
+func _m_verify_g(state: Dictionary, method: String, state_var: String, arg: String, desired_val: Variant, depth: int) -> Array:
 	if state[state_var][arg] != desired_val:
 		assert(false, "Depth %s: method %s didn't achieve\nGoal %s[%s] = %s" % [depth, method, state_var, arg, desired_val])
 	if verbose >= 3:
 		print("Depth %s: method %s achieved\nGoal %s[%s] = %s" % [depth, method, state_var, arg, desired_val])
 	return []
+
 
 static func _goals_not_achieved(state: Dictionary, multigoal: Multigoal) -> Dictionary:
 	var unachieved: Dictionary = {}
@@ -43,6 +38,7 @@ static func _goals_not_achieved(state: Dictionary, multigoal: Multigoal) -> Dict
 				unachieved[n][arg] = val
 	return unachieved
 
+
 func _m_verify_mg(state: Dictionary, method: String, multigoal: Multigoal, depth: int) -> Variant:
 	var goal_dict = _goals_not_achieved(state, multigoal)
 	if goal_dict:
@@ -50,6 +46,7 @@ func _m_verify_mg(state: Dictionary, method: String, multigoal: Multigoal, depth
 	if verbose >= 3:
 		print("Depth %s: method %s achieved %s" % [depth, method, multigoal])
 	return []
+
 
 var _action_dict: Dictionary = {}
 
@@ -62,8 +59,10 @@ var _unigoal_method_dict: Dictionary = {}
 
 var _multigoal_method_list: Array = []
 
+
 func _init(domain_name: String) -> void:
 	set_name(domain_name)
+
 
 func display() -> void:
 	print(self)

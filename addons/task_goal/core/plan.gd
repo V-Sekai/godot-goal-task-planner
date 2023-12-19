@@ -1,6 +1,6 @@
 # Copyright (c) 2023-present. This file is part of V-Sekai https://v-sekai.org/.
 # K. S. Ernest (Fire) Lee & Contributors (see .all-contributorsrc).
-# plan.gd  
+# plan.gd
 # SPDX-License-Identifier: MIT
 
 # SPDX-FileCopyrightText: 2021 University of Maryland
@@ -296,9 +296,7 @@ func _refine_task_and_continue(state, task1, todo_list, plan, depth, stn) -> Var
 	for method in relevant:
 		if verbose >= 3:
 			print("Depth %s trying %s: " % [depth, method.get_method()])
-		var subtasks: Variant = method.get_object().callv(
-			method.get_method(), [state] + task1.slice(1)
-		)
+		var subtasks: Variant = method.get_object().callv(method.get_method(), [state] + task1.slice(1))
 		# Can't just say "if subtasks:", because that's wrong if subtasks == []
 		if subtasks is Array and stn.is_consistent():
 			if verbose >= 3:
@@ -346,9 +344,7 @@ func _refine_unigoal_and_continue(state, goal1, todo_list, plan, depth, stn) -> 
 			var verification = []
 
 			if verify_goals:
-				verification = [
-					["_verify_g", str(method.get_method()), state_var_name, arg, val, depth]
-				]
+				verification = [["_verify_g", str(method.get_method()), state_var_name, arg, val, depth]]
 			else:
 				verification = []
 
@@ -364,9 +360,7 @@ func _refine_unigoal_and_continue(state, goal1, todo_list, plan, depth, stn) -> 
 	return false
 
 
-func _refine_multigoal_and_continue(
-	state: Dictionary, goal1: Multigoal, todo_list: Array, plan: Array, depth: int, stn
-) -> Variant:
+func _refine_multigoal_and_continue(state: Dictionary, goal1: Multigoal, todo_list: Array, plan: Array, depth: int, stn) -> Variant:
 	if verbose >= 3:
 		print("Depth %s multigoal %s: " % [depth, goal1])
 	var relevant: Array = current_domain._multigoal_method_list
@@ -400,6 +394,7 @@ func _refine_multigoal_and_continue(
 		print("Depth %s could not achieve multigoal %s" % [depth, goal1])
 	return false
 
+
 func find_plan(state: Dictionary, todo_list: Array, stn: SimpleTemporalNetwork = SimpleTemporalNetwork.new()) -> Variant:
 	if verbose >= 1:
 		var todo_array: Array = []
@@ -408,12 +403,12 @@ func find_plan(state: Dictionary, todo_list: Array, stn: SimpleTemporalNetwork =
 		var todo_string = "[" + ", ".join(todo_array) + "]"
 		print("FindPlan> find_plan, verbose=%s:" % verbose)
 		print("    state = %s\n    todo_list = %s" % [state, todo_string])
-		
+
 	var result: Variant = seek_plan(state, todo_list, [], 0, stn)
-	
+
 	if verbose >= 1:
 		print("FindPlan> result = ", result, "\n")
-		
+
 	return result
 
 
@@ -424,12 +419,12 @@ func seek_plan(state: Dictionary, todo_list: Array, plan: Array, depth: int, stn
 			todo_array.push_back(_item_to_string(x))
 		var todo_string = "[" + ", ".join(todo_array) + "]"
 		print("Depth %s todo_list %s" % [depth, todo_string])
-		
+
 	if todo_list.is_empty():
 		if verbose >= 3:
 			print("depth %s no more tasks or goals, return plan" % [depth])
 		return plan
-	
+
 	var item1 = todo_list.front()
 	todo_list.pop_front()
 
@@ -444,7 +439,7 @@ func seek_plan(state: Dictionary, todo_list: Array, plan: Array, depth: int, stn
 			return _refine_unigoal_and_continue(state, item1, todo_list, plan, depth, stn)
 
 	assert(false, "Depth %s: %s isn't an action, task, unigoal, or multigoal\n" % [depth, item1])
-	
+
 	return false
 
 

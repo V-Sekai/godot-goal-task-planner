@@ -87,11 +87,7 @@ func find_airport(state, l):
 
 
 func m_drive_truck(state, t, l):
-	if (
-		t in state.trucks
-		and l in state.locations
-		and state.in_city[state.truck_at[t]] == state.in_city[l]
-	):
+	if t in state.trucks and l in state.locations and state.in_city[state.truck_at[t]] == state.in_city[l]:
 		return [["drive_truck", t, l]]
 
 
@@ -124,11 +120,7 @@ func m_unload_plane(state, o, a):
 
 
 func move_within_city(state, o, l):
-	if (
-		o in state.packages
-		and state.at[o] in state.locations
-		and state.in_city[state.at[o]] == state.in_city[l]
-	):
+	if o in state.packages and state.at[o] in state.locations and state.in_city[state.at[o]] == state.in_city[l]:
 		var t = find_truck(state, o)
 		if t:
 			return [["truck_at", t, state.at[o]], ["at", o, t], ["truck_at", t, l], ["at", o, l]]
@@ -136,29 +128,15 @@ func move_within_city(state, o, l):
 
 
 func move_between_airports(state, o, a):
-	if (
-		o in state.packages
-		and state.at[o] in state.airports
-		and a in state.airports
-		and state.in_city[state.at[o]] != state.in_city[a]
-	):
+	if o in state.packages and state.at[o] in state.airports and a in state.airports and state.in_city[state.at[o]] != state.in_city[a]:
 		var plane = find_plane(state, o)
 		if plane:
-			return [
-				["plane_at", plane, state.at[o]],
-				["at", o, plane],
-				["plane_at", plane, a],
-				["at", o, a]
-			]
+			return [["plane_at", plane, state.at[o]], ["at", o, plane], ["plane_at", plane, a], ["at", o, a]]
 	return false
 
 
 func move_between_city(state, o, l):
-	if (
-		o in state.packages
-		and state.at[o] in state.locations
-		and state.in_city[state.at[o]] != state.in_city[l]
-	):
+	if o in state.packages and state.at[o] in state.locations and state.in_city[state.at[o]] != state.in_city[l]:
 		var a1 = find_airport(state, state.at[o])
 		var a2 = find_airport(state, l)
 		if a1 and a2:
@@ -168,43 +146,20 @@ func move_between_city(state, o, l):
 
 var state1: Dictionary
 
+
 func test_move_goal_1():
 	state1.clear()
 	planner._domains.push_back(the_domain)
 
 	# If we've changed to some other domain, this will change us back.
 	planner.current_domain = the_domain
-	planner.declare_actions(
-		[
-			Callable(self, "drive_truck"),
-			Callable(self, "load_truck"),
-			Callable(self, "unload_truck"),
-			Callable(self, "fly_plane"),
-			Callable(self, "load_plane"),
-			Callable(self, "unload_plane")
-		]
-	)
+	planner.declare_actions([Callable(self, "drive_truck"), Callable(self, "load_truck"), Callable(self, "unload_truck"), Callable(self, "fly_plane"), Callable(self, "load_plane"), Callable(self, "unload_plane")])
 
-	planner.declare_unigoal_methods(
-		"at",
-		[
-			Callable(self, "m_load_truck"),
-			Callable(self, "m_unload_truck"),
-			Callable(self, "m_load_plane"),
-			Callable(self, "m_unload_plane")
-		]
-	)
+	planner.declare_unigoal_methods("at", [Callable(self, "m_load_truck"), Callable(self, "m_unload_truck"), Callable(self, "m_load_plane"), Callable(self, "m_unload_plane")])
 	planner.declare_unigoal_methods("truck_at", [Callable(self, "m_drive_truck")])
 	planner.declare_unigoal_methods("plane_at", [Callable(self, "m_fly_plane")])
 
-	planner.declare_unigoal_methods(
-		"at",
-		[
-			Callable(self, "move_within_city"),
-			Callable(self, "move_between_airports"),
-			Callable(self, "move_between_city")
-		]
-	)
+	planner.declare_unigoal_methods("at", [Callable(self, "move_within_city"), Callable(self, "move_between_airports"), Callable(self, "move_between_city")])
 
 	#	planner.print_domain()
 
@@ -218,23 +173,17 @@ func test_move_goal_1():
 	var load_plane2_duration = 2
 	var unload_plane2_duration = 3
 
-	stn.add_temporal_constraint(TemporalConstraint.new(0, 0, drive_truck1_duration, TemporalConstraint.TemporalQualifier.AT_END, "drive_truck1"),
-				TemporalConstraint.new(0, 0, load_truck1_duration, TemporalConstraint.TemporalQualifier.AT_START, "load_truck1"))
+	stn.add_temporal_constraint(TemporalConstraint.new(0, 0, drive_truck1_duration, TemporalConstraint.TemporalQualifier.AT_END, "drive_truck1"), TemporalConstraint.new(0, 0, load_truck1_duration, TemporalConstraint.TemporalQualifier.AT_START, "load_truck1"))
 
-	stn.add_temporal_constraint(TemporalConstraint.new(0, 0, load_truck1_duration, TemporalConstraint.TemporalQualifier.AT_END, "load_truck1"),
-				TemporalConstraint.new(0, 0, drive_truck6_duration, TemporalConstraint.TemporalQualifier.AT_START, "drive_truck6"))
+	stn.add_temporal_constraint(TemporalConstraint.new(0, 0, load_truck1_duration, TemporalConstraint.TemporalQualifier.AT_END, "load_truck1"), TemporalConstraint.new(0, 0, drive_truck6_duration, TemporalConstraint.TemporalQualifier.AT_START, "drive_truck6"))
 
-	stn.add_temporal_constraint(TemporalConstraint.new(0, 0, drive_truck6_duration, TemporalConstraint.TemporalQualifier.AT_END, "drive_truck6"),
-				TemporalConstraint.new(0, 0, unload_truck1_duration, TemporalConstraint.TemporalQualifier.AT_START, "unload_truck1"))
+	stn.add_temporal_constraint(TemporalConstraint.new(0, 0, drive_truck6_duration, TemporalConstraint.TemporalQualifier.AT_END, "drive_truck6"), TemporalConstraint.new(0, 0, unload_truck1_duration, TemporalConstraint.TemporalQualifier.AT_START, "unload_truck1"))
 
-	stn.add_temporal_constraint(TemporalConstraint.new(0, 2, unload_truck1_duration, TemporalConstraint.TemporalQualifier.AT_END, "unload_truck1"),
-				TemporalConstraint.new(0, 0, fly_plane2_duration, TemporalConstraint.TemporalQualifier.OVERALL, "fly_plane2"))
+	stn.add_temporal_constraint(TemporalConstraint.new(0, 2, unload_truck1_duration, TemporalConstraint.TemporalQualifier.AT_END, "unload_truck1"), TemporalConstraint.new(0, 0, fly_plane2_duration, TemporalConstraint.TemporalQualifier.OVERALL, "fly_plane2"))
 
-	stn.add_temporal_constraint(TemporalConstraint.new(0, 0, fly_plane2_duration, TemporalConstraint.TemporalQualifier.AT_END, "fly_plane2"),
-				TemporalConstraint.new(0, 0, load_plane2_duration, TemporalConstraint.TemporalQualifier.AT_START, "load_plane2"))
+	stn.add_temporal_constraint(TemporalConstraint.new(0, 0, fly_plane2_duration, TemporalConstraint.TemporalQualifier.AT_END, "fly_plane2"), TemporalConstraint.new(0, 0, load_plane2_duration, TemporalConstraint.TemporalQualifier.AT_START, "load_plane2"))
 
-	stn.add_temporal_constraint(TemporalConstraint.new(0, 0, load_plane2_duration, TemporalConstraint.TemporalQualifier.AT_END, "load_plane2"),
-				TemporalConstraint.new(0, 0, unload_plane2_duration, TemporalConstraint.TemporalQualifier.AT_START, "unload_plane2"))
+	stn.add_temporal_constraint(TemporalConstraint.new(0, 0, load_plane2_duration, TemporalConstraint.TemporalQualifier.AT_END, "load_plane2"), TemporalConstraint.new(0, 0, unload_plane2_duration, TemporalConstraint.TemporalQualifier.AT_START, "unload_plane2"))
 
 	state1.packages = ["package1", "package2"]
 	state1.trucks = ["truck1", "truck6"]
@@ -246,20 +195,17 @@ func test_move_goal_1():
 	state1.at = {"package1": "location1", "package2": "location2"}
 	state1.truck_at = {"truck1": "location3", "truck6": "location10"}
 	state1.plane_at = {"plane2": "airport2"}
-	state1.in_city = {
-		"location1": "city1",
-		"location2": "city1",
-		"location3": "city1",
-		"airport1": "city1",
-		"location10": "city2",
-		"airport2": "city2"
-	}
-	
-	var plan = planner.find_plan(state1.duplicate(true), [
-		["at", "package1", "airport2"],
-	], stn)
-	assert_eq(
-		plan,
-		[["drive_truck", "truck1", "location1"], ["load_truck", "package1", "truck1"], ["drive_truck", "truck1", "airport1"], ["unload_truck", "package1", "airport1"], ["fly_plane", "plane2", "airport1"], ["load_plane", "package1", "plane2"], ["fly_plane", "plane2", "airport2"], ["unload_plane", "package1", "airport2"]]
+	state1.in_city = {"location1": "city1", "location2": "city1", "location3": "city1", "airport1": "city1", "location10": "city2", "airport2": "city2"}
+
+	var plan = (
+		planner
+		. find_plan(
+			state1.duplicate(true),
+			[
+				["at", "package1", "airport2"],
+			],
+			stn
+		)
 	)
+	assert_eq(plan, [["drive_truck", "truck1", "location1"], ["load_truck", "package1", "truck1"], ["drive_truck", "truck1", "airport1"], ["unload_truck", "package1", "airport1"], ["fly_plane", "plane2", "airport1"], ["load_plane", "package1", "plane2"], ["fly_plane", "plane2", "airport2"], ["unload_plane", "package1", "airport2"]])
 	print(stn.to_dictionary())
