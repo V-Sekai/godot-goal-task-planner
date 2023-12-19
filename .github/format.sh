@@ -33,7 +33,7 @@ if [ $# -eq 0 ]; then
     # Loop through all code files tracked by Git.
     files=$(git ls-files -- '*.gd' \
                 ':!:.git/*' ':!:thirdparty/*' ':!:addons/vrm' ':!:addons/godot_state_charts' ':!:addons/xr_vignette' \
-                ':!:addons/unidot_importer' ':!:addons/Godot-MToon-Shader' ':!:addons/gut' ':!:addons/smoothing' ':!:addons/gut' \
+                ':!:addons/unidot_importer' ':!:addons/Godot-MToon-Shader' ':!:addons/gut' ':!:addons/smoothing' \
                 ':!:.git/*' ':!:thirdparty/*' ':!:*/thirdparty/*' ':!:platform/android/java/lib/src/com/google/*' \
                 ':!:*-so_wrap.*' ':!:tests/python_build/*')
 else
@@ -55,7 +55,7 @@ for f in $files; do
         continue
     fi
 
-    python .github/copyright_headers.py "$f"
+    python3 .github/copyright_headers.py "$f"
 done
 
 diff=$(git diff --color)

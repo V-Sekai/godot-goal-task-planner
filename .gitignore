@@ -4,3 +4,5 @@ task_goal_planner/results
 TEST.xml
 
 addons/.DS_Store
+
+.DS_Store
