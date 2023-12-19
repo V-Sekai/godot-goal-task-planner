@@ -19,7 +19,9 @@ func test_propagate_project_constraints() -> void:
 	assert_eq(simple_temporal_network.is_consistent(), true, "Expected STN to be consistent after propagating constraints")
 	
 	var constraints_array = []
-	for c in simple_temporal_network.constraints:
+	for c: TemporalConstraint in simple_temporal_network.constraints:
+		if not c:
+			continue
 		var dictionary = c.to_dictionary()
 		constraints_array.append(dictionary)
 	print_rich(constraints_array)
