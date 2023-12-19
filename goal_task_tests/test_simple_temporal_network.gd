@@ -3,7 +3,7 @@ extends "res://addons/gut/test.gd"
 var stn = null
 
 
-func setup():
+func before_each():
 	stn = SimpleTemporalNetwork.new()
 
 
