@@ -21,11 +21,9 @@ func test_propagate_project_constraints() -> void:
 
 	var constraints_array = []
 	for c: TemporalConstraint in simple_temporal_network.constraints:
-		if not c:
-			continue
 		var dictionary = c.to_dictionary()
 		constraints_array.append(dictionary)
-	print_rich(constraints_array)
+	gut.p(constraints_array)
 
 	assert_eq_deep(
 		constraints_array,

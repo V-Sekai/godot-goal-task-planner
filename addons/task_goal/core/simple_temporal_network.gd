@@ -13,6 +13,8 @@ var num_nodes: int = 0
 var node_intervals: Array[Vector2i] = []
 var node_indices: Dictionary = {}
 
+func _init():
+	_init_matrix()
 
 func to_dictionary() -> Dictionary:
 	return {"resource_name": resource_name, "constraints": constraints, "matrix": stn_matrix, "number_of_nodes": num_nodes, "node_intervals": node_intervals}
@@ -37,40 +39,66 @@ func _init_matrix() -> void:
 
 func add_temporal_constraint(from_constraint: TemporalConstraint, to_constraint: TemporalConstraint = null, min_gap: float = 0, max_gap: float = 0) -> bool:
 	if not validate_constraints(from_constraint, to_constraint, min_gap, max_gap):
+		print("Failed to validate constraints")
 		return false
 
 	add_constraints_to_list(from_constraint, to_constraint)
 
 	var from_node: int = process_constraint(from_constraint)
 	if from_node == -1:
+		print("Failed to process from_constraint")
 		return false
 
 	if to_constraint != null:
 		var to_node: int = process_constraint(to_constraint)
 		if to_node == -1:
+			print("Failed to process to_constraint")
 			return false
 
 		if not update_matrix(from_node, to_node, from_constraint.duration):
 			reset_matrix(from_node, to_node)
+			print("Failed to update matrix for from_node and to_node")
 			return false
 	else:
 		if not update_matrix_single(from_node):
+			print("Failed to update matrix for single from_node")
 			return false
 
 	return true
 
 
 ## This function validates the constraints and returns a boolean value.
-func validate_constraints(from_constraint: TemporalConstraint, to_constraint: TemporalConstraint, min_gap: float, max_gap: float) -> bool:
-	if not from_constraint is TemporalConstraint or not to_constraint is TemporalConstraint:
-		print("Constraints are not TemporalConstraint instances")
+func validate_constraints(from_constraint, to_constraint, min_gap: float, max_gap: float) -> bool:
+	# Check if from_constraint exists and has the necessary properties
+	if not from_constraint:
+		print("from_constraint is None")
 		return false
 
-	if not min_gap is float or min_gap < 0 or not max_gap is float or max_gap < 0:
+	if not from_constraint.get("time_interval"):
+		print("from_constraint does not have 'time_interval'")
+		return false
+
+	if not from_constraint.get("duration"):
+		print("from_constraint does not have 'duration'")
+		return false
+
+	# Check if to_constraint exists and has the necessary properties
+	if to_constraint:
+		if not to_constraint.get("time_interval"):
+			print("to_constraint does not have 'time_interval'")
+			return false
+
+		if not to_constraint.get("duration"):
+			print("to_constraint does not have 'duration'")
+			return false
+
+	# Check if min_gap and max_gap are valid
+	if typeof(min_gap) != TYPE_FLOAT or min_gap < 0 or typeof(max_gap) != TYPE_FLOAT or max_gap < 0:
 		print("Invalid gap values")
 		return false
 
 	return true
+
 
 
 ## This function adds the constraints to the list.
@@ -94,6 +122,8 @@ func process_constraint(constraint: TemporalConstraint) -> int:
 
 ## This function updates the matrix for two nodes and returns a boolean value.
 func update_matrix(from_node: int, to_node: int, distance: float) -> bool:
+	if not stn_matrix:
+		return true
 	if from_node + 1 >= stn_matrix.size() or to_node + 1 >= stn_matrix.size():
 		return false
 
@@ -112,9 +142,7 @@ func update_matrix(from_node: int, to_node: int, distance: float) -> bool:
 
 ## This function resets the matrix for two nodes.
 func reset_matrix(from_node: int, to_node: int):
-	# Check if stn_matrix is initialized.
 	if not stn_matrix:
-		print("Error: stn_matrix is not initialized.")
 		return
 
 	# Check if indices are valid.
@@ -130,6 +158,8 @@ func reset_matrix(from_node: int, to_node: int):
 
 ## This function updates the matrix for a single node and returns a boolean value.
 func update_matrix_single(from_node: int) -> bool:
+	if not stn_matrix:
+		return true
 	if from_node + 1 >= stn_matrix.size():
 		return false
 

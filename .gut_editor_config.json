@@ -5,7 +5,7 @@
  "dirs": [
   "res://"
  ],
- "disable_colors": false,
+ "disable_colors": true,
  "double_strategy": 1,
  "errors_do_not_cause_failure": false,
  "font_color": "ccccccff",
@@ -23,7 +23,7 @@
  "paint_after": 0.1,
  "panel_options": {
   "font_name": "CourierPrime",
-  "font_size": 30,
+  "font_size": 16,
   "hide_output_text": false,
   "hide_result_tree": false,
   "hide_settings": false,
@@ -34,7 +34,7 @@
  "post_run_script": "",
  "pre_run_script": "",
  "prefix": "test_",
- "selected": "test_logistics.gd",
+ "selected": "test_simple_temporal_network.gd",
  "should_exit": true,
  "should_exit_on_success": false,
  "should_maximize": false,

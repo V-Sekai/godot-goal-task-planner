@@ -100,8 +100,31 @@ func test_reset_matrix():
 	var from_node = 0
 	var to_node = 1
 	stn.reset_matrix(from_node, to_node)
+	assert_true(stn.is_consistent(), "reset_matrix shoudl return true when the matrix is reset")
 
 
 func test_update_matrix_single():
 	var from_node = 0
+	assert_true(stn.update_matrix_single(from_node), "update_matrix_single should return true when matrix is updated successfully")
+
+
+func test_init_and_update_matrix():
+	var from_node = 0
+	var to_node = 1
+	var duration = 3.0
+	stn._init_matrix()
+	assert_true(stn.update_matrix(from_node, to_node, duration), "update_matrix should return true when matrix is updated successfully")
+
+
+func test_init_and_reset_matrix():
+	var from_node = 0
+	var to_node = 1
+	stn._init_matrix()
+	stn.reset_matrix(from_node, to_node)
+	assert_true(stn.is_consistent(), "reset_matrix should return true when the matrix is reset")
+
+
+func test_init_and_update_matrix_single():
+	var from_node = 0
+	stn._init_matrix()
 	assert_true(stn.update_matrix_single(from_node), "update_matrix_single should return true when matrix is updated successfully")
