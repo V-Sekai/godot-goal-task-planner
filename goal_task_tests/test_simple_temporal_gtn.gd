@@ -88,9 +88,12 @@ func ride_car(state, p, y, prev_time):
 		var x = state.loc[car]
 		if is_a(x, "location") and x != y:
 			var _travel_time = travel_time(x, y, "car")
+			var current_time = state.time[p]
+			if current_time < prev_time:
+				current_time = prev_time
 			var arrival_time = prev_time + _travel_time
 			var constraint_name = "%s_ride_car_from_%s_to_%s" % [p, x, y]
-			var constraint = TemporalConstraint.new(prev_time, arrival_time, _travel_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
+			var constraint = TemporalConstraint.new(current_time, arrival_time, _travel_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
 			if planner.current_domain.stn.add_temporal_constraint(constraint):
 				state.loc[car] = y
 				state.owe[p] = taxi_rate(distance(x, y))
