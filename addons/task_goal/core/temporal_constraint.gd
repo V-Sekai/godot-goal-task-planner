@@ -13,12 +13,9 @@ enum TemporalQualifier {
 	OVERALL,
 }
 
-@export
-var time_interval: Vector2i
-@export
-var duration: int
-@export
-var temporal_qualifier: TemporalQualifier
+@export var time_interval: Vector2i
+@export var duration: int
+@export var temporal_qualifier: TemporalQualifier
 
 
 func _init(start: int, end: int, duration: int, qualifier: TemporalQualifier, resource: String):

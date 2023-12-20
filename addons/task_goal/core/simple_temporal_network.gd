@@ -13,8 +13,10 @@ var num_nodes: int = 0
 var node_intervals: Array[Vector2i] = []
 var node_indices: Dictionary = {}
 
-func _init():
-	_init_matrix()
+var row_indices = []
+var col_indices = []
+var values = []
+
 
 func to_dictionary() -> Dictionary:
 	return {"resource_name": resource_name, "constraints": constraints, "matrix": stn_matrix, "number_of_nodes": num_nodes, "node_intervals": node_intervals}
@@ -24,17 +26,17 @@ func get_node_index(node_interval: Vector2i) -> int:
 	return node_intervals.find(node_interval)
 
 
-func _init_matrix() -> void:
-	stn_matrix.resize(num_nodes)
+func _init_matrix(num_nodes):
+	row_indices.clear()
+	row_indices.resize(num_nodes)
+	col_indices.clear()
+	col_indices.resize(num_nodes)
+	values.clear()
+	values.resize(num_nodes)
 	for i in range(num_nodes):
-		if stn_matrix[i] == null:
-			stn_matrix[i] = []
-		stn_matrix[i].resize(num_nodes)
-		for j in range(num_nodes):
-			if i == j:
-				stn_matrix[i][j] = 0
-			else:
-				stn_matrix[i][j] = INF
+		row_indices[i] = 0
+		col_indices[i] = 0
+		values[i] = INF
 
 
 func add_temporal_constraint(from_constraint: TemporalConstraint, to_constraint: TemporalConstraint = null, min_gap: float = 0, max_gap: float = 0) -> bool:
@@ -55,10 +57,7 @@ func add_temporal_constraint(from_constraint: TemporalConstraint, to_constraint:
 			print("Failed to process to_constraint")
 			return false
 
-		if not update_matrix(from_node, to_node, from_constraint.duration):
-			reset_matrix(from_node, to_node)
-			print("Failed to update matrix for from_node and to_node")
-			return false
+		update_matrix(from_node, to_node, from_constraint.duration)
 	else:
 		if not update_matrix_single(from_node):
 			print("Failed to update matrix for single from_node")
@@ -100,7 +99,6 @@ func validate_constraints(from_constraint, to_constraint, min_gap: float, max_ga
 	return true
 
 
-
 ## This function adds the constraints to the list.
 func add_constraints_to_list(from_constraint: TemporalConstraint, to_constraint: TemporalConstraint):
 	if from_constraint:
@@ -116,28 +114,24 @@ func process_constraint(constraint: TemporalConstraint) -> int:
 		node_indices[interval] = num_nodes
 		node_intervals.append(interval)
 		num_nodes += 1
-		_init_matrix()
+		_init_matrix(num_nodes)  # Pass num_nodes as an argument here
 	return node_indices[interval]
 
 
-## This function updates the matrix for two nodes and returns a boolean value.
-func update_matrix(from_node: int, to_node: int, distance: float) -> bool:
-	if not stn_matrix:
-		return true
-	if from_node + 1 >= stn_matrix.size() or to_node + 1 >= stn_matrix.size():
-		return false
+func get_value_from_matrix(i: int, j: int) -> float:
+	for entry in stn_matrix:
+		if entry[0] == i and entry[1] == j:
+			return entry[2]
+	return INF
 
-	if typeof(stn_matrix[from_node + 1]) != TYPE_ARRAY:
-		stn_matrix[from_node + 1] = []
-	if typeof(stn_matrix[to_node + 1]) != TYPE_ARRAY:
-		stn_matrix[to_node + 1] = []
 
-	stn_matrix[from_node][from_node + 1] = max(distance, stn_matrix[from_node][from_node + 1])
-	stn_matrix[from_node + 1][from_node] = -stn_matrix[from_node][from_node + 1]
-	stn_matrix[to_node][to_node + 1] = min(-distance, stn_matrix[to_node][to_node + 1])
-	stn_matrix[to_node + 1][to_node] = -stn_matrix[to_node][to_node + 1]
-
-	return propagate_constraints()
+# Update the COO matrix by appending new entries instead of modifying existing ones
+func update_matrix(i: int, j: int, value: float) -> void:
+	for idx in range(stn_matrix.size()):
+		if stn_matrix[idx][0] == i and stn_matrix[idx][1] == j:
+			stn_matrix[idx][2] = value
+			return
+	stn_matrix.append([i, j, value])
 
 
 ## This function resets the matrix for two nodes.
@@ -180,12 +174,15 @@ func propagate_constraints() -> bool:
 	for k in range(num_nodes):
 		for i in range(num_nodes):
 			for j in range(num_nodes):
-				if i in stn_matrix and k in stn_matrix[i] and stn_matrix[i][k] != INF and k in stn_matrix and j in stn_matrix[k] and stn_matrix[k][j] != INF:
-					if stn_matrix[i][j] == INF or stn_matrix[i][k] + stn_matrix[k][j] < stn_matrix[i][j]:
-						stn_matrix[i][j] = stn_matrix[i][k] + stn_matrix[k][j]
+				var ik_value = get_value_from_matrix(i, k)
+				var kj_value = get_value_from_matrix(k, j)
+				if ik_value != INF and kj_value != INF:
+					var ij_value = get_value_from_matrix(i, j)
+					if ij_value == INF or ik_value + kj_value < ij_value:
+						update_matrix(i, j, ik_value + kj_value)
 
 	for i in range(num_nodes):
-		if stn_matrix[i][i] != INF and stn_matrix[i][i] < 0:
+		if get_value_from_matrix(i, i) < 0:
 			print("Negative diagonal value at index %s" % i)
 			return false
 

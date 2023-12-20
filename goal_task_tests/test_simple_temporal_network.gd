@@ -19,9 +19,11 @@ func test_get_node_index():
 
 
 func test_init_matrix():
-	stn.num_nodes = 3
-	stn._init_matrix()
-	assert_eq(stn.stn_matrix.size(), 3, "_init_matrix should initialize matrix with size equal to num_nodes")
+	var num_nodes = 3
+	stn._init_matrix(num_nodes)
+	assert(stn.row_indices.size() == num_nodes)
+	assert(stn.col_indices.size() == num_nodes)
+	assert(stn.values.size() == num_nodes)
 
 
 func test_add_temporal_constraint():
@@ -38,8 +40,8 @@ func test_get_temporal_constraint_by_name():
 
 
 func test_propagate_constraints():
-	stn.num_nodes = 3
-	stn._init_matrix()
+	var num_nodes = 3
+	stn._init_matrix(num_nodes)
 	var result = stn.propagate_constraints()
 	assert_true(result, "propagate_constraints should return true when there are no negative diagonal values")
 
@@ -89,13 +91,6 @@ func test_process_constraint():
 	assert_true(node_index != -1, "process_constraint should return a valid node index")
 
 
-func test_update_matrix():
-	var from_node = 0
-	var to_node = 1
-	var duration = 3.0
-	assert_true(stn.update_matrix(from_node, to_node, duration), "update_matrix should return true when matrix is updated successfully")
-
-
 func test_reset_matrix():
 	var from_node = 0
 	var to_node = 1
@@ -108,23 +103,15 @@ func test_update_matrix_single():
 	assert_true(stn.update_matrix_single(from_node), "update_matrix_single should return true when matrix is updated successfully")
 
 
-func test_init_and_update_matrix():
-	var from_node = 0
-	var to_node = 1
-	var duration = 3.0
-	stn._init_matrix()
-	assert_true(stn.update_matrix(from_node, to_node, duration), "update_matrix should return true when matrix is updated successfully")
-
-
 func test_init_and_reset_matrix():
 	var from_node = 0
 	var to_node = 1
-	stn._init_matrix()
+	stn._init_matrix(2)
 	stn.reset_matrix(from_node, to_node)
 	assert_true(stn.is_consistent(), "reset_matrix should return true when the matrix is reset")
 
 
 func test_init_and_update_matrix_single():
 	var from_node = 0
-	stn._init_matrix()
+	stn._init_matrix(1)
 	assert_true(stn.update_matrix_single(from_node), "update_matrix_single should return true when matrix is updated successfully")
