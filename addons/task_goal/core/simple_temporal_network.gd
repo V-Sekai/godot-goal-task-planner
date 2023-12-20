@@ -72,23 +72,23 @@ func validate_constraints(from_constraint, to_constraint, min_gap: float, max_ga
 	if not from_constraint:
 		print("from_constraint is None")
 		return false
-
+		
 	if not from_constraint.get("time_interval"):
-		print("from_constraint does not have 'time_interval'")
+		print("from_constraint does not have 'time_interval': %s" % from_constraint.to_dictionary())
 		return false
 
 	if not from_constraint.get("duration"):
-		print("from_constraint does not have 'duration'")
+		print("from_constraint does not have 'duration': %s" % from_constraint.to_dictionary())
 		return false
 
 	# Check if to_constraint exists and has the necessary properties
 	if to_constraint:
 		if not to_constraint.get("time_interval"):
-			print("to_constraint does not have 'time_interval'")
+			print("to_constraint does not have 'time_interval': %s" % from_constraint.to_dictionary())
 			return false
 
 		if not to_constraint.get("duration"):
-			print("to_constraint does not have 'duration'")
+			print("to_constraint does not have 'duration': %s" % from_constraint.to_dictionary())
 			return false
 
 	# Check if min_gap and max_gap are valid

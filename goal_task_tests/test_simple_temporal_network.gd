@@ -1,3 +1,8 @@
+# Copyright (c) 2023-present. This file is part of V-Sekai https://v-sekai.org/.
+# K. S. Ernest (Fire) Lee & Contributors (see .all-contributorsrc).
+# test_simple_temporal_network.gd
+# SPDX-License-Identifier: MIT
+
 extends "res://addons/gut/test.gd"
 
 var stn: SimpleTemporalNetwork = null
@@ -22,7 +27,7 @@ func test_init_matrix():
 	var num_nodes = 3
 	stn._init_matrix(num_nodes)
 	assert_eq(stn.row_indices.size(), num_nodes)
-	assert_eq(stn.col_indices.size(),num_nodes)
+	assert_eq(stn.col_indices.size(), num_nodes)
 	assert_eq(stn.values.size(), num_nodes)
 
 

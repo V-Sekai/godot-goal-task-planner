@@ -1,6 +1,6 @@
 # Copyright (c) 2023-present. This file is part of V-Sekai https://v-sekai.org/.
 # K. S. Ernest (Fire) Lee & Contributors (see .all-contributorsrc).
-# plan.gd
+# plan.gd  
 # SPDX-License-Identifier: MIT
 
 # SPDX-FileCopyrightText: 2021 University of Maryland
@@ -49,7 +49,15 @@ func print_domain(domain: Object = null) -> void:
 	print("Domain name: %s" % resource_name)
 	print_actions(domain)
 	print_methods(domain)
+	print_simple_temporary_network(domain)
 
+func print_simple_temporary_network(domain) -> void:
+	if domain == null:
+		domain = current_domain
+	if domain.stn:
+		print("-- Simple Temporal Network: %s" % domain.stn.to_dictionary())
+	else:
+		print("-- There is no Simple Temporarl Network --")
 
 ## Print the names of all the actions
 func print_actions(domain: Object = null) -> void:
@@ -271,22 +279,26 @@ func m_split_multigoal(state, multigoal):
 var verify_goals = true
 
 
-func _apply_action_and_continue(state, task1, todo_list, plan, depth, stn) -> Variant:
+func _apply_action_and_continue(state, task1, todo_list, plan, depth) -> Variant:
 	if verbose >= 3:
 		print("Depth %s action %s: " % [depth, task1])
 	var action: Callable = current_domain._action_dict[task1[0]]
-	var newstate = action.get_object().callv(action.get_method(), [state] + task1.slice(1))
-	if newstate and stn.is_consistent():
+	var new_state = action.get_object().callv(action.get_method(), [state] + task1.slice(1))
+	if new_state and current_domain.stn.is_consistent():
 		if verbose >= 3:
 			print("Applied")
-			print(newstate)
-		return seek_plan(newstate, todo_list, plan + [task1], depth + 1, stn)
+			print(new_state)
+		return seek_plan(new_state, todo_list, plan + [task1], depth + 1)
+	if verbose >= 3 and not new_state:
+			print("The new state is not valid")
+	if verbose >= 3 and not current_domain.stn.is_consistent():
+			print("The simple time network is non-consistent")
 	if verbose >= 3:
 		print("Not applicable")
 	return false
 
 
-func _refine_task_and_continue(state, task1, todo_list, plan, depth, stn) -> Variant:
+func _refine_task_and_continue(state, task1, todo_list, plan, depth) -> Variant:
 	var relevant: Array = current_domain._task_method_dict[task1[0]]
 	if verbose >= 3:
 		var string_array: PackedStringArray = []
@@ -298,11 +310,11 @@ func _refine_task_and_continue(state, task1, todo_list, plan, depth, stn) -> Var
 			print("Depth %s trying %s: " % [depth, method.get_method()])
 		var subtasks: Variant = method.get_object().callv(method.get_method(), [state] + task1.slice(1))
 		# Can't just say "if subtasks:", because that's wrong if subtasks == []
-		if subtasks is Array and stn.is_consistent():
+		if subtasks is Array and current_domain.stn.is_consistent():
 			if verbose >= 3:
 				print("Applicable")
 				print("Depth %s subtasks: %s" % [depth, subtasks])
-			var result: Variant = seek_plan(state, subtasks + todo_list, plan, depth + 1, stn)
+			var result: Variant = seek_plan(state, subtasks + todo_list, plan, depth + 1)
 			if result is Array:
 				return result
 	if verbose >= 3:
@@ -310,7 +322,7 @@ func _refine_task_and_continue(state, task1, todo_list, plan, depth, stn) -> Var
 	return false
 
 
-func _refine_unigoal_and_continue(state, goal1, todo_list, plan, depth, stn) -> Variant:
+func _refine_unigoal_and_continue(state, goal1, todo_list, plan, depth) -> Variant:
 	if verbose >= 3:
 		print("Depth %s goal %s: " % [depth, goal1])
 
@@ -321,7 +333,7 @@ func _refine_unigoal_and_continue(state, goal1, todo_list, plan, depth, stn) -> 
 	if state.get(state_var_name).get(arg) == val:
 		if verbose >= 3:
 			print("Already achieved")
-		return seek_plan(state, todo_list, plan, depth + 1, stn)
+		return seek_plan(state, todo_list, plan, depth + 1)
 
 	var relevant = current_domain._unigoal_method_dict[state_var_name]
 
@@ -337,7 +349,7 @@ func _refine_unigoal_and_continue(state, goal1, todo_list, plan, depth, stn) -> 
 
 		var subgoals: Variant = method.get_object().callv(method.get_method(), [state] + [arg, val])
 
-		if subgoals is Array and stn.is_consistent():
+		if subgoals is Array and current_domain.stn.is_consistent():
 			if verbose >= 3:
 				print("Depth %s subgoals: %s" % [depth, subgoals])
 
@@ -349,7 +361,7 @@ func _refine_unigoal_and_continue(state, goal1, todo_list, plan, depth, stn) -> 
 				verification = []
 
 			todo_list = subgoals + verification + todo_list
-			var result: Variant = seek_plan(state, todo_list, plan, depth + 1, stn)
+			var result: Variant = seek_plan(state, todo_list, plan, depth + 1)
 
 			if result is Array:
 				return result
@@ -360,7 +372,7 @@ func _refine_unigoal_and_continue(state, goal1, todo_list, plan, depth, stn) -> 
 	return false
 
 
-func _refine_multigoal_and_continue(state: Dictionary, goal1: Multigoal, todo_list: Array, plan: Array, depth: int, stn) -> Variant:
+func _refine_multigoal_and_continue(state: Dictionary, goal1: Multigoal, todo_list: Array, plan: Array, depth: int) -> Variant:
 	if verbose >= 3:
 		print("Depth %s multigoal %s: " % [depth, goal1])
 	var relevant: Array = current_domain._multigoal_method_list
@@ -373,7 +385,7 @@ func _refine_multigoal_and_continue(state: Dictionary, goal1: Multigoal, todo_li
 		if verbose >= 3:
 			print("Depth %s trying method %s: " % [depth, method.get_method()])
 		var subgoals: Variant = method.get_object().callv(method.get_method(), [state, goal1])
-		if subgoals is Array and stn.is_consistent():
+		if subgoals is Array and current_domain.stn.is_consistent():
 			if verbose >= 3:
 				print("Applicable")
 				print("Depth %s subgoals: %s" % [depth, subgoals])
@@ -383,7 +395,7 @@ func _refine_multigoal_and_continue(state: Dictionary, goal1: Multigoal, todo_li
 			else:
 				verification = []
 			todo_list = subgoals + verification + todo_list
-			var result: Variant = seek_plan(state, todo_list, plan, depth + 1, stn)
+			var result: Variant = seek_plan(state, todo_list, plan, depth + 1)
 			if result is Array:
 				return result
 		else:
@@ -403,8 +415,9 @@ func find_plan(state: Dictionary, todo_list: Array, stn: SimpleTemporalNetwork =
 		var todo_string = "[" + ", ".join(todo_array) + "]"
 		print("FindPlan> find_plan, verbose=%s:" % verbose)
 		print("    state = %s\n    todo_list = %s" % [state, todo_string])
+		print("    stn = %s" % current_domain.stn.to_dictionary())
 
-	var result: Variant = seek_plan(state, todo_list, [], 0, stn)
+	var result: Variant = seek_plan(state, todo_list, [], 0)
 
 	if verbose >= 1:
 		print("FindPlan> result = ", result, "\n")
@@ -412,7 +425,7 @@ func find_plan(state: Dictionary, todo_list: Array, stn: SimpleTemporalNetwork =
 	return result
 
 
-func seek_plan(state: Dictionary, todo_list: Array, plan: Array, depth: int, stn: SimpleTemporalNetwork) -> Variant:
+func seek_plan(state: Dictionary, todo_list: Array, plan: Array, depth: int) -> Variant:
 	if verbose >= 2:
 		var todo_array: PackedStringArray = []
 		for x in todo_list:
@@ -428,19 +441,27 @@ func seek_plan(state: Dictionary, todo_list: Array, plan: Array, depth: int, stn
 	var item1 = todo_list.front()
 	todo_list.pop_front()
 
-	if item1 is Multigoal:
-		return _refine_multigoal_and_continue(state, item1, todo_list, plan, depth, stn)
-	elif item1 is Array:
-		if item1[0] in current_domain._action_dict.keys():
-			return _apply_action_and_continue(state, item1, todo_list, plan, depth, stn)
-		elif item1[0] in current_domain._task_method_dict.keys():
-			return _refine_task_and_continue(state, item1, todo_list, plan, depth, stn)
-		elif item1[0] in current_domain._unigoal_method_dict.keys():
-			return _refine_unigoal_and_continue(state, item1, todo_list, plan, depth, stn)
+	print("Processing item: ", item1)
 
-	assert(false, "Depth %s: %s isn't an action, task, unigoal, or multigoal\n" % [depth, item1])
+	if item1 is Multigoal:
+		print("Item is a Multigoal")
+		return _refine_multigoal_and_continue(state, item1, todo_list, plan, depth)
+	elif item1 is Array:
+		print("Item is an Array")
+		if item1[0] in current_domain._action_dict.keys():
+			print("Item is an action")
+			return _apply_action_and_continue(state, item1, todo_list, plan, depth)
+		elif item1[0] in current_domain._task_method_dict.keys():
+			print("Item is a task")
+			return _refine_task_and_continue(state, item1, todo_list, plan, depth)
+		elif item1[0] in current_domain._unigoal_method_dict.keys():
+			print("Item is a unigoal")
+			return _refine_unigoal_and_continue(state, item1, todo_list, plan, depth)
+
+	print("Depth %s: %s isn't an action, task, unigoal, or multigoal\n" % [depth, item1])
 
 	return false
+	
 
 
 func _item_to_string(item):
@@ -462,7 +483,7 @@ func _item_to_string(item):
 ##
 ## Note: whenever run_lazy_lookahead encounters an action for which there is
 ## no corresponding command definition, it uses the action definition instead.
-func run_lazy_lookahead(state: Dictionary, todo_list: Array, stn, max_tries: int = 10):
+func run_lazy_lookahead(state: Dictionary, todo_list: Array, max_tries: int = 10):
 	if verbose >= 1:
 		print("RunLazyLookahead> run_lazy_lookahead, verbose = %s, max_tries = %s" % [verbose, max_tries])
 		print("RunLazyLookahead> initial state: %s" % [state.keys()])
@@ -474,33 +495,34 @@ func run_lazy_lookahead(state: Dictionary, todo_list: Array, stn, max_tries: int
 		if verbose >= 1:
 			print("RunLazyLookahead> %s%s call to find_plan:" % [tries, ordinals.get(tries, "")])
 
-		var plan = find_plan(state, todo_list, stn)
-		if plan == null or plan.is_empty():
+		var plan = find_plan(state, todo_list)
+		if plan == null or (typeof(plan) == TYPE_ARRAY and plan.is_empty()) or (typeof(plan) == TYPE_DICTIONARY and !plan):
 			if verbose >= 1:
 				print("run_lazy_lookahead: find_plan has failed")
 			return state
 
-		if plan.is_empty():
+		if plan == null or (typeof(plan) == TYPE_ARRAY and plan.is_empty()) or (typeof(plan) == TYPE_DICTIONARY and !plan):
 			if verbose >= 1:
 				print("RunLazyLookahead> Empty plan => success\nafter {tries} calls to find_plan.")
 			if verbose >= 2:
 				print("> final state %s" % [state])
 			return state
 
-		for action in plan:
-			var action_name = current_domain._action_dict.get(action[0])
-			if verbose >= 1:
-				print("RunLazyLookahead> Command: %s" % [[action_name] + action.slice(1)])
-
-			var new_state = _apply_command_and_continue(state, action_name, action.slice(1))
-			if new_state is Dictionary:
-				if verbose >= 2:
-					print(new_state)
-				state = new_state
-			else:
+		if typeof(plan) != TYPE_BOOL:
+			for action in plan:
+				var action_name = current_domain._action_dict.get(action[0])
 				if verbose >= 1:
-					print("RunLazyLookahead> WARNING: action %s failed; will call find_plan." % [action_name])
-				break
+					print("RunLazyLookahead> Command: %s" % [[action_name] + action.slice(1)])
+
+				var new_state = _apply_command_and_continue(state, action_name, action.slice(1))
+				if new_state is Dictionary:
+					if verbose >= 2:
+						print(new_state)
+					state = new_state
+				else:
+					if verbose >= 1:
+						print("RunLazyLookahead> WARNING: action %s failed; will call find_plan." % [action_name])
+					break
 
 		if verbose >= 1 and state != null:
 			print("RunLazyLookahead> Plan ended; will call find_plan again.")
