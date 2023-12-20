@@ -1,6 +1,6 @@
 # Copyright (c) 2023-present. This file is part of V-Sekai https://v-sekai.org/.
 # K. S. Ernest (Fire) Lee & Contributors (see .all-contributorsrc).
-# test_simple_gtn.gd
+# test_simple_temporal_gtn.gd
 # SPDX-License-Identifier: MIT
 
 extends GutTest
@@ -43,8 +43,6 @@ func walk(state, p, x, y, last_activity_end_time):
 			var arrival_time = current_time + _travel_time
 			var constraint_name = "%s_walk_from_%s_to_%s" % [p, x, y]
 			var constraint = TemporalConstraint.new(current_time, arrival_time, _travel_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
-			# print("Character location: ", state.loc[p])
-			# print("Travel time: ", _travel_time)
 			if planner.current_domain.stn.add_temporal_constraint(constraint):
 				print("walk called")
 				state.loc[p] = y
@@ -64,12 +62,7 @@ func call_car(state, p, x, last_activity_end_time):
 		var arrival_time = last_activity_end_time + _travel_time
 		var constraint_name = "%s_call_car_at_%s" % [p, x]
 		var constraint = TemporalConstraint.new(current_time, arrival_time, _travel_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
-		# print("Character location: ", state.loc[p])
-		# print("Travel time: ", _travel_time)
-		# print("Car1 location: ", state.loc["car1"])
 		if planner.current_domain.stn.add_temporal_constraint(constraint):
-			# print("Temporal constraint added successfully")
-			# print("call_car called")
 			state.loc["car1"] = x
 			state.loc[p] = "car1"
 			state["time"][p] = arrival_time
@@ -95,14 +88,9 @@ func ride_car(state, p, y, prev_time):
 		var x = state.loc[car]
 		if is_a(x, "location") and x != y:
 			var _travel_time = travel_time(x, y, "car")
-			# print("Arrival travel time: %d" % _travel_time)
 			var arrival_time = prev_time + _travel_time
-			# print("Arrival arrival time: %d" % arrival_time)
 			var constraint_name = "%s_ride_car_from_%s_to_%s" % [p, x, y]
 			var constraint = TemporalConstraint.new(prev_time, arrival_time, _travel_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
-			# print("Constraint: %s" % constraint.to_dictionary())
-			# print("Character location: ", state.loc[p])
-			# print("Travel time: ", _travel_time)
 			if planner.current_domain.stn.add_temporal_constraint(constraint):
 				state.loc[car] = y
 				state.owe[p] = taxi_rate(distance(x, y))
@@ -122,9 +110,6 @@ func pay_driver(state, p, y, prev_activity_end_time):
 			var post_payment_time = prev_activity_end_time + payment_time
 			var constraint_name = "%s_pay_driver_at_%s" % [p, y]
 			var constraint = TemporalConstraint.new(current_time, post_payment_time, payment_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
-			# print("Character location: ", state.loc[p])
-			# print("Payment time: ", payment_time)
-
 			if planner.current_domain.stn.add_temporal_constraint(constraint):
 				state.cash[p] = state.cash[p] - state.owe[p]
 				state.owe[p] = 0
@@ -252,4 +237,4 @@ func test_isekai_anime():
 	var state1 = state0.duplicate(true)
 	var plan = planner.find_plan(state1, [["loc", "Mia", "mall"], ["loc", "Frank", "mall"], ["wait_for_everyone", ["Mia", "Frank"]], goal3])
 
-	assert_eq_deep(plan,  [["call_car", "Mia", "home_Mia", 0], ["ride_car", "Mia", "mall", 0], ["pay_driver", "Mia", "mall", 0], ["call_car", "Frank", "home_Frank", 0], ["ride_car", "Frank", "mall", 0], ["pay_driver", "Frank", "mall", 0], ["wait_for_everyone", ["Mia", "Frank"]], ["call_car", "Mia", "mall", 3], ["ride_car", "Mia", "cinema", 3], ["pay_driver", "Mia", "cinema", 3], ["call_car", "Frank", "mall", 3], ["ride_car", "Frank", "cinema", 3], ["pay_driver", "Frank", "cinema", 3]])
+	assert_eq_deep(plan, [["call_car", "Mia", "home_Mia", 0], ["ride_car", "Mia", "mall", 0], ["pay_driver", "Mia", "mall", 0], ["call_car", "Frank", "home_Frank", 0], ["ride_car", "Frank", "mall", 0], ["pay_driver", "Frank", "mall", 0], ["wait_for_everyone", ["Mia", "Frank"]], ["call_car", "Mia", "mall", 3], ["ride_car", "Mia", "cinema", 3], ["pay_driver", "Mia", "cinema", 3], ["call_car", "Frank", "mall", 3], ["ride_car", "Frank", "cinema", 3], ["pay_driver", "Frank", "cinema", 3]])
