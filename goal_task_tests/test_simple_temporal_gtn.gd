@@ -223,7 +223,7 @@ var goal3 = Multigoal.new("goal3", {"loc": {"Mia": "cinema", "Frank": "cinema"}}
 
 
 func before_each():
-	planner.verbose = 3
+	planner.verbose = 0
 	planner._domains.push_back(the_domain)
 	planner.current_domain = the_domain
 	goal1.state["loc"] = {"Mia": "cinema"}

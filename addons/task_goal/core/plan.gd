@@ -258,8 +258,8 @@ func m_split_multigoal(state, multigoal):
 	var goal_list: Array = []
 	for state_var_name in goal_dict.keys():
 		for arg in goal_dict[state_var_name]:
-			print("state_var_name: ", state_var_name)
-			print("arg: ", arg)
+			# print("state_var_name: ", state_var_name)
+			# print("arg: ", arg)
 			if goal_dict[state_var_name].has(arg) and goal_dict[state_var_name].size() > 0:
 				var val = goal_dict[state_var_name][arg]
 				goal_list.append([state_var_name, arg, val])
