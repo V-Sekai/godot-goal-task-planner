@@ -256,10 +256,13 @@ func declare_multigoal_methods(methods):
 func m_split_multigoal(state, multigoal):
 	var goal_dict: Dictionary = domain_const._goals_not_achieved(state, multigoal)
 	var goal_list: Array = []
-	for state_var_name in goal_dict:
+	for state_var_name in goal_dict.keys():
 		for arg in goal_dict[state_var_name]:
-			var val = goal_dict[state_var_name][arg]
-			goal_list.append([state_var_name, arg, val])
+			print("state_var_name: ", state_var_name)
+			print("arg: ", arg)
+			if goal_dict[state_var_name].has(arg) and goal_dict[state_var_name].size() > 0:
+				var val = goal_dict[state_var_name][arg]
+				goal_list.append([state_var_name, arg, val])
 	if not goal_list.is_empty():
 		# achieve goals, then check whether they're all simultaneously true
 		return goal_list + [multigoal]
@@ -279,8 +282,8 @@ func m_split_multigoal(state, multigoal):
 var verify_goals = true
 
 
-func _apply_action_and_continue(state, task1, todo_list, plan, depth) -> Variant:
-	if verbose >= 3:
+func _apply_action_and_continue(state: Dictionary, task1: Array, todo_list: Array, plan: Array, depth: int) -> Variant:
+	if verbose >= 1:
 		print("Depth %s action %s: " % [depth, task1])
 	var action: Callable = current_domain._action_dict[task1[0]]
 	var new_state = action.get_object().callv(action.get_method(), [state] + task1.slice(1))

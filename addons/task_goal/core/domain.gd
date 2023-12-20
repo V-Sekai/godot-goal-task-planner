@@ -30,7 +30,7 @@ func _m_verify_g(state: Dictionary, method: String, state_var: String, arg: Stri
 
 static func _goals_not_achieved(state: Dictionary, multigoal: Multigoal) -> Dictionary:
 	var unachieved: Dictionary = {}
-	for n in multigoal.state:
+	for n in multigoal.state.keys():
 		for arg in multigoal.state[n]:
 			var val = multigoal.state[n][arg]
 			if val != state[n][arg]:

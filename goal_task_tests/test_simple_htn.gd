@@ -206,7 +206,7 @@ func test_simple_gtn():
 #happen repeatedly until either the taxi arrives or run_lazy_lookahead decides
 #it has tried too many times."""
 #	)
-	var new_state = planner.run_lazy_lookahead(state1.duplicate(true), [["travel", "alice", "park"]], SimpleTemporalNetwork.new())
+	var new_state = planner.run_lazy_lookahead(state1.duplicate(true), [["travel", "alice", "park"]])
 
 #	gut.p("")
 #	gut.p("If run_lazy_lookahead succeeded, then Alice is now at the park,")
