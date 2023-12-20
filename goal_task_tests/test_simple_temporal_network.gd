@@ -21,9 +21,9 @@ func test_get_node_index():
 func test_init_matrix():
 	var num_nodes = 3
 	stn._init_matrix(num_nodes)
-	assert(stn.row_indices.size() == num_nodes)
-	assert(stn.col_indices.size() == num_nodes)
-	assert(stn.values.size() == num_nodes)
+	assert_eq(stn.row_indices.size(), num_nodes)
+	assert_eq(stn.col_indices.size(),num_nodes)
+	assert_eq(stn.values.size(), num_nodes)
 
 
 func test_add_temporal_constraint():
