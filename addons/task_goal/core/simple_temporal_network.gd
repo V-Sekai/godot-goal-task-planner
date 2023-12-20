@@ -164,7 +164,6 @@ func propagate_constraints() -> bool:
 
 func is_consistent() -> bool:
 	if not constraints.size():
-		print("No constraints in the network")
 		return true
 
 	var skip = false
