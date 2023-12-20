@@ -208,7 +208,7 @@ var goal3 = Multigoal.new("goal3", {"loc": {"Mia": "cinema", "Frank": "cinema"}}
 
 
 func before_each():
-	planner.verbose = 0
+	planner.verbose = 3
 	planner._domains.push_back(the_domain)
 	planner.current_domain = the_domain
 	goal1.state["loc"] = {"Mia": "cinema"}
@@ -219,6 +219,7 @@ func before_each():
 	planner.declare_actions([Callable(self, "wait_for_everyone"), Callable(self, "walk"), Callable(self, "call_car"), Callable(self, "ride_car"), Callable(self, "pay_driver"), Callable(self, "call_car_action"), Callable(self, "ride_car_action"), Callable(self, "pay_driver_action"), Callable(self, "do_nothing")])
 
 	planner.declare_unigoal_methods("loc", [Callable(self, "travel_by_foot"), Callable(self, "travel_by_car")])
+	planner.declare_task_methods("travel", [Callable(self, "travel_by_foot"), Callable(self, "travel_by_car")])
 
 	planner.declare_multigoal_methods([planner.m_split_multigoal])
 
@@ -231,10 +232,10 @@ func test_isekai_anime():
 		["ride_car", "Mia", "mall", 0],
 		["pay_driver", "Mia", "mall", 0],
 	]
-	var result = planner.find_plan(state0.duplicate(true), [["loc", "Mia", "mall"]])
+	var result = planner.find_plan(state0.duplicate(true), [["travel", "Mia", "mall"]])
 	assert_eq_deep(result, expected)
 
 	var state1 = state0.duplicate(true)
-	var plan = planner.find_plan(state1, [["loc", "Mia", "mall"], ["loc", "Frank", "mall"], ["wait_for_everyone", ["Mia", "Frank"]], goal3])
+	var plan = planner.find_plan(state1, [["travel", "Mia", "mall"], ["travel", "Frank", "mall"], ["wait_for_everyone", ["Mia", "Frank"]], goal3])
 
 	assert_eq_deep(plan, [["call_car", "Mia", "home_Mia", 0], ["ride_car", "Mia", "mall", 0], ["pay_driver", "Mia", "mall", 0], ["call_car", "Frank", "home_Frank", 0], ["ride_car", "Frank", "mall", 0], ["pay_driver", "Frank", "mall", 0], ["wait_for_everyone", ["Mia", "Frank"]], ["call_car", "Mia", "mall", 3], ["ride_car", "Mia", "cinema", 3], ["pay_driver", "Mia", "cinema", 3], ["call_car", "Frank", "mall", 3], ["ride_car", "Frank", "cinema", 3], ["pay_driver", "Frank", "cinema", 3]])
