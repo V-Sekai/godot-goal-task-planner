@@ -91,6 +91,7 @@ func wait_for_everyone(state, persons):
 			state.time[person] += time
 	return state
 
+
 @export var types = {
 	"character": ["Hero", "Villain"],
 	"location": ["HomeTown", "Dungeon_01", "MarketPlace", "Guild", "BossRoom"],
@@ -102,6 +103,7 @@ func wait_for_everyone(state, persons):
 	["Guild", "HomeTown"]: 1,
 	["Guild", "Dungeon_01"]: 10,
 	["HomeTown", "Guild"]: 10,
+	["MarketPlace", "Guild"]: 10,
 	["Guild", "MarketPlace"]: 12,
 	["HomeTown", "BossRoom"]: 8,
 	["Dungeon_01", "BossRoom"]: 10,
@@ -112,9 +114,13 @@ var state0: Dictionary = {"loc": {"Hero": "HomeTown", "Villain": "Dungeon_01"}, 
 
 var goal1: Multigoal = Multigoal.new("goal1", {"loc": {"Hero": "MarketPlace"}})
 
-var goal2 = Multigoal.new("goal2", {"loc": {"Hero": "Guild", "Villain": "Guild"}})
+var goal2: Multigoal = Multigoal.new("goal2", {"loc": {"Hero": "Guild"}})
 
-var goal3 = Multigoal.new("goal3", {"loc": {"Hero": "BossRoom", "Villain": "BossRoom"}})
+var goal3: Multigoal = Multigoal.new("goal3", {"loc": {"Hero": "Dungeon_01"}})
+
+var goal4: Multigoal = Multigoal.new("goal4", {"loc": {"Hero": "BossRoom"}})
+
+var goal5: Multigoal = Multigoal.new("goal5", {"loc": {"Hero": "MarketPlace"}})
 
 
 func before_each():
@@ -131,6 +137,6 @@ func before_each():
 func test_isekai_litrpg():
 	planner.current_domain = the_domain
 
-	var expected = [["walk", "Hero", "HomeTown", "MarketPlace", 4]]
-	var result = planner.find_plan(state0.duplicate(true), [goal1])
+	var expected = [["walk", "Hero", "HomeTown", "MarketPlace", 4], ["walk", "Hero", "MarketPlace", "Guild", 10], ["walk", "Hero", "Guild", "Dungeon_01", 10], ["walk", "Hero", "Dungeon_01", "BossRoom", 10], ["walk", "Hero", "BossRoom", "MarketPlace", 7]]
+	var result = planner.find_plan(state0.duplicate(true), [goal1, goal2, goal3, goal4, goal5])
 	assert_eq_deep(result, expected)
