@@ -42,8 +42,8 @@ func walk(state, p, x, y, current_time, last_activity_end_time):
 			var arrival_time = current_time + _travel_time
 			var constraint_name = "%s_walk_from_%s_to_%s" % [p, x, y]
 			var constraint = TemporalConstraint.new(current_time, arrival_time, _travel_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
-			print("Character location: ", state.loc[p])
-			print("Travel time: ", _travel_time)
+			# print("Character location: ", state.loc[p])
+			# print("Travel time: ", _travel_time)
 			if planner.current_domain.stn.add_temporal_constraint(constraint):
 				print("walk called")
 				state.loc[p] = y
@@ -62,12 +62,12 @@ func call_car(state, p, x, current_time, last_activity_end_time):
 		var arrival_time = last_activity_end_time + _travel_time
 		var constraint_name = "%s_call_car_at_%s" % [p, x]
 		var constraint = TemporalConstraint.new(current_time, arrival_time, _travel_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
-		print("Character location: ", state.loc[p])
-		print("Travel time: ", _travel_time)
-		print("Car1 location: ", state.loc["car1"])
+		# print("Character location: ", state.loc[p])
+		# print("Travel time: ", _travel_time)
+		# print("Car1 location: ", state.loc["car1"])
 		if planner.current_domain.stn.add_temporal_constraint(constraint):
-			print("Temporal constraint added successfully")
-			print("call_car called")
+			# print("Temporal constraint added successfully")
+			# print("call_car called")
 			state.loc["car1"] = x
 			state.loc[p] = "car1"
 			state["time"] = arrival_time
@@ -93,14 +93,14 @@ func ride_car(state, p, y, current_time, prev_time):
 		var x = state.loc[car]
 		if is_a(x, "location") and x != y:
 			var _travel_time = travel_time(x, y, "car")
-			print("Arrival travel time: %d" % _travel_time)
+			# print("Arrival travel time: %d" % _travel_time)
 			var arrival_time = prev_time + _travel_time
-			print("Arrival arrival time: %d" % arrival_time)
+			# print("Arrival arrival time: %d" % arrival_time)
 			var constraint_name = "%s_ride_car_from_%s_to_%s" % [p, x, y]
 			var constraint = TemporalConstraint.new(prev_time, arrival_time, _travel_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
-			print("Constraint: %s" % constraint.to_dictionary())
-			print("Character location: ", state.loc[p])
-			print("Travel time: ", _travel_time)
+			# print("Constraint: %s" % constraint.to_dictionary())
+			# print("Character location: ", state.loc[p])
+			# print("Travel time: ", _travel_time)
 			if planner.current_domain.stn.add_temporal_constraint(constraint):
 				state.loc[car] = y
 				state.owe[p] = taxi_rate(distance(x, y))
@@ -120,8 +120,8 @@ func pay_driver(state, p, y, current_time, prev_activity_end_time):
 			var post_payment_time = prev_activity_end_time + payment_time
 			var constraint_name = "%s_pay_driver_at_%s" % [p, y]
 			var constraint = TemporalConstraint.new(current_time, post_payment_time, payment_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
-			print("Character location: ", state.loc[p])
-			print("Payment time: ", payment_time)
+			# print("Character location: ", state.loc[p])
+			# print("Payment time: ", payment_time)
 
 			if planner.current_domain.stn.add_temporal_constraint(constraint):
 				state.cash[p] = state.cash[p] - state.owe[p]
@@ -145,7 +145,7 @@ func travel_by_foot(state, p, y):
 	if is_a(p, "character") and is_a(y, "location"):
 		var x = state.loc[p]
 		var _travel_time = travel_time(x, y, "foot")
-		print("Travel time: %s" % _travel_time)
+		# print("Travel time: %s" % _travel_time)
 		if x != y and distance(x, y) <= 2 and _travel_time <= 100:
 			return [["walk", p, x, y, _travel_time]]
 

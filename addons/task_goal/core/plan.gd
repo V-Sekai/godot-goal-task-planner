@@ -441,21 +441,15 @@ func seek_plan(state: Dictionary, todo_list: Array, plan: Array, depth: int) -> 
 	var item1 = todo_list.front()
 	todo_list.pop_front()
 
-	print("Processing item: ", item1)
 
 	if item1 is Multigoal:
-		print("Item is a Multigoal")
 		return _refine_multigoal_and_continue(state, item1, todo_list, plan, depth)
 	elif item1 is Array:
-		print("Item is an Array")
 		if item1[0] in current_domain._action_dict.keys():
-			print("Item is an action")
 			return _apply_action_and_continue(state, item1, todo_list, plan, depth)
 		elif item1[0] in current_domain._task_method_dict.keys():
-			print("Item is a task")
 			return _refine_task_and_continue(state, item1, todo_list, plan, depth)
 		elif item1[0] in current_domain._unigoal_method_dict.keys():
-			print("Item is a unigoal")
 			return _refine_unigoal_and_continue(state, item1, todo_list, plan, depth)
 
 	print("Depth %s: %s isn't an action, task, unigoal, or multigoal\n" % [depth, item1])
