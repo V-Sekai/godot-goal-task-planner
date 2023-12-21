@@ -204,12 +204,12 @@ var state0: Dictionary = {"loc": {"Mia": "home_Mia", "Frank": "home_Frank", "car
 
 var goal2 = Multigoal.new("goal2", {"loc": {"Mia": "mall", "Frank": "mall"}})
 
-var goal3 = Multigoal.new("goal3", {"loc": {"Mia": "cinema", "Frank": "cinema"}, "time": {"Mia": 19, "Frank": 19}})
+var goal3 = Multigoal.new("goal3", {"loc": {"Mia": "cinema", "Frank": "cinema"}, "time": {"Mia": 15, "Frank": 15}})
 
-var goal4 = Multigoal.new("goal4", {"loc": {"Mia": "home_Mia", "Frank": "home_Mia"}, "time": {"Mia": 29, "Frank": 29}})
+var goal4 = Multigoal.new("goal4", {"loc": {"Mia": "home_Mia", "Frank": "home_Mia"}, "time": {"Mia": 25, "Frank": 25}})
 
 func before_each():
-	planner.verbose = 0
+	planner.verbose = 1
 	planner._domains.push_back(the_domain)
 	planner.current_domain = the_domain
 	planner.declare_actions([Callable(self, "walk"), Callable(self, "call_car"), Callable(self, "ride_car"), Callable(self, "pay_driver"), Callable(self, "do_nothing"), Callable(self, "idle")])
@@ -231,5 +231,5 @@ func test_isekai_anime():
 	var plan = planner.find_plan(state1, [goal2, goal3, goal4])
 
 	assert_eq_deep(plan, 
-		[["call_car", "Mia", "home_Mia", 1], ["ride_car", "Mia", "mall", 2], ["pay_driver", "Mia", "mall", 3], ["call_car", "Frank", "home_Frank", 1], ["ride_car", "Frank", "mall", 3], ["pay_driver", "Frank", "mall", 4], ["call_car", "Mia", "mall", 5], ["ride_car", "Mia", "cinema", 6], ["pay_driver", "Mia", "cinema", 7], ["call_car", "Frank", "mall", 7], ["ride_car", "Frank", "cinema", 8], ["pay_driver", "Frank", "cinema", 9], ["idle", "Mia", 19], ["idle", "Frank", 19], ["call_car", "Mia", "cinema", 20], ["ride_car", "Mia", "home_Mia", 22], ["pay_driver", "Mia", "home_Mia", 23], ["call_car", "Frank", "cinema", 20], ["ride_car", "Frank", "home_Mia", 22], ["pay_driver", "Frank", "home_Mia", 23], ["idle", "Mia", 29], ["idle", "Frank", 29]]
+		 [["call_car", "Mia", "home_Mia", 1], ["ride_car", "Mia", "mall", 2], ["pay_driver", "Mia", "mall", 3], ["call_car", "Frank", "home_Frank", 1], ["ride_car", "Frank", "mall", 3], ["pay_driver", "Frank", "mall", 4], ["call_car", "Mia", "mall", 5], ["ride_car", "Mia", "cinema", 6], ["pay_driver", "Mia", "cinema", 7], ["call_car", "Frank", "mall", 7], ["ride_car", "Frank", "cinema", 8], ["pay_driver", "Frank", "cinema", 9], ["idle", "Mia", 15], ["idle", "Frank", 15], ["call_car", "Mia", "cinema", 16], ["ride_car", "Mia", "home_Mia", 18], ["pay_driver", "Mia", "home_Mia", 19], ["call_car", "Frank", "cinema", 16], ["ride_car", "Frank", "home_Mia", 18], ["pay_driver", "Frank", "home_Mia", 19], ["idle", "Mia", 25], ["idle", "Frank", 25]]
 	)
