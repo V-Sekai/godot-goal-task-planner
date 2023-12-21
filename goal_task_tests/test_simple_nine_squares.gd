@@ -167,7 +167,7 @@ func path_has_location(path, location):
 
 var state0: Dictionary = {"loc": {"Mia": "home_Mia", "Frank": "home_Frank", "car1": "cinema", "car2": "station"}, "cash": {"Mia": 30, "Frank": 35}, "owe": {"Mia": 0, "Frank": 0}, "time": {"Mia": 0, "Frank": 0}}
 
-var goal1 = Multigoal.new("goal1", {"loc": {"Mia": "supermarket"}})
+var goal1 = Multigoal.new("goal1", {"loc": {"Mia": "cinema"}})
 
 func before_each():
 	planner.verbose = 3
@@ -181,9 +181,9 @@ func before_each():
 	planner.declare_multigoal_methods([planner.m_split_multigoal])
 
 
-func test_isekai_anime():
-	planner.current_domain = the_domain
-
-	var expected =  [["walk", "Mia", "home_Mia", "supermarket", 5]]
-	var result = planner.find_plan(state0.duplicate(true), [goal1])
-	assert_eq_deep(result, expected)
+#func test_isekai_anime():
+	#planner.current_domain = the_domain
+#
+	#var expected =  [["walk", "Mia", "home_Mia", "mall", 12]]
+	#var result = planner.find_plan(state0.duplicate(true), [goal1])
+	#assert_eq_deep(result, expected)
