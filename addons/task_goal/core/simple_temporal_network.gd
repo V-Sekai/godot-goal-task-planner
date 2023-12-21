@@ -84,6 +84,15 @@ func validate_constraints(from_constraint, to_constraint, min_gap: float, max_ga
 		print("from_constraint does not have 'time_interval': %s" % from_constraint.to_dictionary())
 		return false
 
+	# Check if the duration is within the time interval
+	if from_constraint.duration > (from_constraint.time_interval.y - from_constraint.time_interval.x):
+		print("Duration is longer than time interval for from_constraint")
+		return false
+
+	if to_constraint != null and to_constraint.duration > (to_constraint.time_interval.y - to_constraint.time_interval.x):
+		print("Duration is longer than time interval for to_constraint")
+		return false
+		
 	if not from_constraint.get("duration"):
 		print("from_constraint does not have 'duration': %s" % from_constraint.to_dictionary())
 		return false
@@ -99,7 +108,7 @@ func validate_constraints(from_constraint, to_constraint, min_gap: float, max_ga
 			return false
 
 	# Check if min_gap and max_gap are valid
-	if typeof(min_gap) != TYPE_FLOAT or min_gap < 0 or typeof(max_gap) != TYPE_FLOAT or max_gap < 0:
+	if typeof(min_gap) != TYPE_FLOAT or min_gap < 0 or (typeof(max_gap) != TYPE_FLOAT and max_gap != float('inf')):
 		print("Invalid gap values")
 		return false
 
