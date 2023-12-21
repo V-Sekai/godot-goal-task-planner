@@ -33,16 +33,40 @@ func is_a(variable, type):
 	return variable in types[type]
 
 
-func walk(state, p, x, y, last_activity_end_time):
+func idle(state, person, goal_time):
+	if is_a(person, "character"):
+		var current_time = state["time"][person]
+		if current_time > goal_time:
+			print("idle error: Current time is greater than goal time")
+			return false
+		var _idle_time = goal_time - current_time
+		var constraint_name = "%s_idle_until_%s" % [person, goal_time]
+		var constraint = TemporalConstraint.new(current_time, goal_time, _idle_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
+		if planner.current_domain.stn.add_temporal_constraint(constraint):
+			print("idle called")
+			state["time"][person] = goal_time
+			return state
+		else:
+			if state.verbose > 0:
+				print("idle error: Failed to add temporal constraint %s" % constraint.to_dictionary())
+	
+
+func do_idle(state, person, goal_time):
+	if is_a(person, "character"):
+		if goal_time >= state["time"][person]:
+			return [["idle", person, goal_time]]
+
+
+func walk(state, p, x, y, goal_time):
 	if is_a(p, "character") and is_a(x, "location") and is_a(y, "location") and x != y:
 		if state.loc[p] == x:
 			var current_time = state.time[p]
-			if current_time < last_activity_end_time:
-				current_time = last_activity_end_time
+			if current_time < goal_time:
+				current_time = goal_time
 			var _travel_time = travel_time(x, y, "foot")
-			var arrival_time = last_activity_end_time + _travel_time
+			var arrival_time = goal_time + _travel_time
 			var constraint_name = "%s_walk_from_%s_to_%s" % [p, x, y]
-			var constraint = TemporalConstraint.new(current_time, arrival_time, _travel_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
+			var constraint = TemporalConstraint.new(current_time, arrival_time, goal_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
 			if planner.current_domain.stn.add_temporal_constraint(constraint):
 				print("walk called")
 				state.loc[p] = y
@@ -53,36 +77,39 @@ func walk(state, p, x, y, last_activity_end_time):
 					print("walk error: Failed to add temporal constraint %s" % constraint.to_dictionary())
 
 
-func call_car(state, p, x, last_activity_end_time):
+func call_car(state, p, x, goal_time):
 	if is_a(p, "character") and is_a(x, "location"):
 		var current_time = state.time[p]
-		if current_time < last_activity_end_time:
-			current_time = last_activity_end_time
+		if current_time < goal_time:
+			current_time = goal_time
 		var _travel_time = 1
-		var arrival_time = last_activity_end_time + _travel_time
+		var arrival_time = goal_time + _travel_time
 		var constraint_name = "%s_call_car_at_%s" % [p, x]
-		var constraint = TemporalConstraint.new(current_time, arrival_time, _travel_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
+		var constraint = TemporalConstraint.new(current_time, arrival_time, goal_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
 		if planner.current_domain.stn.add_temporal_constraint(constraint):
-			state.loc["car1"] = x
-			state.loc[p] = "car1"
-			state["time"][p] = arrival_time
+			for car in types["vehicle"]:
+				state.loc[car] = x
+				state.loc[p] = car
+				state["time"][p] = arrival_time
+				return state
+			print("call_car error: No available cars at location.")
 			return state
 		else:
 			print("call_car error: Failed to add temporal constraint %s" % constraint.to_dictionary())
 
 
-func ride_car(state, p, y, last_activity_end_time ):
+func ride_car(state, p, y, goal_time):
 	if is_a(p, "character") and is_a(state.loc[p], "vehicle") and is_a(y, "location"):
 		var car = state.loc[p]
 		var x = state.loc[car]
 		if is_a(x, "location") and x != y:
 			var _travel_time = travel_time(x, y, "car")
 			var current_time = state.time[p]
-			if current_time < last_activity_end_time :
-				current_time = last_activity_end_time 
-			var arrival_time = last_activity_end_time  + _travel_time
+			if current_time < goal_time :
+				current_time = goal_time 
+			var arrival_time = goal_time + _travel_time
 			var constraint_name = "%s_ride_car_from_%s_to_%s" % [p, x, y]
-			var constraint = TemporalConstraint.new(current_time, arrival_time, _travel_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
+			var constraint = TemporalConstraint.new(current_time, arrival_time, goal_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
 			if planner.current_domain.stn.add_temporal_constraint(constraint):
 				state.loc[car] = y
 				state.owe[p] = taxi_rate(distance(x, y))
@@ -90,14 +117,14 @@ func ride_car(state, p, y, last_activity_end_time ):
 				return state
 
 
-func pay_driver(state, p, y, prev_activity_end_time):
+func pay_driver(state, p, y, goal_time):
 	if is_a(p, "character"):
 		if state.cash[p] >= state.owe[p]:
 			var payment_time = 1  # Assuming payment takes no time
 			var current_time = state.time[p]
 			# Ensure the payment starts after the ride
-			if current_time < prev_activity_end_time:
-				current_time = prev_activity_end_time
+			if current_time < goal_time:
+				current_time = goal_time
 			var post_payment_time = current_time + payment_time
 			var constraint_name = "%s_pay_driver_at_%s" % [p, y]
 			var constraint = TemporalConstraint.new(current_time, post_payment_time, payment_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
@@ -134,54 +161,23 @@ func do_nothing(state, p, y):
 func travel_by_foot(state, p, y):
 	if is_a(p, "character") and is_a(y, "location"):
 		var x = state.loc[p]
-		var _travel_time = travel_time(x, y, "foot")
-		# print("Travel time: %s" % _travel_time)
-		if x != y and distance(x, y) <= 2 and _travel_time <= 100:
-			return [["walk", p, x, y, _travel_time]]
+		var goal_time = state.time[p] + travel_time(x, y, "foot")
+		# print("Travel time: %s" % goal_time)
+		if x != y and distance(x, y) <= 2 and goal_time <= 100:
+			return [["walk", p, x, y, goal_time]]
 
 
 func travel_by_car(state, p, y):
 	if is_a(p, "character") and is_a(y, "location"):
 		var x = state.loc[p]
 		if x != y and state.cash[p] >= taxi_rate(distance(x, y)):
-			var actions = [call_car_action(state, p, x), ride_car_action(state, p, y)]
+			var call_car_goal_time = state.time[p] + 1 # Assuming calling a car takes 1 unit of time
+			var ride_car_goal_time = call_car_goal_time + travel_time(x, y, "car")
+			var actions = [["call_car", p, x, call_car_goal_time], ["ride_car", p, y, ride_car_goal_time]]
 			if actions[0][0] == "call_car" and actions[1][0] == "ride_car":
-				actions.append(["wait_for_everyone", ["Mia"]])
-				actions.append(pay_driver_action(state, p, y))
+				var pay_driver_goal_time = ride_car_goal_time + 1 # Assuming payment takes 1 unit of time
+				actions.append(["pay_driver", p, y, pay_driver_goal_time])
 			return actions
-			
-
-func wait_for_everyone(state, persons):
-	var max_time = 0
-	for person in persons:
-		if not is_a(person, "character"):
-			return false
-		var time = state.time[person]  # Get the time for each person
-		if time > max_time:
-			max_time = time  # Update the maximum time
-
-		# Have everyone do nothing until the slowest person arrives
-	for person in persons:
-		var time = max_time - state.time[person]
-		if time > 0:
-			state.time[person] += time
-	return state
-
-
-func call_car_action(state, p, x):
-	var current_time = state.time[p]
-	return ["call_car", p, x, current_time]
-
-
-func ride_car_action(state, p, y):
-	var current_time = state.time[p]
-	var _travel_time = travel_time(state.loc[p], y, "car")
-	return ["ride_car", p, y, current_time]
-
-
-func pay_driver_action(state, p, y):
-	var current_time = state.time[p]
-	return ["pay_driver", p, y, current_time]
 
 
 @export var types = {
@@ -208,11 +204,11 @@ var goal1: Multigoal = Multigoal.new("goal1", {"loc": {"Mia": "mall"}})
 
 var goal2 = Multigoal.new("goal2", {"loc": {"Mia": "mall", "Frank": "mall"}})
 
-var goal3 = Multigoal.new("goal3", {"loc": {"Mia": "cinema", "Frank": "cinema"}})
+var goal3 = Multigoal.new("goal3", {"loc": {"Mia": "cinema", "Frank": "cinema"}, "time": {"Mia": 19, "Frank": 19}})
 
 
 func before_each():
-	planner.verbose = 2
+	planner.verbose = 3
 	planner._domains.push_back(the_domain)
 	planner.current_domain = the_domain
 	goal1.state["loc"] = {"Mia": "cinema"}
@@ -220,24 +216,23 @@ func before_each():
 	goal2.state["loc"] = {"Frank": "cinema"}
 	goal2.state["cash"] = {"Frank": 10}
 	goal2.state["loc"] = {"Mia": "cinema", "Frank": "cinema"}
-	planner.declare_actions([Callable(self, "wait_for_everyone"), Callable(self, "walk"), Callable(self, "call_car"), Callable(self, "ride_car"), Callable(self, "pay_driver"), Callable(self, "call_car_action"), Callable(self, "ride_car_action"), Callable(self, "pay_driver_action"), Callable(self, "do_nothing")])
+	planner.declare_actions([Callable(self, "walk"), Callable(self, "call_car"), Callable(self, "ride_car"), Callable(self, "pay_driver"), Callable(self, "do_nothing"), Callable(self, "idle")])
 
 	planner.declare_unigoal_methods("loc", [Callable(self, "travel_by_foot"), Callable(self, "travel_by_car")])
 	planner.declare_task_methods("travel", [Callable(self, "travel_by_foot"), Callable(self, "travel_by_car")])
-
+	planner.declare_unigoal_methods("time", [Callable(self, "do_idle")])
 	planner.declare_multigoal_methods([planner.m_split_multigoal])
 
 
 func test_isekai_anime():
 	planner.current_domain = the_domain
 
-	var expected = [["call_car", "Mia", "home_Mia", 0], ["ride_car", "Mia", "mall", 0], ["wait_for_everyone", ["Mia"]], ["pay_driver", "Mia", "mall", 0]]
+	var expected = [["call_car", "Mia", "home_Mia", 1], ["ride_car", "Mia", "mall", 2], ["pay_driver", "Mia", "mall", 3]]
 	var result = planner.find_plan(state0.duplicate(true), [["travel", "Mia", "mall"]])
 	assert_eq_deep(result, expected)
 
 	var state1 = state0.duplicate(true)
-	var plan = planner.find_plan(state1, [["travel", "Mia", "mall"], ["travel", "Frank", "mall"], ["wait_for_everyone", ["Mia", "Frank"]], goal3])
+	var plan = planner.find_plan(state1, [["travel", "Mia", "mall"], ["travel", "Frank", "mall"], goal3])
 
 	assert_eq_deep(plan, 
-		[["call_car", "Mia", "home_Mia", 0], ["ride_car", "Mia", "mall", 0], ["wait_for_everyone", ["Mia"]], ["pay_driver", "Mia", "mall", 0], ["call_car", "Frank", "home_Frank", 0], ["ride_car", "Frank", "mall", 0], ["wait_for_everyone", ["Mia"]], ["pay_driver", "Frank", "mall", 0], ["wait_for_everyone", ["Mia", "Frank"]], ["call_car", "Mia", "mall", 3], ["ride_car", "Mia", "cinema", 3], ["wait_for_everyone", ["Mia"]], ["pay_driver", "Mia", "cinema", 3], ["call_car", "Frank", "mall", 3], ["ride_car", "Frank", "cinema", 3], ["wait_for_everyone", ["Mia"]], ["pay_driver", "Frank", "cinema", 3]]
-	)
+		 [["call_car", "Mia", "home_Mia", 1], ["ride_car", "Mia", "mall", 2], ["pay_driver", "Mia", "mall", 3], ["call_car", "Frank", "home_Frank", 1], ["ride_car", "Frank", "mall", 3], ["pay_driver", "Frank", "mall", 4], ["call_car", "Mia", "mall", 5], ["ride_car", "Mia", "cinema", 6], ["pay_driver", "Mia", "cinema", 7], ["call_car", "Frank", "mall", 7], ["ride_car", "Frank", "cinema", 8], ["pay_driver", "Frank", "cinema", 9], ["idle", "Mia", 19], ["idle", "Frank", 19]])
