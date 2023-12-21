@@ -200,22 +200,15 @@ func travel_by_car(state, p, y):
 
 var state0: Dictionary = {"loc": {"Mia": "home_Mia", "Frank": "home_Frank", "car1": "cinema", "car2": "station"}, "cash": {"Mia": 20, "Frank": 15}, "owe": {"Mia": 0, "Frank": 0}, "time": {"Mia": 0, "Frank": 0}}
 
-var goal1: Multigoal = Multigoal.new("goal1", {"loc": {"Mia": "mall"}})
-
 var goal2 = Multigoal.new("goal2", {"loc": {"Mia": "mall", "Frank": "mall"}})
 
 var goal3 = Multigoal.new("goal3", {"loc": {"Mia": "cinema", "Frank": "cinema"}, "time": {"Mia": 19, "Frank": 19}})
 
 
 func before_each():
-	planner.verbose = 3
+	planner.verbose = 1
 	planner._domains.push_back(the_domain)
 	planner.current_domain = the_domain
-	goal1.state["loc"] = {"Mia": "cinema"}
-	goal1.state["cash"] = {"Mia": 10}
-	goal2.state["loc"] = {"Frank": "cinema"}
-	goal2.state["cash"] = {"Frank": 10}
-	goal2.state["loc"] = {"Mia": "cinema", "Frank": "cinema"}
 	planner.declare_actions([Callable(self, "walk"), Callable(self, "call_car"), Callable(self, "ride_car"), Callable(self, "pay_driver"), Callable(self, "do_nothing"), Callable(self, "idle")])
 
 	planner.declare_unigoal_methods("loc", [Callable(self, "travel_by_foot"), Callable(self, "travel_by_car")])
@@ -232,7 +225,8 @@ func test_isekai_anime():
 	assert_eq_deep(result, expected)
 
 	var state1 = state0.duplicate(true)
-	var plan = planner.find_plan(state1, [["travel", "Mia", "mall"], ["travel", "Frank", "mall"], goal3])
+	var plan = planner.find_plan(state1, [goal2, goal3])
 
 	assert_eq_deep(plan, 
-		 [["call_car", "Mia", "home_Mia", 1], ["ride_car", "Mia", "mall", 2], ["pay_driver", "Mia", "mall", 3], ["call_car", "Frank", "home_Frank", 1], ["ride_car", "Frank", "mall", 3], ["pay_driver", "Frank", "mall", 4], ["call_car", "Mia", "mall", 5], ["ride_car", "Mia", "cinema", 6], ["pay_driver", "Mia", "cinema", 7], ["call_car", "Frank", "mall", 7], ["ride_car", "Frank", "cinema", 8], ["pay_driver", "Frank", "cinema", 9], ["idle", "Mia", 19], ["idle", "Frank", 19]])
+		[["call_car", "Mia", "home_Mia", 1], ["ride_car", "Mia", "mall", 2], ["pay_driver", "Mia", "mall", 3], ["call_car", "Frank", "home_Frank", 1], ["ride_car", "Frank", "mall", 3], ["pay_driver", "Frank", "mall", 4], ["call_car", "Mia", "mall", 5], ["ride_car", "Mia", "cinema", 6], ["pay_driver", "Mia", "cinema", 7], ["call_car", "Frank", "mall", 7], ["ride_car", "Frank", "cinema", 8], ["pay_driver", "Frank", "cinema", 9], ["idle", "Mia", 19], ["idle", "Frank", 19]]
+	)
