@@ -17,11 +17,11 @@ func test_performance_with_large_number_of_constraints():
 
 	for i in range(180):
 		var from_constraint = TemporalConstraint.new(i, i+10, 5, TemporalConstraint.TemporalQualifier.AT_START, "from" + str(i))
-		var to_constraint = TemporalConstraint.new(i+11, i+21, 5, TemporalConstraint.TemporalQualifier.AT_END, "to" + str(i))
-
+		var to_constraint = TemporalConstraint.new(i+20, i+30, 5, TemporalConstraint.TemporalQualifier.AT_END, "to" + str(i))
+	
 		# Add constraints and propagate them.
 		stn.add_temporal_constraint(from_constraint, to_constraint, 0, 10)
-	stn.propagate_constraints()
+	
 	assert_true(stn.is_consistent(), "Consistency test failed: STN should be consistent")
 	var end_time = Time.get_ticks_msec()
 	var time_taken = end_time - start_time

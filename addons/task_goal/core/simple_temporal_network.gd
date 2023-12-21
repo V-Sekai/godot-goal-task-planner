@@ -29,7 +29,8 @@ func get_node_index(time_point: int) -> int:
 				return index
 		print("Time point not found in any interval")
 		return -1
-	
+
+var outgoing_edges: Dictionary = {}
 
 func add_temporal_constraint(from_constraint: TemporalConstraint, to_constraint: TemporalConstraint = null, min_gap: float = 0, max_gap: float = 0) -> bool:
 	if not validate_constraints(from_constraint, to_constraint, min_gap, max_gap):
@@ -38,16 +39,36 @@ func add_temporal_constraint(from_constraint: TemporalConstraint, to_constraint:
 
 	add_constraints_to_list(from_constraint, to_constraint)
 
-	var from_node: int = process_constraint(from_constraint)
-	if from_node == -1:
+	var from_node: TemporalConstraint = process_constraint(from_constraint)
+	if not from_node:
 		print("Failed to process from_constraint")
 		return false
-
+	var to_node: TemporalConstraint = null
 	if to_constraint != null:
-		var to_node: int = process_constraint(to_constraint)
-		if to_node == -1:
+		to_node = process_constraint(to_constraint)
+		if not to_node:
 			print("Failed to process to_constraint")
 			return false
+
+		# Add the constraint to the list of outgoing edges for the from_node
+		if from_node in outgoing_edges:
+			outgoing_edges[from_node].append(to_node)
+		else:
+			outgoing_edges[from_node] = [to_node]
+
+	# Update the constraints list with the processed nodes
+	var index_from = constraints.find(from_constraint)
+	if index_from != -1:
+		constraints[index_from] = from_node
+	else:
+		constraints.append(from_node)
+
+	if to_constraint != null:
+		var index_to = constraints.find(to_constraint)
+		if index_to != -1:
+			constraints[index_to] = to_node
+		else:
+			constraints.append(to_node)
 
 	return true
 
@@ -63,6 +84,15 @@ func validate_constraints(from_constraint, to_constraint, min_gap: float, max_ga
 		print("from_constraint does not have 'time_interval': %s" % from_constraint.to_dictionary())
 		return false
 
+	# Check if the duration is within the time interval
+	if from_constraint.duration > (from_constraint.time_interval.y - from_constraint.time_interval.x):
+		print("Duration is longer than time interval for from_constraint")
+		return false
+
+	if to_constraint != null and to_constraint.duration > (to_constraint.time_interval.y - to_constraint.time_interval.x):
+		print("Duration is longer than time interval for to_constraint")
+		return false
+		
 	if not from_constraint.get("duration"):
 		print("from_constraint does not have 'duration': %s" % from_constraint.to_dictionary())
 		return false
@@ -78,7 +108,7 @@ func validate_constraints(from_constraint, to_constraint, min_gap: float, max_ga
 			return false
 
 	# Check if min_gap and max_gap are valid
-	if typeof(min_gap) != TYPE_FLOAT or min_gap < 0 or typeof(max_gap) != TYPE_FLOAT or max_gap < 0:
+	if typeof(min_gap) != TYPE_FLOAT or min_gap < 0 or (typeof(max_gap) != TYPE_FLOAT and max_gap != float('inf')):
 		print("Invalid gap values")
 		return false
 
@@ -93,14 +123,21 @@ func add_constraints_to_list(from_constraint: TemporalConstraint, to_constraint:
 		constraints.append(to_constraint)
 
 
-## This function processes the constraint and returns the node index.
-func process_constraint(constraint: TemporalConstraint) -> int:
+func process_constraint(constraint: TemporalConstraint) -> TemporalConstraint:
 	var interval: Vector2i = constraint.time_interval
 	if interval not in node_indices:
 		node_indices[interval] = num_nodes
 		node_intervals.append(interval)
 		num_nodes += 1
-	return node_indices[interval]
+
+	# Find the index of the original constraint in the constraints list
+	var index = constraints.find(constraint)
+
+	# Replace the original constraint with the processed constraint
+	if index != -1:
+		constraints[index] = constraint
+
+	return constraint
 
 
 func get_temporal_constraint_by_name(constraint_name: String) -> TemporalConstraint:
@@ -110,61 +147,87 @@ func get_temporal_constraint_by_name(constraint_name: String) -> TemporalConstra
 	return null
 
 
-func propagate_constraints() -> bool:
-	var matrix_values = {}
-	for i in range(num_nodes):
-		matrix_values[i] = {}
-		for j in range(num_nodes):
-			matrix_values[i][j] = INF if i != j else 0
-
-	for constraint in constraints:
-		var from_node = get_node_index(constraint.time_interval.x)  # Use start time as from_node
-		var to_node = get_node_index(constraint.time_interval.y)  # Use end time as to_node
-		var weight = constraint.duration
-		if from_node in matrix_values and to_node in matrix_values[from_node]:
-			matrix_values[from_node][to_node] = min(matrix_values[from_node][to_node], weight)
-
-	for k in range(num_nodes):
-		for i in range(num_nodes):
-			for j in range(num_nodes):
-				if matrix_values[i][k] != INF and matrix_values[k][j] != INF:
-					matrix_values[i][j] = min(matrix_values[i][j], matrix_values[i][k] + matrix_values[k][j])
-
-	for i in range(num_nodes):
-		if i in matrix_values[i] and matrix_values[i][i] < 0:
-			print("Negative diagonal value at index %s" % i)
-			return false
-
-	return true
+# Algorithm to return all the possible instantiations of a given path decomposition tree.
+func enumerate_decompositions(vertex: TemporalConstraint) -> Array[Array]:
+	if not vertex is TemporalConstraint:
+		print("Error: vertex must be an instance of TemporalConstraint.")
+		return [[]]
+	# Initialize empty leafs vector
+	var leafs: Array[Array] = [[]]
 	
+	# If vertex is a leaf then
+	if is_leaf(vertex):
+		# Add vertex to leafs
+		leafs.append([vertex])
+	else:
+		# If vertex is OR then
+		if is_or(vertex):
+			# For all children c of vertex do
+			for child: TemporalConstraint in get_children(vertex):
+				# Enumerate decompositions of child and add to leafs
+				leafs += enumerate_decompositions(child)
+		else:
+			# Initialize empty op vector
+			var op: Array[Array]
+			
+			# For all children c of vertex do
+			for child: TemporalConstraint in get_children(vertex):
+				# Enumerate decompositions of child and add to op
+				op += enumerate_decompositions(child)
+			
+			# Leafs = cartesian product(op)
+			leafs = cartesian_product(op)
+	
+	return leafs
+
+
+func is_leaf(vertex: TemporalConstraint) -> bool:
+	# A vertex is a leaf if it has no outgoing edges
+	return not vertex in outgoing_edges or outgoing_edges[vertex].is_empty()
+
+
+func is_or(vertex: TemporalConstraint) -> bool:
+	# A vertex is an OR if it has more than one outgoing edge
+	return vertex in outgoing_edges and outgoing_edges[vertex].size() > 1
+
+
+func get_children(vertex: TemporalConstraint) -> Array[TemporalConstraint]:
+	# The children of a vertex are the destinations of its outgoing edges
+	if vertex in outgoing_edges:
+		var children: Array[TemporalConstraint] = []
+		for child_vertex in outgoing_edges[vertex]:
+			children.append(child_vertex)
+		return children
+	else:
+		return []
+		
+
+# Helper function to calculate the cartesian product of an array of arrays
+func cartesian_product(arrays: Array[Array]) -> Array[Array]:
+	var result: Array[Array] = [[]]
+	
+	for arr in arrays:
+		var temp: Array[Array] = [[]]
+		
+		for res in result:
+			for item in arr:
+				temp.append(res + [item])
+		
+		result = temp
+	
+	return result
+
 
 func is_consistent() -> bool:
 	if not constraints.size():
 		return true
 
-	var skip = false
-	for i in range(constraints.size()):
-		if skip:
-			skip = false
-			continue
-		for j in range(i + 1, constraints.size()):
-			var c1 := constraints[i]
-			if c1 == null:
-				return false
-			var c2 := constraints[j]
-			if c2 == null:
-				return false
-			if c1.time_interval.x < c2.time_interval.y and c2.time_interval.x < c1.time_interval.y:
-				if c1.time_interval.x < c2.time_interval.x:
-					if c2.time_interval.x + c2.duration <= c1.time_interval.y:
-						skip = true
-						break
-				else:
-					if c1.time_interval.x + c1.duration <= c2.time_interval.y:
-						skip = true
-						break
-				print("Inconsistent constraints: " + str(c1.to_dictionary()) + " and " + str(c2.to_dictionary()))
-				return false
+	for constraint in constraints:
+		var decompositions = enumerate_decompositions(constraint)
+		if decompositions.is_empty():
+			print("No valid decompositions for constraint: " + str(constraint.to_dictionary()))
+			return false
+	
 	return true
 
 

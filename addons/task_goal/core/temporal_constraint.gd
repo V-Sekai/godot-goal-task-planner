@@ -24,6 +24,5 @@ func _init(start: int, end: int, duration: int, qualifier: TemporalQualifier, re
 	temporal_qualifier = qualifier
 	resource_name = resource
 
-
 func to_dictionary() -> Dictionary:
 	return {"resource_name": resource_name, "time_interval": time_interval, "duration": duration, "temporal_qualifier": temporal_qualifier}

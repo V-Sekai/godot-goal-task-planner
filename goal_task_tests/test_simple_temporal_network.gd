@@ -18,13 +18,13 @@ func test_to_dictionary():
 
 
 func test_add_temporal_constraint():
-	var from_constraint = TemporalConstraint.new(1, 2, 3, TemporalConstraint.TemporalQualifier.AT_START, "resource")
+	var from_constraint = TemporalConstraint.new(1, 5, 3, TemporalConstraint.TemporalQualifier.AT_START, "resource")
 	var result = stn.add_temporal_constraint(from_constraint)
 	assert_true(result, "add_temporal_constraint should return true when adding valid constraint")
 
 
 func test_get_temporal_constraint_by_name():
-	var constraint = TemporalConstraint.new(1, 2, 3, TemporalConstraint.TemporalQualifier.AT_START, "resource")
+	var constraint = TemporalConstraint.new(1, 5, 3, TemporalConstraint.TemporalQualifier.AT_START, "resource")
 	stn.constraints.append(constraint)
 	var result = stn.get_temporal_constraint_by_name("resource")
 	assert_eq(result, constraint, "get_temporal_constraint_by_name should return the correct constraint")
@@ -36,13 +36,13 @@ func test_is_consistent():
 
 
 func test_update_state():
-	var state = {"constraint": TemporalConstraint.new(1, 2, 3, TemporalConstraint.TemporalQualifier.AT_START, "resource")}
+	var state = {"constraint": TemporalConstraint.new(1, 5, 3, TemporalConstraint.TemporalQualifier.AT_START, "resource")}
 	stn.update_state(state)
 	assert_eq(stn.constraints.size(), 1, "update_state should add the constraint to the constraints array")
 
 
 func test_is_consistent_with():
-	var constraint = TemporalConstraint.new(1, 2, 3, TemporalConstraint.TemporalQualifier.AT_START, "resource")
+	var constraint = TemporalConstraint.new(1, 5, 3, TemporalConstraint.TemporalQualifier.AT_START, "resource")
 	stn.add_temporal_constraint(constraint)
 	var result = stn.is_consistent_with(constraint)
 	assert_true(result, "is_consistent_with should return true when the network is consistent with the given constraint")
@@ -58,8 +58,8 @@ func test_print_constraints_and_check_consistency():
 
 
 func test_validate_constraints():
-	var from_constraint = TemporalConstraint.new(1, 2, 3, TemporalConstraint.TemporalQualifier.AT_START, "resource")
-	var to_constraint = TemporalConstraint.new(4, 5, 6, TemporalConstraint.TemporalQualifier.AT_END, "resource")
+	var from_constraint = TemporalConstraint.new(1, 5, 3, TemporalConstraint.TemporalQualifier.AT_START, "resource")
+	var to_constraint = TemporalConstraint.new(4, 10, 6, TemporalConstraint.TemporalQualifier.AT_END, "resource")
 	assert_true(stn.validate_constraints(from_constraint, to_constraint, 0, 0), "validate_constraints should return true when constraints are valid")
 
 
@@ -72,4 +72,4 @@ func test_add_constraints_to_list():
 func test_process_constraint():
 	var from_constraint = TemporalConstraint.new(1, 2, 3, TemporalConstraint.TemporalQualifier.AT_START, "resource")
 	var node_index = stn.process_constraint(from_constraint)
-	assert_true(node_index != -1, "process_constraint should return a valid node index")
+	assert_true(node_index != null, "process_constraint should return a valid node")

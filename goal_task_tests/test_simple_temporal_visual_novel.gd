@@ -145,7 +145,7 @@ var goal5: Multigoal = Multigoal.new("goal5", {"loc": {"Hero": "MarketPlace"}, "
 
 
 func before_each():
-	planner.verbose = 3
+	planner.verbose = 0
 	planner._domains.push_back(the_domain)
 	planner.current_domain = the_domain
 	planner.declare_actions([Callable(self, "wait_for_everyone"), Callable(self, "walk"), Callable(self, "idle")])
