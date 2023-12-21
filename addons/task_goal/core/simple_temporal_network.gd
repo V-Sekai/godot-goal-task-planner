@@ -8,7 +8,7 @@ extends Resource
 class_name SimpleTemporalNetwork
 
 var constraints: Array[TemporalConstraint] = []
-var stn_matrix: Array[Array] = []
+var stn_matrix: Dictionary = {}
 var num_nodes: int = 0
 var node_intervals: Array[Vector2i] = []
 var node_indices: Dictionary = {}
@@ -22,9 +22,14 @@ func to_dictionary() -> Dictionary:
 	return {"resource_name": resource_name, "constraints": constraints, "matrix": stn_matrix, "number_of_nodes": num_nodes, "node_intervals": node_intervals}
 
 
+var node_index_cache = {}
 func get_node_index(node_interval: Vector2i) -> int:
-	return node_intervals.find(node_interval)
-
+	if node_interval in node_index_cache:
+		return node_index_cache[node_interval]
+	else:
+		var index = node_intervals.find(node_interval)
+		node_index_cache[node_interval] = index
+		return index
 
 func _init_matrix(num_nodes):
 	row_indices.clear()
@@ -119,19 +124,18 @@ func process_constraint(constraint: TemporalConstraint) -> int:
 
 
 func get_value_from_matrix(i: int, j: int) -> float:
-	for entry in stn_matrix:
-		if entry[0] == i and entry[1] == j:
-			return entry[2]
+	if i in stn_matrix and j in stn_matrix[i]:
+		return stn_matrix[i][j]
 	return INF
 
 
-# Update the COO matrix by appending new entries instead of modifying existing ones
 func update_matrix(i: int, j: int, value: float) -> void:
-	for idx in range(stn_matrix.size()):
-		if stn_matrix[idx][0] == i and stn_matrix[idx][1] == j:
-			stn_matrix[idx][2] = value
-			return
-	stn_matrix.append([i, j, value])
+	if i in stn_matrix and j in stn_matrix[i]:
+		stn_matrix[i][j] = value
+	else:
+		if i not in stn_matrix:
+			stn_matrix[i] = {}
+		stn_matrix[i][j] = value
 
 
 ## This function resets the matrix for two nodes.
@@ -170,26 +174,28 @@ func get_temporal_constraint_by_name(constraint_name: String) -> TemporalConstra
 	return null
 
 
+
 func propagate_constraints() -> bool:
-	var matrix_values = []
+	var matrix_values = {}
 	for i in range(num_nodes):
-		matrix_values.append([])
+		matrix_values[i] = {}
 		for j in range(num_nodes):
-			matrix_values[i].append(get_value_from_matrix(i, j))
+			matrix_values[i][j] = get_value_from_matrix(i, j)
 
 	for i in range(num_nodes):
 		for j in range(num_nodes):
 			for k in range(num_nodes):
 				if matrix_values[j][i] != INF and matrix_values[i][k] != INF:
+					if k not in matrix_values[j]:
+						matrix_values[j][k] = INF
 					matrix_values[j][k] = min(matrix_values[j][k], matrix_values[j][i] + matrix_values[i][k])
 
 	for i in range(num_nodes):
-		if matrix_values[i][i] < 0:
+		if i in matrix_values[i] and matrix_values[i][i] < 0:
 			print("Negative diagonal value at index %s" % i)
 			return false
 
 	return true
-
 
 
 func is_consistent() -> bool:
