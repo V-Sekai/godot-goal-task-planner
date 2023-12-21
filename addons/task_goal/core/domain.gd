@@ -33,7 +33,7 @@ static func _goals_not_achieved(state: Dictionary, multigoal: Multigoal) -> Dict
 	for n in multigoal.state.keys():
 		for arg in multigoal.state[n]:
 			var val = multigoal.state[n][arg]
-			if val != state[n][arg]:
+			if state[n].has(arg) and val != state[n][arg]:
 				if not unachieved.has(n):
 					unachieved[n] = {}
 				unachieved[n][arg] = val
