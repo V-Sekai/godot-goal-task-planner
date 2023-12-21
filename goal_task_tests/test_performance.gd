@@ -17,7 +17,7 @@ func test_performance_with_large_number_of_constraints():
 
 	for i in range(197):
 		var from_constraint = TemporalConstraint.new(i, i+10, 5, TemporalConstraint.TemporalQualifier.AT_START, "from" + str(i))
-		var to_constraint = TemporalConstraint.new(i+5, i+15, 5, TemporalConstraint.TemporalQualifier.AT_END, "to" + str(i))
+		var to_constraint = TemporalConstraint.new(i+11, i+21, 5, TemporalConstraint.TemporalQualifier.AT_END, "to" + str(i))
 
 		# Add constraints and propagate them.
 		stn.add_temporal_constraint(from_constraint, to_constraint, 0, 10)
@@ -27,3 +27,4 @@ func test_performance_with_large_number_of_constraints():
 	var time_taken = end_time - start_time
 	gut.p("Time taken for 1000 constraints: " + str(time_taken) + " ms")
 	assert_true(time_taken >= 1000, "Performance test failed: Time taken should be slower than 1 second")
+	
