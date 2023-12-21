@@ -177,18 +177,11 @@ func propagate_constraints() -> bool:
 		for j in range(num_nodes):
 			matrix_values[i].append(get_value_from_matrix(i, j))
 
-	for k in range(num_nodes):
-		for i in range(num_nodes):
-			var ik_value = matrix_values[i][k]
-			if ik_value == INF:
-				continue
-			for j in range(num_nodes):
-				var kj_value = matrix_values[k][j]
-				if kj_value != INF:
-					var ij_value = matrix_values[i][j]
-					if ij_value == INF or ik_value + kj_value < ij_value:
-						update_matrix(i, j, ik_value + kj_value)
-						matrix_values[i][j] = ik_value + kj_value
+	for i in range(num_nodes):
+		for j in range(num_nodes):
+			for k in range(num_nodes):
+				if matrix_values[j][i] != INF and matrix_values[i][k] != INF:
+					matrix_values[j][k] = min(matrix_values[j][k], matrix_values[j][i] + matrix_values[i][k])
 
 	for i in range(num_nodes):
 		if matrix_values[i][i] < 0:
@@ -196,6 +189,7 @@ func propagate_constraints() -> bool:
 			return false
 
 	return true
+
 
 
 func is_consistent() -> bool:
