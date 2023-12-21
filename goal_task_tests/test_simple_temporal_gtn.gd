@@ -217,16 +217,16 @@ func before_each():
 	planner.declare_multigoal_methods([planner.m_split_multigoal])
 
 
-#func test_isekai_anime():
-	#planner.current_domain = the_domain
-#
-	#var expected = [["call_car", "Mia", "home_Mia", 1], ["ride_car", "Mia", "mall", 2], ["pay_driver", "Mia", "mall", 3]]
-	#var result = planner.find_plan(state0.duplicate(true), [["travel", "Mia", "mall"]])
-	#assert_eq_deep(result, expected)
-#
-	#var state1 = state0.duplicate(true)
-	#var plan = planner.find_plan(state1, [goal2, goal3])
-#
-	#assert_eq_deep(plan, 
-		#[["call_car", "Mia", "home_Mia", 1], ["ride_car", "Mia", "mall", 2], ["pay_driver", "Mia", "mall", 3], ["call_car", "Frank", "home_Frank", 1], ["ride_car", "Frank", "mall", 3], ["pay_driver", "Frank", "mall", 4], ["call_car", "Mia", "mall", 5], ["ride_car", "Mia", "cinema", 6], ["pay_driver", "Mia", "cinema", 7], ["call_car", "Frank", "mall", 7], ["ride_car", "Frank", "cinema", 8], ["pay_driver", "Frank", "cinema", 9], ["idle", "Mia", 19], ["idle", "Frank", 19]]
-	#)
+func test_isekai_anime():
+	planner.current_domain = the_domain
+
+	var expected = [["call_car", "Mia", "home_Mia", 1], ["ride_car", "Mia", "mall", 2], ["pay_driver", "Mia", "mall", 3]]
+	var result = planner.find_plan(state0.duplicate(true), [["travel", "Mia", "mall"]])
+	assert_eq_deep(result, expected)
+
+	var state1 = state0.duplicate(true)
+	var plan = planner.find_plan(state1, [goal2, goal3])
+
+	assert_eq_deep(plan, 
+		[["call_car", "Mia", "home_Mia", 1], ["ride_car", "Mia", "mall", 2], ["pay_driver", "Mia", "mall", 3], ["call_car", "Frank", "home_Frank", 1], ["ride_car", "Frank", "mall", 3], ["pay_driver", "Frank", "mall", 4], ["call_car", "Mia", "mall", 5], ["ride_car", "Mia", "cinema", 6], ["pay_driver", "Mia", "cinema", 7], ["call_car", "Frank", "mall", 7], ["ride_car", "Frank", "cinema", 8], ["pay_driver", "Frank", "cinema", 9], ["idle", "Mia", 19], ["idle", "Frank", 19]]
+	)
