@@ -72,4 +72,4 @@ func test_add_constraints_to_list():
 func test_process_constraint():
 	var from_constraint = TemporalConstraint.new(1, 2, 3, TemporalConstraint.TemporalQualifier.AT_START, "resource")
 	var node_index = stn.process_constraint(from_constraint)
-	assert_true(node_index != -1, "process_constraint should return a valid node index")
+	assert_true(node_index != null, "process_constraint should return a valid node")
