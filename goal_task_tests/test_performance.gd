@@ -15,14 +15,14 @@ func before_each():
 func test_performance_with_large_number_of_constraints():
 	var start_time = Time.get_ticks_msec()
 
-	for i in range(25):
+	for i in range(42):
 		var from_constraint = TemporalConstraint.new(i, i+10, 5, TemporalConstraint.TemporalQualifier.AT_START, "from" + str(i))
 		var to_constraint = TemporalConstraint.new(i+5, i+15, 5, TemporalConstraint.TemporalQualifier.AT_END, "to" + str(i))
 
 		# Add constraints and propagate them.
 		stn.add_temporal_constraint(from_constraint, to_constraint, 0, 10)
-		stn.propagate_constraints()
-
+	stn.propagate_constraints()
+	assert_true(stn.is_consistent(), "Consistency test failed: STN should be consistent")
 	var end_time = Time.get_ticks_msec()
 	var time_taken = end_time - start_time
 	gut.p("Time taken for 1000 constraints: " + str(time_taken) + " ms")
