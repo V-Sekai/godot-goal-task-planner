@@ -15,7 +15,7 @@ func before_each():
 func test_performance_with_large_number_of_constraints():
 	var start_time = Time.get_ticks_msec()
 
-	for i in range(42):
+	for i in range(200):
 		var from_constraint = TemporalConstraint.new(i, i+10, 5, TemporalConstraint.TemporalQualifier.AT_START, "from" + str(i))
 		var to_constraint = TemporalConstraint.new(i+5, i+15, 5, TemporalConstraint.TemporalQualifier.AT_END, "to" + str(i))
 

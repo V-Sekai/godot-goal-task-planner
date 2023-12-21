@@ -171,18 +171,27 @@ func get_temporal_constraint_by_name(constraint_name: String) -> TemporalConstra
 
 
 func propagate_constraints() -> bool:
+	var matrix_values = []
+	for i in range(num_nodes):
+		matrix_values.append([])
+		for j in range(num_nodes):
+			matrix_values[i].append(get_value_from_matrix(i, j))
+
 	for k in range(num_nodes):
 		for i in range(num_nodes):
+			var ik_value = matrix_values[i][k]
+			if ik_value == INF:
+				continue
 			for j in range(num_nodes):
-				var ik_value = get_value_from_matrix(i, k)
-				var kj_value = get_value_from_matrix(k, j)
-				if ik_value != INF and kj_value != INF:
-					var ij_value = get_value_from_matrix(i, j)
+				var kj_value = matrix_values[k][j]
+				if kj_value != INF:
+					var ij_value = matrix_values[i][j]
 					if ij_value == INF or ik_value + kj_value < ij_value:
 						update_matrix(i, j, ik_value + kj_value)
+						matrix_values[i][j] = ik_value + kj_value
 
 	for i in range(num_nodes):
-		if get_value_from_matrix(i, i) < 0:
+		if matrix_values[i][i] < 0:
 			print("Negative diagonal value at index %s" % i)
 			return false
 
