@@ -40,7 +40,7 @@ func walk(state, p, x, y, last_activity_end_time):
 			if current_time < last_activity_end_time:
 				current_time = last_activity_end_time
 			var _travel_time = travel_time(x, y, "foot")
-			var arrival_time = current_time + _travel_time
+			var arrival_time = last_activity_end_time + _travel_time
 			var constraint_name = "%s_walk_from_%s_to_%s" % [p, x, y]
 			var constraint = TemporalConstraint.new(current_time, arrival_time, _travel_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
 			if planner.current_domain.stn.add_temporal_constraint(constraint):
@@ -71,27 +71,16 @@ func call_car(state, p, x, last_activity_end_time):
 			print("call_car error: Failed to add temporal constraint %s" % constraint.to_dictionary())
 
 
-func travel_time(x, y, mode):
-	var _distance = distance(x, y)
-	if mode == "foot":
-		return _distance / 1
-	elif mode == "car":
-		return _distance / 5
-	else:
-		print("Error: Invalid mode of transportation")
-		return -1
-
-
-func ride_car(state, p, y, prev_time):
+func ride_car(state, p, y, last_activity_end_time ):
 	if is_a(p, "character") and is_a(state.loc[p], "vehicle") and is_a(y, "location"):
 		var car = state.loc[p]
 		var x = state.loc[car]
 		if is_a(x, "location") and x != y:
 			var _travel_time = travel_time(x, y, "car")
 			var current_time = state.time[p]
-			if current_time < prev_time:
-				current_time = prev_time
-			var arrival_time = prev_time + _travel_time
+			if current_time < last_activity_end_time :
+				current_time = last_activity_end_time 
+			var arrival_time = last_activity_end_time  + _travel_time
 			var constraint_name = "%s_ride_car_from_%s_to_%s" % [p, x, y]
 			var constraint = TemporalConstraint.new(current_time, arrival_time, _travel_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
 			if planner.current_domain.stn.add_temporal_constraint(constraint):
@@ -109,8 +98,7 @@ func pay_driver(state, p, y, prev_activity_end_time):
 			# Ensure the payment starts after the ride
 			if current_time < prev_activity_end_time:
 				current_time = prev_activity_end_time
-
-			var post_payment_time = prev_activity_end_time + payment_time
+			var post_payment_time = current_time + payment_time
 			var constraint_name = "%s_pay_driver_at_%s" % [p, y]
 			var constraint = TemporalConstraint.new(current_time, post_payment_time, payment_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
 			if planner.current_domain.stn.add_temporal_constraint(constraint):
@@ -126,6 +114,17 @@ func pay_driver(state, p, y, prev_activity_end_time):
 				return false
 
 
+func travel_time(x, y, mode):
+	var _distance = distance(x, y)
+	if mode == "foot":
+		return _distance / 1
+	elif mode == "car":
+		return _distance / 5
+	else:
+		print("Error: Invalid mode of transportation")
+		return -1
+
+		
 func do_nothing(state, p, y):
 	if is_a(p, "character"):
 		state["time"][p] += y
@@ -147,9 +146,10 @@ func travel_by_car(state, p, y):
 		if x != y and state.cash[p] >= taxi_rate(distance(x, y)):
 			var actions = [call_car_action(state, p, x), ride_car_action(state, p, y)]
 			if actions[0][0] == "call_car" and actions[1][0] == "ride_car":
+				actions.append(["wait_for_everyone", ["Mia"]])
 				actions.append(pay_driver_action(state, p, y))
 			return actions
-
+			
 
 func wait_for_everyone(state, persons):
 	var max_time = 0
@@ -170,19 +170,18 @@ func wait_for_everyone(state, persons):
 
 func call_car_action(state, p, x):
 	var current_time = state.time[p]
-	var _travel_time = 1  # Assuming it takes 1 unit of time to call a car
-	return ["call_car", p, x, current_time + _travel_time]
+	return ["call_car", p, x, current_time]
 
 
 func ride_car_action(state, p, y):
 	var current_time = state.time[p]
 	var _travel_time = travel_time(state.loc[p], y, "car")
-	return ["ride_car", p, y, current_time + _travel_time]
+	return ["ride_car", p, y, current_time]
 
 
 func pay_driver_action(state, p, y):
 	var current_time = state.time[p]
-	return ["pay_driver", p, y, current_time + 1]
+	return ["pay_driver", p, y, current_time]
 
 
 @export var types = {
@@ -232,11 +231,13 @@ func before_each():
 func test_isekai_anime():
 	planner.current_domain = the_domain
 
-	var expected = [["call_car", "Mia", "home_Mia", 1], ["ride_car", "Mia", "mall", 1], ["pay_driver", "Mia", "mall", 1]]
+	var expected = [["call_car", "Mia", "home_Mia", 0], ["ride_car", "Mia", "mall", 0], ["wait_for_everyone", ["Mia"]], ["pay_driver", "Mia", "mall", 0]]
 	var result = planner.find_plan(state0.duplicate(true), [["travel", "Mia", "mall"]])
 	assert_eq_deep(result, expected)
 
 	var state1 = state0.duplicate(true)
 	var plan = planner.find_plan(state1, [["travel", "Mia", "mall"], ["travel", "Frank", "mall"], ["wait_for_everyone", ["Mia", "Frank"]], goal3])
 
-	assert_eq_deep(plan, [["call_car", "Mia", "home_Mia", 1], ["ride_car", "Mia", "mall", 1], ["pay_driver", "Mia", "mall", 1], ["call_car", "Frank", "home_Frank", 1], ["ride_car", "Frank", "mall", 2], ["pay_driver", "Frank", "mall", 1], ["wait_for_everyone", ["Mia", "Frank"]], ["call_car", "Mia", "mall", 3], ["ride_car", "Mia", "cinema", 3], ["pay_driver", "Mia", "cinema", 3], ["call_car", "Frank", "mall", 3], ["ride_car", "Frank", "cinema", 3], ["pay_driver", "Frank", "cinema", 3]])
+	assert_eq_deep(plan, 
+		[["call_car", "Mia", "home_Mia", 0], ["ride_car", "Mia", "mall", 0], ["wait_for_everyone", ["Mia"]], ["pay_driver", "Mia", "mall", 0], ["call_car", "Frank", "home_Frank", 0], ["ride_car", "Frank", "mall", 0], ["wait_for_everyone", ["Mia"]], ["pay_driver", "Frank", "mall", 0], ["wait_for_everyone", ["Mia", "Frank"]], ["call_car", "Mia", "mall", 3], ["ride_car", "Mia", "cinema", 3], ["wait_for_everyone", ["Mia"]], ["pay_driver", "Mia", "cinema", 3], ["call_car", "Frank", "mall", 3], ["ride_car", "Frank", "cinema", 3], ["wait_for_everyone", ["Mia"]], ["pay_driver", "Frank", "cinema", 3]]
+	)
