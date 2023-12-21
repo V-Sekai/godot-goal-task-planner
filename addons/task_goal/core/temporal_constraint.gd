@@ -26,3 +26,6 @@ func _init(start: int, end: int, duration: int, qualifier: TemporalQualifier, re
 
 func to_dictionary() -> Dictionary:
 	return {"resource_name": resource_name, "time_interval": time_interval, "duration": duration, "temporal_qualifier": temporal_qualifier}
+
+static func sort_func(a: TemporalConstraint, b: TemporalConstraint) -> bool:
+	return a.time_interval.x < b.time_interval.x or (a.time_interval.x == b.time_interval.x and a.time_interval.y < b.time_interval.y)

@@ -222,6 +222,7 @@ func is_consistent() -> bool:
 	if not constraints.size():
 		return true
 
+	constraints.sort_custom(TemporalConstraint.sort_func)
 	for constraint in constraints:
 		var decompositions = enumerate_decompositions(constraint)
 		if decompositions.is_empty():
