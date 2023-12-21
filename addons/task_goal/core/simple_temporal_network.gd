@@ -149,13 +149,16 @@ func get_temporal_constraint_by_name(constraint_name: String) -> TemporalConstra
 
 # Algorithm to return all the possible instantiations of a given path decomposition tree.
 func enumerate_decompositions(vertex: TemporalConstraint) -> Array[Array]:
+	if not vertex is TemporalConstraint:
+		print("Error: vertex must be an instance of TemporalConstraint.")
+		return [[]]
 	# Initialize empty leafs vector
-	var leafs: Array[Array] = []
+	var leafs: Array[Array] = [[]]
 	
 	# If vertex is a leaf then
 	if is_leaf(vertex):
 		# Add vertex to leafs
-		leafs.append(vertex)
+		leafs.append([vertex])
 	else:
 		# If vertex is OR then
 		if is_or(vertex):
@@ -204,7 +207,7 @@ func cartesian_product(arrays: Array[Array]) -> Array[Array]:
 	var result: Array[Array] = [[]]
 	
 	for arr in arrays:
-		var temp: Array = []
+		var temp: Array[Array] = [[]]
 		
 		for res in result:
 			for item in arr:

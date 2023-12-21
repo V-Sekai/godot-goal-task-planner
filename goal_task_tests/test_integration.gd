@@ -25,7 +25,7 @@ func m_travel_location(state, entity, location):
 	return false
 
 
-func has_entity_met_entity(state: Dictionary, e_1: String, e_2, place: String) -> Variant:
+func has_entity_met_entity(_state: Dictionary, e_1: String, e_2, place: String) -> Variant:
 	return [Multigoal.new("entities_together", {"at": {e_1: place, e_2: place}})]
 
 

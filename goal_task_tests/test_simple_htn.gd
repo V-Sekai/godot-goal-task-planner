@@ -40,9 +40,9 @@ var state0: Dictionary = {"loc": {"alice": "home_a", "bob": "home_b", "taxi1": "
 # Helper functions:
 
 
-func taxi_rate(dist):
+func taxi_rate(dist_):
 	"In this domain, the taxi fares are quite low :-)"
-	return 1.5 + 0.5 * dist
+	return 1.5 + 0.5 * dist_
 
 
 func distance(x, y):

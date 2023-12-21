@@ -41,7 +41,7 @@ func walk(state, p, x, y, goal_time):
 			var constraint_name = "%s_walk_from_%s_to_%s" % [p, x, y]
 			var constraint = TemporalConstraint.new(current_time, arrival_time, _travel_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
 			if planner.current_domain.stn.add_temporal_constraint(constraint):
-				print("walk called")
+				#print("walk called")
 				state.loc[p] = y
 				state["time"][p] = arrival_time
 				return state
@@ -71,7 +71,7 @@ func idle(state, person, goal_time):
 		var constraint_name = "%s_idle_until_%s" % [person, goal_time]
 		var constraint = TemporalConstraint.new(current_time, goal_time, _idle_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
 		if planner.current_domain.stn.add_temporal_constraint(constraint):
-			print("idle called")
+			#print("idle called")
 			state["time"][person] = goal_time
 			return state
 		else:
@@ -89,10 +89,10 @@ func travel_by_foot(state, p, y):
 	if is_a(p, "character") and is_a(y, "location"):
 		var x = state.loc[p]
 		var _travel_time = travel_time(x, y, "foot")
-		print("Travel time from", x, "to", y, ":", _travel_time)
+		#print("Travel time from", x, "to", y, ":", _travel_time)
 		if x != y:
 			var goal_time = state.time[p] + _travel_time
-			print("Goal time for", p, "to reach", y, ":", goal_time)
+			#print("Goal time for", p, "to reach", y, ":", goal_time)
 			return [["walk", p, x, y, goal_time]]
 			
 
@@ -147,7 +147,7 @@ var goal5: Multigoal = Multigoal.new("goal5", {"loc": {"Seb": "Home"}, "time": {
 
 
 func before_each():
-	planner.verbose = 3
+	planner.verbose = 0
 	planner._domains.push_back(the_domain)
 	planner.current_domain = the_domain
 	planner.declare_actions([Callable(self, "wait_for_everyone"), Callable(self, "walk"), Callable(self, "idle")])

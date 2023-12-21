@@ -45,7 +45,7 @@ func assemble_sandwich(state: Dictionary) -> Dictionary:
 	return state
 
 
-func make_complete_sandwich(state: Dictionary) -> Array:
+func make_complete_sandwich(_state: Dictionary) -> Array:
 	return [["take_tomato"], ["take_cheese"], ["take_bread"], ["take_lettuce"], ["assemble_sandwich"]]
 
 
