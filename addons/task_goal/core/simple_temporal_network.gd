@@ -8,41 +8,28 @@ extends Resource
 class_name SimpleTemporalNetwork
 
 var constraints: Array[TemporalConstraint] = []
-var stn_matrix: Dictionary = {}
 var num_nodes: int = 0
 var node_intervals: Array[Vector2i] = []
 var node_indices: Dictionary = {}
 
-var row_indices = []
-var col_indices = []
-var values = []
-
+var node_index_cache = {}
 
 func to_dictionary() -> Dictionary:
-	return {"resource_name": resource_name, "constraints": constraints, "matrix": stn_matrix, "number_of_nodes": num_nodes, "node_intervals": node_intervals}
+	return {"resource_name": resource_name, "constraints": constraints, "number_of_nodes": num_nodes, "node_intervals": node_intervals}
 
 
-var node_index_cache = {}
-func get_node_index(node_interval: Vector2i) -> int:
-	if node_interval in node_index_cache:
-		return node_index_cache[node_interval]
+func get_node_index(time_point: int) -> int:
+	if time_point in node_index_cache:
+		return node_index_cache[time_point]
 	else:
-		var index = node_intervals.find(node_interval)
-		node_index_cache[node_interval] = index
-		return index
-
-func _init_matrix(num_nodes):
-	row_indices.clear()
-	row_indices.resize(num_nodes)
-	col_indices.clear()
-	col_indices.resize(num_nodes)
-	values.clear()
-	values.resize(num_nodes)
-	for i in range(num_nodes):
-		row_indices[i] = 0
-		col_indices[i] = 0
-		values[i] = INF
-
+		for interval in node_intervals:
+			if interval.x <= time_point and time_point <= interval.y:
+				var index = node_indices[interval]
+				node_index_cache[time_point] = index
+				return index
+		print("Time point not found in any interval")
+		return -1
+	
 
 func add_temporal_constraint(from_constraint: TemporalConstraint, to_constraint: TemporalConstraint = null, min_gap: float = 0, max_gap: float = 0) -> bool:
 	if not validate_constraints(from_constraint, to_constraint, min_gap, max_gap):
@@ -60,12 +47,6 @@ func add_temporal_constraint(from_constraint: TemporalConstraint, to_constraint:
 		var to_node: int = process_constraint(to_constraint)
 		if to_node == -1:
 			print("Failed to process to_constraint")
-			return false
-
-		update_matrix(from_node, to_node, from_constraint.duration)
-	else:
-		if not update_matrix_single(from_node):
-			print("Failed to update matrix for single from_node")
 			return false
 
 	return true
@@ -119,52 +100,7 @@ func process_constraint(constraint: TemporalConstraint) -> int:
 		node_indices[interval] = num_nodes
 		node_intervals.append(interval)
 		num_nodes += 1
-		_init_matrix(num_nodes)  # Pass num_nodes as an argument here
 	return node_indices[interval]
-
-
-func get_value_from_matrix(i: int, j: int) -> float:
-	if i in stn_matrix and j in stn_matrix[i]:
-		return stn_matrix[i][j]
-	return INF
-
-
-func update_matrix(i: int, j: int, value: float) -> void:
-	if i in stn_matrix and j in stn_matrix[i]:
-		stn_matrix[i][j] = value
-	else:
-		if i not in stn_matrix:
-			stn_matrix[i] = {}
-		stn_matrix[i][j] = value
-
-
-## This function resets the matrix for two nodes.
-func reset_matrix(from_node: int, to_node: int):
-	if not stn_matrix:
-		return
-
-	# Check if indices are valid.
-	if from_node < 0 or from_node + 1 >= stn_matrix.size() or to_node < 0 or to_node + 1 >= stn_matrix.size():
-		print("Error: Index out of range.")
-		return
-
-	stn_matrix[from_node][from_node + 1] = INF
-	stn_matrix[from_node + 1][from_node] = -INF
-	stn_matrix[to_node][to_node + 1] = INF
-	stn_matrix[to_node + 1][to_node] = -INF
-
-
-## This function updates the matrix for a single node and returns a boolean value.
-func update_matrix_single(from_node: int) -> bool:
-	if not stn_matrix:
-		return true
-	if from_node + 1 >= stn_matrix.size():
-		return false
-
-	if typeof(stn_matrix[from_node + 1]) != TYPE_ARRAY:
-		stn_matrix[from_node + 1] = []
-
-	return true
 
 
 func get_temporal_constraint_by_name(constraint_name: String) -> TemporalConstraint:
@@ -174,21 +110,25 @@ func get_temporal_constraint_by_name(constraint_name: String) -> TemporalConstra
 	return null
 
 
-
 func propagate_constraints() -> bool:
 	var matrix_values = {}
 	for i in range(num_nodes):
 		matrix_values[i] = {}
 		for j in range(num_nodes):
-			matrix_values[i][j] = get_value_from_matrix(i, j)
+			matrix_values[i][j] = INF if i != j else 0
 
-	for i in range(num_nodes):
-		for j in range(num_nodes):
-			for k in range(num_nodes):
-				if matrix_values[j][i] != INF and matrix_values[i][k] != INF:
-					if k not in matrix_values[j]:
-						matrix_values[j][k] = INF
-					matrix_values[j][k] = min(matrix_values[j][k], matrix_values[j][i] + matrix_values[i][k])
+	for constraint in constraints:
+		var from_node = get_node_index(constraint.time_interval.x)  # Use start time as from_node
+		var to_node = get_node_index(constraint.time_interval.y)  # Use end time as to_node
+		var weight = constraint.duration
+		if from_node in matrix_values and to_node in matrix_values[from_node]:
+			matrix_values[from_node][to_node] = min(matrix_values[from_node][to_node], weight)
+
+	for k in range(num_nodes):
+		for i in range(num_nodes):
+			for j in range(num_nodes):
+				if matrix_values[i][k] != INF and matrix_values[k][j] != INF:
+					matrix_values[i][j] = min(matrix_values[i][j], matrix_values[i][k] + matrix_values[k][j])
 
 	for i in range(num_nodes):
 		if i in matrix_values[i] and matrix_values[i][i] < 0:
@@ -196,7 +136,7 @@ func propagate_constraints() -> bool:
 			return false
 
 	return true
-
+	
 
 func is_consistent() -> bool:
 	if not constraints.size():

@@ -17,20 +17,6 @@ func test_to_dictionary():
 	assert_eq(typeof(result), TYPE_DICTIONARY, "to_dictionary should return a Dictionary")
 
 
-func test_get_node_index():
-	var node_interval = Vector2i(1, 2)
-	var index = stn.get_node_index(node_interval)
-	assert_eq(index, -1, "get_node_index should return -1 for non-existing node")
-
-
-func test_init_matrix():
-	var num_nodes = 3
-	stn._init_matrix(num_nodes)
-	assert_eq(stn.row_indices.size(), num_nodes)
-	assert_eq(stn.col_indices.size(), num_nodes)
-	assert_eq(stn.values.size(), num_nodes)
-
-
 func test_add_temporal_constraint():
 	var from_constraint = TemporalConstraint.new(1, 2, 3, TemporalConstraint.TemporalQualifier.AT_START, "resource")
 	var result = stn.add_temporal_constraint(from_constraint)
@@ -42,13 +28,6 @@ func test_get_temporal_constraint_by_name():
 	stn.constraints.append(constraint)
 	var result = stn.get_temporal_constraint_by_name("resource")
 	assert_eq(result, constraint, "get_temporal_constraint_by_name should return the correct constraint")
-
-
-func test_propagate_constraints():
-	var num_nodes = 3
-	stn._init_matrix(num_nodes)
-	var result = stn.propagate_constraints()
-	assert_true(result, "propagate_constraints should return true when there are no negative diagonal values")
 
 
 func test_is_consistent():
@@ -94,29 +73,3 @@ func test_process_constraint():
 	var from_constraint = TemporalConstraint.new(1, 2, 3, TemporalConstraint.TemporalQualifier.AT_START, "resource")
 	var node_index = stn.process_constraint(from_constraint)
 	assert_true(node_index != -1, "process_constraint should return a valid node index")
-
-
-func test_reset_matrix():
-	var from_node = 0
-	var to_node = 1
-	stn.reset_matrix(from_node, to_node)
-	assert_true(stn.is_consistent(), "reset_matrix shoudl return true when the matrix is reset")
-
-
-func test_update_matrix_single():
-	var from_node = 0
-	assert_true(stn.update_matrix_single(from_node), "update_matrix_single should return true when matrix is updated successfully")
-
-
-func test_init_and_reset_matrix():
-	var from_node = 0
-	var to_node = 1
-	stn._init_matrix(2)
-	stn.reset_matrix(from_node, to_node)
-	assert_true(stn.is_consistent(), "reset_matrix should return true when the matrix is reset")
-
-
-func test_init_and_update_matrix_single():
-	var from_node = 0
-	stn._init_matrix(1)
-	assert_true(stn.update_matrix_single(from_node), "update_matrix_single should return true when matrix is updated successfully")
