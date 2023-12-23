@@ -67,7 +67,6 @@ func idle(state, person, goal_time):
 		var constraint_name = "%s_idle_until_%s" % [person, goal_time]
 		var constraint = TemporalConstraint.new(current_time, goal_time, _idle_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
 		if state["stn"][person].add_temporal_constraint(constraint):
-			print("idle called")
 			state["time"][person] = goal_time
 			return state
 		else:
@@ -209,7 +208,7 @@ var goal3 = Multigoal.new("goal3", {"loc": {"Mia": "cinema", "Frank": "cinema"},
 var goal4 = Multigoal.new("goal4", {"loc": {"Mia": "home_Mia", "Frank": "home_Mia"}, "time": {"Mia": 25, "Frank": 25}})
 
 func before_each():
-	planner.verbose = 1
+	planner.verbose = 0
 	planner._domains.push_back(the_domain)
 	planner.current_domain = the_domain
 	planner.declare_actions([Callable(self, "walk"), Callable(self, "call_car"), Callable(self, "ride_car"), Callable(self, "pay_driver"), Callable(self, "do_nothing"), Callable(self, "idle")])

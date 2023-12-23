@@ -245,7 +245,6 @@ func before_each():
 	
 
 func test_isekai_anime():
-	planner.verbose = 1
 	planner.current_domain = the_domain
 
 	var expected = [["walk", "Mia", "home_Mia", "cinema", 12], ["walk", "Mia", "cinema", "home_Frank", 16], ["walk", "Mia", "home_Frank", "hospital", 36], ["walk", "Mia", "hospital", "beach", 47], ["walk", "Mia", "beach", "supermarket", 59], ["idle", "Mia", 127]]
@@ -272,7 +271,6 @@ func generate_random_plan():
 	
 	
 func test_random_plans():
-	planner.verbose = 0
 	randomize()
 	var result = []
 	for i in range(100):
@@ -287,7 +285,6 @@ func test_random_plans():
 
 
 func test_visit_all_the_doors():
-	planner.verbose = 0
 	var door_goals = []
 	for location in types["location"]:
 		var goal = ["travel", "Mia", location]
