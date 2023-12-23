@@ -224,7 +224,7 @@ func before_each():
 	planner.current_domain = the_domain
 	planner.declare_actions([Callable(self, "wait_for_everyone"), Callable(self, "walk"), Callable(self, "do_nothing"), Callable(self, "idle"), Callable(self, "find_path")])
 
-	planner.declare_unigoal_methods("loc", [Callable(self, "travel_by_foot")])
+	planner.declare_unigoal_methods("loc", [Callable(self, "travel_by_foot"), Callable(self, "find_path")])
 	planner.declare_unigoal_methods("time", [Callable(self, "do_idle")])
 	planner.declare_task_methods("travel", [Callable(self, "travel_by_foot"), Callable(self, "find_path")])
 	planner.declare_multigoal_methods([planner.m_split_multigoal])
@@ -254,8 +254,6 @@ func generate_random_plan():
 			shuffled_state["loc"][key] = possible_values[0]
 			shuffled_state["time"][key] = 100
 			gut.p("Goal %s" % shuffled_state)
-			gut.p("Destination %s" % possible_values[0])
-			travel_destinations.push_back(["travel", key, possible_values[0]])
 			break
 	travel_destinations.push_back(Multigoal.new("goal1", shuffled_state))
 	return travel_destinations
