@@ -241,7 +241,7 @@ func before_each():
 	
 
 func test_isekai_anime():
-	planner.verbose = 1
+	planner.verbose = 0
 	planner.current_domain = the_domain
 
 	var expected =  [["walk", "Mia", "home_Mia", "cinema", 12], ["walk", "Mia", "cinema", "home_Frank", 16], ["walk", "Mia", "home_Frank", "hospital", 36], ["walk", "Mia", "hospital", "beach", 47], ["walk", "Mia", "beach", "supermarket", 59], ["idle", "Mia", 127]]
@@ -263,7 +263,6 @@ func generate_random_plan():
 			shuffled_state["loc"][key] = possible_values[0]
 			shuffled_state["time"][key] = 100
 			gut.p("Goal %s" % shuffled_state)
-			break
 	travel_destinations.push_back(Multigoal.new("goal1", shuffled_state))
 	return travel_destinations
 	
