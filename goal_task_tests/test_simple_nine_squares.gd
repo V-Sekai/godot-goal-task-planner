@@ -215,7 +215,7 @@ func test_isekai_anime():
 	var expected = [["walk", "Mia", "home_Mia", "cinema", 12], ["walk", "Mia", "cinema", "home_Mia", 24], ["walk", "Mia", "home_Mia", "park", 29], ["walk", "Mia", "park", "restaurant", 34], ["walk", "Mia", "restaurant", "school", 40], ["walk", "Mia", "school", "office", 47], ["walk", "Mia", "office", "gym", 55], ["walk", "Mia", "gym", "library", 64], ["walk", "Mia", "library", "hospital", 74], ["walk", "Mia", "hospital", "beach", 85], ["walk", "Mia", "beach", "supermarket", 97]]
 	var result = planner.find_plan(state0.duplicate(true), [goal1])
 	var previous_time = -1
-	assert_ne(result, false)
+	assert_true(not result is bool)
 	if not result is bool:
 		for action in result:
 			var current_time = action[4]
