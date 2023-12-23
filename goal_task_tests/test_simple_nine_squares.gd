@@ -172,9 +172,10 @@ func path_has_location(path, location):
 
 @export var types = {
 	"character": ["Mia", "Frank"],
-	"location": ["home_Mia", "home_Frank", "cinema", "station", "mall", "park", "restaurant", "school", "office", "gym", "library", "hospital", "beach", "supermarket"],
+	"location": ["home_Mia", "home_Frank", "cinema", "station", "mall", "park", "restaurant", "school", "office", "gym", "library", "hospital", "beach", "supermarket", "museum", "zoo", "airport"],
 	"vehicle": ["car1", "car2"],
 }
+
 
 @export var dist: Dictionary = {
 	["home_Mia", "cinema"]: 12,
@@ -197,6 +198,11 @@ func path_has_location(path, location):
 	["hospital", "beach"]: 11,
 	["beach", "supermarket"]: 12,
 	["supermarket", "park"]: 13,
+	["park", "museum"]: 13,
+	["museum", "zoo"]: 14,
+	["zoo", "airport"]: 15,
+	["airport", "home_Mia"]: 16,
+	["airport", "home_Frank"]: 17,
 }
 
 var state0: Dictionary = {"loc": {"Mia": "home_Mia", "Frank": "home_Frank", "car1": "cinema", "car2": "station"}, "cash": {"Mia": 30, "Frank": 35}, "owe": {"Mia": 0, "Frank": 0}, "time": {"Mia": 0, "Frank": 0}, "stn": {"Mia": SimpleTemporalNetwork.new(), "Frank": SimpleTemporalNetwork.new()}}
