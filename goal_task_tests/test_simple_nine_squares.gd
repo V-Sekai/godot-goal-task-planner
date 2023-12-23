@@ -33,25 +33,41 @@ func idle(state, person, goal_time):
 	if is_a(person, "character"):
 		var current_time = state["time"][person]
 		if current_time > goal_time:
-			print("idle error: Current time is greater than goal time")
-			return false
+			if the_domain.verbose > 0:
+				print("idle warning: Current time is greater than goal time. Adjusting goal time.")
+			goal_time = current_time
 		var _idle_time = goal_time - current_time
+		if _idle_time <= 0:
+			if the_domain.verbose > 0:
+				print("idle warning: Idle time is less than or equal to 0. Adjusting idle time.")
+			_idle_time = 1
 		var constraint_name = "%s_idle_until_%s" % [person, goal_time]
 		var constraint = TemporalConstraint.new(current_time, goal_time, _idle_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
 		if state["stn"][person].add_temporal_constraint(constraint):
-			print("idle called")
+			if the_domain.verbose > 0:
+				print("idle called")
 			state["time"][person] = goal_time
 			return state
 		else:
-			if state.verbose > 0:
+			if the_domain.verbose > 0:
 				print("idle error: Failed to add temporal constraint %s" % constraint.to_dictionary())
-	
+
 
 func do_idle(state, person, goal_time):
 	if is_a(person, "character"):
+		if the_domain.verbose > 0:
+			print("Current time for %s: %s" % [person, state["time"][person]])
+			print("Goal time: %s" % goal_time)
+		if goal_time < state["time"][person]:			
+			if the_domain.verbose > 0:
+				print("Warning: Goal time is in the past. Adjusting goal time.")
+			goal_time = state["time"][person]
 		if goal_time >= state["time"][person]:
 			return [["idle", person, goal_time]]
-
+		else:
+			if the_domain.verbose > 0:
+				print("Error: Goal time is less than current time: %s" % goal_time)
+				
 
 func walk(state, p, x, y, goal_time):
 	if is_a(p, "character") and is_a(x, "location") and is_a(y, "location") and x != y:
@@ -64,7 +80,6 @@ func walk(state, p, x, y, goal_time):
 			var constraint_name = "%s_walk_from_%s_to_%s" % [p, x, y]
 			var constraint = TemporalConstraint.new(current_time, arrival_time, goal_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
 			if state["stn"][p].add_temporal_constraint(constraint):
-				print("walk called")
 				state.loc[p] = y
 				state["time"][p] = arrival_time
 				return state
@@ -163,10 +178,12 @@ func path_has_location(path, location):
 
 var state0: Dictionary = {"loc": {"Mia": "home_Mia", "Frank": "home_Frank", "car1": "cinema", "car2": "station"}, "cash": {"Mia": 30, "Frank": 35}, "owe": {"Mia": 0, "Frank": 0}, "time": {"Mia": 0, "Frank": 0}, "stn": {"Mia": SimpleTemporalNetwork.new(), "Frank": SimpleTemporalNetwork.new()}}
 
-var goal1 = Multigoal.new("goal1", {"loc": {"Mia": "supermarket"}})
+var goal1 = Multigoal.new("goal1", {"loc": {"Mia": "supermarket"}, "time": {"Mia": 24 }})
+
+var goal2 = Multigoal.new("goal2", {"loc": {"Mia": "supermarket"}, "time": {"Mia": 15 }})
 
 func before_each():
-	planner.verbose = 3
+	planner.verbose = 0
 	planner._domains.push_back(the_domain)
 	planner.current_domain = the_domain
 	planner.declare_actions([Callable(self, "walk"), Callable(self, "do_nothing"), Callable(self, "idle")])
@@ -182,3 +199,6 @@ func test_isekai_anime():
 	var expected =  [["walk", "Mia", "home_Mia", "cinema", 12], ["walk", "Mia", "cinema", "home_Mia", 12], ["walk", "Mia", "home_Mia", "park", 5], ["walk", "Mia", "park", "restaurant", 5], ["walk", "Mia", "restaurant", "school", 6], ["walk", "Mia", "school", "office", 7], ["walk", "Mia", "office", "gym", 8], ["walk", "Mia", "gym", "library", 9], ["walk", "Mia", "library", "hospital", 10], ["walk", "Mia", "hospital", "beach", 11], ["walk", "Mia", "beach", "supermarket", 12]]
 	var result = planner.find_plan(state0.duplicate(true), [goal1])
 	assert_eq_deep(result, expected)
+	
+	result = planner.find_plan(state0.duplicate(true), [goal2])
+	assert_ne_deep(result, expected)

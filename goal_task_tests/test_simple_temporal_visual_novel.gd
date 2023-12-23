@@ -36,13 +36,13 @@ func walk(state, p, x, y, goal_time):
 			var current_time = state.time[p]
 			var _travel_time = travel_time(x, y, "foot")
 			if current_time + _travel_time > goal_time:
-				print("walk error: Arrival time exceeds goal time")
+				if the_domain.verbose > 0:
+					print("walk error: Arrival time exceeds goal time")
 				return false
 			var arrival_time = goal_time
 			var constraint_name = "%s_walk_from_%s_to_%s" % [p, x, y]
 			var constraint = TemporalConstraint.new(current_time, arrival_time, _travel_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
 			if stn.add_temporal_constraint(constraint):
-				print("walk called")
 				state.loc[p] = y
 				state["time"][p] = arrival_time
 				return state
@@ -72,7 +72,6 @@ func idle(state, person, goal_time):
 		var constraint_name = "%s_idle_until_%s" % [person, goal_time]
 		var constraint = TemporalConstraint.new(current_time, goal_time, _idle_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
 		if stn.add_temporal_constraint(constraint):
-			print("idle called")
 			state["time"][person] = goal_time
 			return state
 		else:
@@ -90,12 +89,14 @@ func travel_by_foot(state, p, y):
 	if is_a(p, "character") and is_a(y, "location"):
 		var x = state.loc[p]
 		var _travel_time = travel_time(x, y, "foot")
-		print("Travel time from", x, "to", y, ":", _travel_time)
+		if the_domain.verbose > 0:
+			print("Travel time from ", x, " to ", y, ": ", _travel_time)
 		if x != y:
 			var goal_time = state.time[p] + _travel_time
-			print("Goal time for", p, "to reach", y, ":", goal_time)
+			if the_domain.verbose > 0:
+				print("Goal time for ", p, " to reach ", y, ": ", goal_time)
 			return [["walk", p, x, y, goal_time]]
-			
+
 
 func wait_for_everyone(state, persons):
 	var max_time = 0

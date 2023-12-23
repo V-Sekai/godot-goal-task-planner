@@ -18,9 +18,11 @@ extends Resource
 
 const verbose: int = 0
 
-func _m_verify_g(state: Dictionary, method: String, state_var: String, arg: String, desired_val: Variant, depth: int) -> Array:
+func _m_verify_g(state: Dictionary, method: String, state_var: String, arg: String, desired_val: Variant, depth: int) -> Variant:
 	if state[state_var][arg] != desired_val:
-		assert(false, "Depth %s: method %s didn't achieve\nGoal %s[%s] = %s" % [depth, method, state_var, arg, desired_val])
+		if verbose >= 3:
+			print("Depth %s: method %s didn't achieve\nGoal %s[%s] = %s" % [depth, method, state_var, arg, desired_val])
+		return false
 	if verbose >= 3:
 		print("Depth %s: method %s achieved\nGoal %s[%s] = %s" % [depth, method, state_var, arg, desired_val])
 	return []
@@ -41,7 +43,9 @@ static func _goals_not_achieved(state: Dictionary, multigoal: Multigoal) -> Dict
 func _m_verify_mg(state: Dictionary, method: String, multigoal: Multigoal, depth: int) -> Variant:
 	var goal_dict = _goals_not_achieved(state, multigoal)
 	if goal_dict:
-		assert(false, "Depth %s: method %s didn't achieve %s" % [depth, method, multigoal])
+		if verbose >= 3:
+			print("Depth %s: method %s didn't achieve %s" % [depth, method, multigoal])
+		return false
 	if verbose >= 3:
 		print("Depth %s: method %s achieved %s" % [depth, method, multigoal])
 	return []
