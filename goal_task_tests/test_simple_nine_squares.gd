@@ -191,6 +191,7 @@ func path_has_location(path, location):
 	"stn": [],
 }
 
+@export var state0: Dictionary = {"loc": {"Mia": "home_Mia", "Frank": "home_Frank", "car1": "cinema", "car2": "station"}, "cash": {"Mia": 30, "Frank": 35}, "owe": {"Mia": 0, "Frank": 0}, "time": {"Mia": 0, "Frank": 0}, "stn": {"Mia": SimpleTemporalNetwork.new(), "Frank": SimpleTemporalNetwork.new()}}
 
 @export var dist: Dictionary = {
 	["home_Mia", "cinema"]: 12,
@@ -221,8 +222,6 @@ func path_has_location(path, location):
 	["airport", "home_Mia"]: 16,
 	["airport", "home_Frank"]: 17,
 }
-
-var state0: Dictionary = {"loc": {"Mia": "home_Mia", "Frank": "home_Frank", "car1": "cinema", "car2": "station"}, "cash": {"Mia": 30, "Frank": 35}, "owe": {"Mia": 0, "Frank": 0}, "time": {"Mia": 0, "Frank": 0}, "stn": {"Mia": SimpleTemporalNetwork.new(), "Frank": SimpleTemporalNetwork.new()}}
 
 var goal1 = Multigoal.new("goal1", {"loc": {"Mia": "supermarket"}, "time": {"Mia": 127 }})
 
