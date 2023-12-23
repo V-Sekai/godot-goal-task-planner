@@ -188,10 +188,9 @@ func path_has_location(path, location):
 	"vehicle": ["car1", "car2"],
 	"owe": [],
 	"stn": [],
-	"door": {},
 }
 
-@export var state0: Dictionary = {"loc": {"Mia": "home_Mia", "Chair": "home_Mia", "Frank": "home_Frank", "car1": "cinema", "car2": "station"}, "cash": {"Mia": 30, "Frank": 35}, "owe": {"Mia": 0, "Frank": 0}, "time": {"Mia": 0, "Frank": 0, "Chair": 0}, "stn": {"Mia": SimpleTemporalNetwork.new(), "Frank": SimpleTemporalNetwork.new(), "Chair": SimpleTemporalNetwork.new()}}
+@export var state0: Dictionary = {"loc": {"Mia": "home_Mia", "Chair": "home_Mia", "Frank": "home_Frank", "car1": "cinema", "car2": "station"}, "cash": {"Mia": 30, "Frank": 35}, "owe": {"Mia": 0, "Frank": 0}, "time": {"Mia": 0, "Frank": 0, "Chair": 0}, "stn": {"Mia": SimpleTemporalNetwork.new(), "Frank": SimpleTemporalNetwork.new(), "Chair": SimpleTemporalNetwork.new()}, "door": {}}
 
 @export var dist: Dictionary = {
 	["home_Mia", "cinema"]: 12,
@@ -224,8 +223,8 @@ func path_has_location(path, location):
 }
 
 func _ready():
-    for location in types["location"]:
-        state0["door"][location] = "open"
+	for location in types["location"]:
+		state0["door"][location] = "open"
 		
 var goal1 = Multigoal.new("goal1", {"loc": {"Mia": "supermarket"}, "time": {"Mia": 127 }})
 
