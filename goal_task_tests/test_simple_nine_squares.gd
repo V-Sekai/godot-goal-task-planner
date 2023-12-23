@@ -153,11 +153,11 @@ func find_path(state, p, destination):
 
 	# If a path exists, reconstruct it by following the previous locations from the destination to the start
 	var path = []
-	var u = destination
-	while not u == null:
-		if prev[u] != null: # Check if there's a previous location
-			path.insert(0, ["walk", p, prev[u], u, dist[u]]) # Insert at the beginning to reverse the path
-		u = prev[u]
+	var uu = destination
+	while not uu == null:
+		if prev[uu] != null: # Check if there's a previous location
+			path.insert(0, ["walk", p, prev[uu], uu, dist[uu]]) # Insert at the beginning to reverse the path
+		uu = prev[uu]
 
 	return path
 
