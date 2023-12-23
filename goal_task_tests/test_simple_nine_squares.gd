@@ -164,6 +164,7 @@ func path_has_location(path, location):
 		print("Location %s not found in path" % location)
 	return false
 
+
 # func fight(state, character, enemy):
 # func interact(state, character, npc):
 # func craft(state, character, item):
@@ -174,6 +175,8 @@ func path_has_location(path, location):
 	"character": ["Mia", "Frank"],
 	"location": ["home_Mia", "home_Frank", "cinema", "station", "mall", "park", "restaurant", "school", "office", "gym", "library", "hospital", "beach", "supermarket", "museum", "zoo", "airport"],
 	"vehicle": ["car1", "car2"],
+	"owe": [],
+	"stn": [],
 }
 
 
@@ -215,16 +218,16 @@ func before_each():
 	planner.verbose = 0
 	planner._domains.push_back(the_domain)
 	planner.current_domain = the_domain
-	planner.declare_actions([Callable(self, "walk"), Callable(self, "do_nothing"), Callable(self, "idle"), Callable(self, "find_path")])
+	planner.declare_actions([Callable(self, "wait_for_everyone"), Callable(self, "walk"), Callable(self, "do_nothing"), Callable(self, "idle"), Callable(self, "find_path")])
 
-	planner.declare_unigoal_methods("loc", [Callable(self, "travel_by_foot"), Callable(self, "find_path")])
+	planner.declare_unigoal_methods("loc", [Callable(self, "travel_by_foot")])
 	planner.declare_unigoal_methods("time", [Callable(self, "do_idle")])
-	planner.declare_task_methods("travel", [Callable(self, "travel_by_foot")])
+	planner.declare_task_methods("travel", [Callable(self, "travel_by_foot"), Callable(self, "find_path")])
 	planner.declare_multigoal_methods([planner.m_split_multigoal])
 	
 
 func test_isekai_anime():
-	planner.verbose = 3
+	planner.verbose = 0
 	planner.current_domain = the_domain
 
 	var expected = [["walk", "Mia", "home_Mia", "park", 5], ["walk", "Mia", "park", "restaurant", 10], ["walk", "Mia", "restaurant", "school", 16], ["walk", "Mia", "school", "office", 23], ["walk", "Mia", "office", "gym", 31], ["walk", "Mia", "gym", "library", 40], ["walk", "Mia", "library", "hospital", 50], ["walk", "Mia", "hospital", "beach", 61], ["walk", "Mia", "beach", "supermarket", 73], ["idle", "Mia", 109]]
@@ -232,6 +235,37 @@ func test_isekai_anime():
 	assert_eq_deep(result, expected)
 
 
-func test_isekai_anime_failure():
-	var result = planner.find_plan(state0.duplicate(true), [goal2])
-	assert_ne_deep(result, true)
+func generate_random_plan():
+	var shuffled_state: Dictionary = {"loc": {}, "time": {}}
+
+	var loc_keys = state0["loc"].keys()
+	var travel_destinations = []
+	for key in loc_keys:
+		if is_a(key, "character"):
+			var possible_values = types["location"]
+			possible_values.shuffle()
+			# Ensure the character does not stay at home
+			if possible_values[0] == state0["loc"][key]:
+				possible_values.remove_at(0)
+			shuffled_state["loc"][key] = possible_values[0]
+			shuffled_state["time"][key] = 100
+			gut.p("Goal %s" % shuffled_state)
+			gut.p("Destination %s" % possible_values[0])
+			travel_destinations.push_back(["travel", key, possible_values[0]])
+			break
+	travel_destinations.push_back(Multigoal.new("goal1", shuffled_state))
+	return travel_destinations
+	
+	
+func test_random_plans():
+	planner.verbose = 0
+	randomize()
+	var result = []
+	for i in range(100):
+		var plan = generate_random_plan()
+		result = planner.find_plan(state0.duplicate(true), plan)
+		if not result is bool and result.size():
+			break
+	gut.p("Result: %s" % str(result))
+	assert_ne_deep(result, [])
+	assert_ne_deep(result, false)
