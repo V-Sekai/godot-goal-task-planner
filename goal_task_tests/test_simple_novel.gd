@@ -1,6 +1,6 @@
 # Copyright (c) 2023-present. This file is part of V-Sekai https://v-sekai.org/.
 # K. S. Ernest (Fire) Lee & Contributors (see .all-contributorsrc).
-# test_simple_temporal_visual_novel.gd
+# test_simple_novel.gd
 # SPDX-License-Identifier: MIT
 
 extends GutTest

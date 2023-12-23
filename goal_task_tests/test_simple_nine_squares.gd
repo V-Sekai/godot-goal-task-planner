@@ -1,6 +1,6 @@
 # Copyright (c) 2023-present. This file is part of V-Sekai https://v-sekai.org/.
 # K. S. Ernest (Fire) Lee & Contributors (see .all-contributorsrc).
-# test_simple_temporal_gtn.gd
+# test_simple_nine_squares.gd
 # SPDX-License-Identifier: MIT
 
 extends GutTest
@@ -163,8 +163,12 @@ func path_has_location(path, location):
 	if the_domain.verbose > 0:
 		print("Location %s not found in path" % location)
 	return false
-	
-			
+
+# func fight(state, character, enemy):
+# func interact(state, character, npc):
+# func craft(state, character, item):
+# func level_up(state, character):
+		
 
 @export var types = {
 	"character": ["Mia", "Frank"],
@@ -205,12 +209,13 @@ func before_each():
 	planner.verbose = 0
 	planner._domains.push_back(the_domain)
 	planner.current_domain = the_domain
-	planner.declare_actions([Callable(self, "walk"), Callable(self, "do_nothing"), Callable(self, "idle"), Callable(self, "find_path")])
+	planner.declare_actions([Callable(self, "walk"), Callable(self, "do_nothing"), Callable(self, "idle"), Callable(self, "find_path"), Callable(self, "fight"), Callable(self, "interact"), Callable(self, "craft"), Callable(self, "level_up")])
 
 	planner.declare_unigoal_methods("loc", [Callable(self, "travel_by_foot"), Callable(self, "find_path")])
 	planner.declare_unigoal_methods("time", [Callable(self, "do_idle")])
+	planner.declare_task_methods("travel", [Callable(self, "travel_by_foot")])
 	planner.declare_multigoal_methods([planner.m_split_multigoal])
-
+	
 
 func test_isekai_anime():
 	planner.verbose = 3
