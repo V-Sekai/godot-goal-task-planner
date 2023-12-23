@@ -192,55 +192,35 @@ func path_has_location(path, location):
 
 @export var state0: Dictionary = {"loc": {"Mia": "home_Mia", "Chair": "home_Mia", "Frank": "home_Frank", "car1": "cinema", "car2": "station"}, "cash": {"Mia": 30, "Frank": 35}, "owe": {"Mia": 0, "Frank": 0}, "time": {"Mia": 0, "Frank": 0, "Chair": 0}, "stn": {"Mia": SimpleTemporalNetwork.new(), "Frank": SimpleTemporalNetwork.new(), "Chair": SimpleTemporalNetwork.new()}, "door": {}}
 
+
 @export var dist: Dictionary = {
 	["home_Mia", "cinema"]: 12,
 	["cinema", "home_Mia"]: 12,
 	["home_Frank", "cinema"]: 4,
 	["cinema", "home_Frank"]: 4,
 	["station", "home_Mia"]: 1,
-	["home_Mia", "station"]: 1,
 	["station", "home_Frank"]: 10,
-	["home_Frank", "station"]: 10,
 	["station", "cinema"]: 12,
-	["cinema", "station"]: 12,
 	["home_Mia", "mall"]: 8,
-	["mall", "home_Mia"]: 8,
 	["home_Frank", "mall"]: 10,
-	["mall", "home_Frank"]: 10,
 	["home_Frank", "hospital"]: 20,
 	["hospital", "home_Frank"]: 20,
 	["mall", "cinema"]: 7,
-	["cinema", "mall"]: 7,
 	["home_Mia", "park"]: 5,
-	["park", "home_Mia"]: 5,
 	["park", "restaurant"]: 5,
-	["restaurant", "park"]: 5,
 	["restaurant", "school"]: 6,
-	["school", "restaurant"]: 6,
 	["school", "office"]: 7,
-	["office", "school"]: 7,
 	["office", "gym"]: 8,
-	["gym", "office"]: 8,
 	["gym", "library"]: 9,
-	["library", "gym"]: 9,
 	["library", "hospital"]: 10,
-	["hospital", "library"]: 10,
 	["hospital", "beach"]: 11,
-	["beach", "hospital"]: 11,
 	["beach", "supermarket"]: 12,
-	["supermarket", "beach"]: 12,
 	["supermarket", "park"]: 13,
-	["park", "supermarket"]: 13,
 	["park", "museum"]: 13,
-	["museum", "park"]: 13,
 	["museum", "zoo"]: 14,
-	["zoo", "museum"]: 14,
 	["zoo", "airport"]: 15,
-	["airport", "zoo"]: 15,
 	["airport", "home_Mia"]: 16,
-	["home_Mia", "airport"]: 16,
 	["airport", "home_Frank"]: 17,
-	["home_Frank", "airport"]: 17,
 }
 
 
@@ -268,7 +248,7 @@ func test_isekai_anime():
 	planner.verbose = 1
 	planner.current_domain = the_domain
 
-	var expected =  [["walk", "Mia", "home_Mia", "park", 5], ["walk", "Mia", "park", "supermarket", 18], ["idle", "Mia", 127]]
+	var expected = [["walk", "Mia", "home_Mia", "cinema", 12], ["walk", "Mia", "cinema", "home_Frank", 16], ["walk", "Mia", "home_Frank", "hospital", 36], ["walk", "Mia", "hospital", "beach", 47], ["walk", "Mia", "beach", "supermarket", 59], ["idle", "Mia", 127]]
 	var result = planner.find_plan(state0.duplicate(true), [goal1])
 	assert_eq_deep(result, expected)
 
@@ -307,7 +287,7 @@ func test_random_plans():
 
 
 func test_visit_all_the_doors():
-	planner.verbose = 3
+	planner.verbose = 0
 	var door_goals = []
 	for location in types["location"]:
 		var goal = ["travel", "Mia", location]
