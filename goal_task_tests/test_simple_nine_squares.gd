@@ -181,17 +181,16 @@ func path_has_location(path, location):
 # func interact(state, character, npc):
 # func craft(state, character, item):
 # func level_up(state, character):
-		
 
 @export var types = {
-	"character": ["Mia", "Frank"],
+	"character": ["Mia", "Frank", "Chair"],
 	"location": ["home_Mia", "home_Frank", "cinema", "station", "mall", "park", "restaurant", "school", "office", "gym", "library", "hospital", "beach", "supermarket", "museum", "zoo", "airport"],
 	"vehicle": ["car1", "car2"],
 	"owe": [],
 	"stn": [],
 }
 
-@export var state0: Dictionary = {"loc": {"Mia": "home_Mia", "Frank": "home_Frank", "car1": "cinema", "car2": "station"}, "cash": {"Mia": 30, "Frank": 35}, "owe": {"Mia": 0, "Frank": 0}, "time": {"Mia": 0, "Frank": 0}, "stn": {"Mia": SimpleTemporalNetwork.new(), "Frank": SimpleTemporalNetwork.new()}}
+@export var state0: Dictionary = {"loc": {"Mia": "home_Mia", "Chair": "home_Mia", "Frank": "home_Frank", "car1": "cinema", "car2": "station"}, "cash": {"Mia": 30, "Frank": 35}, "owe": {"Mia": 0, "Frank": 0}, "time": {"Mia": 0, "Frank": 0}, "stn": {"Mia": SimpleTemporalNetwork.new(), "Frank": SimpleTemporalNetwork.new()}}
 
 @export var dist: Dictionary = {
 	["home_Mia", "cinema"]: 12,
