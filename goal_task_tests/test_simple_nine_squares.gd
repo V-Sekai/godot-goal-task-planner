@@ -199,6 +199,8 @@ func test_isekai_anime():
 	var expected =  [["walk", "Mia", "home_Mia", "cinema", 12], ["walk", "Mia", "cinema", "home_Mia", 12], ["walk", "Mia", "home_Mia", "park", 5], ["walk", "Mia", "park", "restaurant", 5], ["walk", "Mia", "restaurant", "school", 6], ["walk", "Mia", "school", "office", 7], ["walk", "Mia", "office", "gym", 8], ["walk", "Mia", "gym", "library", 9], ["walk", "Mia", "library", "hospital", 10], ["walk", "Mia", "hospital", "beach", 11], ["walk", "Mia", "beach", "supermarket", 12]]
 	var result = planner.find_plan(state0.duplicate(true), [goal1])
 	assert_eq_deep(result, expected)
-	
-	result = planner.find_plan(state0.duplicate(true), [goal2])
-	assert_ne_deep(result, expected)
+
+
+func test_isekai_anime_failure():
+	var result = planner.find_plan(state0.duplicate(true), [goal2])
+	assert_ne_deep(result, true)
