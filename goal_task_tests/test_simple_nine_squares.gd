@@ -76,9 +76,9 @@ func walk(state, p, x, y, goal_time):
 			if current_time < goal_time:
 				current_time = goal_time
 			var _travel_time = travel_time(x, y, "foot")
-			var arrival_time = goal_time + _travel_time
+			var arrival_time = current_time + _travel_time
 			var constraint_name = "%s_walk_from_%s_to_%s" % [p, x, y]
-			var constraint = TemporalConstraint.new(current_time, arrival_time, goal_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
+			var constraint = TemporalConstraint.new(current_time, arrival_time, _travel_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
 			if state["stn"][p].add_temporal_constraint(constraint):
 				state.loc[p] = y
 				state["time"][p] = arrival_time
@@ -114,37 +114,52 @@ func travel_by_foot(state, p, destination):
 		var current_location = state.loc[p]
 		if current_location == destination:
 			return []
-		var path = find_path(state, p, current_location, destination, [])
+		var path = find_path(state, p, current_location, destination, [], 0)
 		if path.size() > 0:
 			return path
 	return []
 
 
-func find_path(state, p, current_location, destination, path):
+func find_path(state, p, current_location, destination, path, total_time):
 	if current_location == destination:
 		return path
 
-	for next_location in types["location"]:
-		if next_location == current_location or distance(current_location, next_location) == INF:
+	var next_locations = []
+	for loc in types["location"]:
+		if loc == current_location or distance(current_location, loc) == INF:
 			continue
+		var goal_time = state.time[p] + travel_time(current_location, loc, "foot")
+		if goal_time < INF and not path_has_location(path, loc):
+			next_locations.append([loc, goal_time])
 
-		var goal_time = state.time[p] + travel_time(current_location, next_location, "foot")
-		if goal_time < INF and not path_has_location(path, next_location):
-			var new_path = path.duplicate()
-			new_path.append(["walk", p, current_location, next_location, goal_time])
-			
-			var result = find_path(state, p, next_location, destination, new_path)
-			if result.size() > 0:
-				return result
+	next_locations.sort_custom(Callable(self, "compare_goal_times"))
+
+	for data in next_locations:
+		var new_path = path.duplicate()
+		new_path.append(["walk", p, current_location, data[0], total_time + data[1]])
+
+		var result = find_path(state, p, data[0], destination, new_path, total_time + data[1])
+
+		if result.size() > 0:
+			return result
 
 	return []
+
+
+func compare_goal_times(a, b):
+	return a[1] > b[1]
 
 
 func path_has_location(path, location):
 	for step in path:
 		if step[3] == location:  # Check the destination of each step
+			if the_domain.verbose > 0:
+				print("Location %s found in path" % location)
 			return true
+	if the_domain.verbose > 0:
+		print("Location %s not found in path" % location)
 	return false
+	
 			
 
 @export var types = {
@@ -178,7 +193,7 @@ func path_has_location(path, location):
 
 var state0: Dictionary = {"loc": {"Mia": "home_Mia", "Frank": "home_Frank", "car1": "cinema", "car2": "station"}, "cash": {"Mia": 30, "Frank": 35}, "owe": {"Mia": 0, "Frank": 0}, "time": {"Mia": 0, "Frank": 0}, "stn": {"Mia": SimpleTemporalNetwork.new(), "Frank": SimpleTemporalNetwork.new()}}
 
-var goal1 = Multigoal.new("goal1", {"loc": {"Mia": "supermarket"}, "time": {"Mia": 24 }})
+var goal1 = Multigoal.new("goal1", {"loc": {"Mia": "supermarket"}, "time": {"Mia": 109 }})
 
 var goal2 = Multigoal.new("goal2", {"loc": {"Mia": "supermarket"}, "time": {"Mia": 15 }})
 
@@ -186,18 +201,26 @@ func before_each():
 	planner.verbose = 0
 	planner._domains.push_back(the_domain)
 	planner.current_domain = the_domain
-	planner.declare_actions([Callable(self, "walk"), Callable(self, "do_nothing"), Callable(self, "idle")])
+	planner.declare_actions([Callable(self, "walk"), Callable(self, "do_nothing"), Callable(self, "idle"), Callable(self, "find_path")])
 
-	planner.declare_unigoal_methods("loc", [Callable(self, "travel_by_foot")])
+	planner.declare_unigoal_methods("loc", [Callable(self, "travel_by_foot"), Callable(self, "find_path")])
 	planner.declare_unigoal_methods("time", [Callable(self, "do_idle")])
 	planner.declare_multigoal_methods([planner.m_split_multigoal])
 
 
 func test_isekai_anime():
+	planner.verbose = 3
 	planner.current_domain = the_domain
 
-	var expected =  [["walk", "Mia", "home_Mia", "cinema", 12], ["walk", "Mia", "cinema", "home_Mia", 12], ["walk", "Mia", "home_Mia", "park", 5], ["walk", "Mia", "park", "restaurant", 5], ["walk", "Mia", "restaurant", "school", 6], ["walk", "Mia", "school", "office", 7], ["walk", "Mia", "office", "gym", 8], ["walk", "Mia", "gym", "library", 9], ["walk", "Mia", "library", "hospital", 10], ["walk", "Mia", "hospital", "beach", 11], ["walk", "Mia", "beach", "supermarket", 12]]
+	var expected = [["walk", "Mia", "home_Mia", "cinema", 12], ["walk", "Mia", "cinema", "home_Mia", 24], ["walk", "Mia", "home_Mia", "park", 29], ["walk", "Mia", "park", "restaurant", 34], ["walk", "Mia", "restaurant", "school", 40], ["walk", "Mia", "school", "office", 47], ["walk", "Mia", "office", "gym", 55], ["walk", "Mia", "gym", "library", 64], ["walk", "Mia", "library", "hospital", 74], ["walk", "Mia", "hospital", "beach", 85], ["walk", "Mia", "beach", "supermarket", 97]]
 	var result = planner.find_plan(state0.duplicate(true), [goal1])
+	var previous_time = -1
+	assert_ne(result, false)
+	if not result is bool:
+		for action in result:
+			var current_time = action[4]
+			assert_true(current_time > previous_time)
+			previous_time = current_time
 	assert_eq_deep(result, expected)
 
 
