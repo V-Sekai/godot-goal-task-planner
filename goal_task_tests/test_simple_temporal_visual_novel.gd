@@ -10,6 +10,7 @@ var the_domain = preload("res://addons/task_goal/core/domain.gd").new(domain_nam
 
 var planner = preload("res://addons/task_goal/core/plan.gd").new()
 
+var stn = SimpleTemporalNetwork.new()
 
 func distance(x: String, y: String):
 	var result = dist.get([x, y])
@@ -40,7 +41,7 @@ func walk(state, p, x, y, goal_time):
 			var arrival_time = goal_time
 			var constraint_name = "%s_walk_from_%s_to_%s" % [p, x, y]
 			var constraint = TemporalConstraint.new(current_time, arrival_time, _travel_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
-			if planner.current_domain.stn.add_temporal_constraint(constraint):
+			if stn.add_temporal_constraint(constraint):
 				print("walk called")
 				state.loc[p] = y
 				state["time"][p] = arrival_time
@@ -70,7 +71,7 @@ func idle(state, person, goal_time):
 		var _idle_time = goal_time - current_time
 		var constraint_name = "%s_idle_until_%s" % [person, goal_time]
 		var constraint = TemporalConstraint.new(current_time, goal_time, _idle_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
-		if planner.current_domain.stn.add_temporal_constraint(constraint):
+		if stn.add_temporal_constraint(constraint):
 			print("idle called")
 			state["time"][person] = goal_time
 			return state

@@ -287,15 +287,13 @@ func _apply_action_and_continue(state: Dictionary, task1: Array, todo_list: Arra
 		print("Depth %s action %s: " % [depth, task1])
 	var action: Callable = current_domain._action_dict[task1[0]]
 	var new_state = action.get_object().callv(action.get_method(), [state] + task1.slice(1))
-	if new_state and current_domain.stn.is_consistent():
+	if new_state:
 		if verbose >= 3:
 			print("Applied")
 			print(new_state)
 		return seek_plan(new_state, todo_list, plan + [task1], depth + 1)
 	if verbose >= 3 and not new_state:
 			print("The new state is not valid")
-	if verbose >= 3 and not current_domain.stn.is_consistent():
-			print("The simple time network is non-consistent")
 	if verbose >= 3:
 		print("Not applicable")
 	return false
@@ -313,7 +311,7 @@ func _refine_task_and_continue(state, task1, todo_list, plan, depth) -> Variant:
 			print("Depth %s trying %s: " % [depth, method.get_method()])
 		var subtasks: Variant = method.get_object().callv(method.get_method(), [state] + task1.slice(1))
 		# Can't just say "if subtasks:", because that's wrong if subtasks == []
-		if subtasks is Array and current_domain.stn.is_consistent():
+		if subtasks is Array:
 			if verbose >= 3:
 				print("Applicable")
 				print("Depth %s subtasks: %s" % [depth, subtasks])
@@ -352,7 +350,7 @@ func _refine_unigoal_and_continue(state, goal1, todo_list, plan, depth) -> Varia
 
 		var subgoals: Variant = method.get_object().callv(method.get_method(), [state] + [arg, val])
 
-		if subgoals is Array and current_domain.stn.is_consistent():
+		if subgoals is Array:
 			if verbose >= 3:
 				print("Depth %s subgoals: %s" % [depth, subgoals])
 
@@ -388,7 +386,7 @@ func _refine_multigoal_and_continue(state: Dictionary, goal1: Multigoal, todo_li
 		if verbose >= 3:
 			print("Depth %s trying method %s: " % [depth, method.get_method()])
 		var subgoals: Variant = method.get_object().callv(method.get_method(), [state, goal1])
-		if subgoals is Array and current_domain.stn.is_consistent():
+		if subgoals is Array:
 			if verbose >= 3:
 				print("Applicable")
 				print("Depth %s subgoals: %s" % [depth, subgoals])
@@ -418,7 +416,6 @@ func find_plan(state: Dictionary, todo_list: Array, stn: SimpleTemporalNetwork =
 		var todo_string = "[" + ", ".join(todo_array) + "]"
 		print("FindPlan> find_plan, verbose=%s:" % verbose)
 		print("    state = %s\n    todo_list = %s" % [state, todo_string])
-		print("    stn = %s" % current_domain.stn.to_dictionary())
 
 	var result: Variant = seek_plan(state, todo_list, [], 0)
 

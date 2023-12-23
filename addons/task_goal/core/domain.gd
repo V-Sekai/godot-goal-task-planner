@@ -18,8 +18,6 @@ extends Resource
 
 const verbose: int = 0
 
-var stn = SimpleTemporalNetwork.new()
-
 func _m_verify_g(state: Dictionary, method: String, state_var: String, arg: String, desired_val: Variant, depth: int) -> Array:
 	if state[state_var][arg] != desired_val:
 		assert(false, "Depth %s: method %s didn't achieve\nGoal %s[%s] = %s" % [depth, method, state_var, arg, desired_val])
