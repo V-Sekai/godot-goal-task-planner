@@ -276,7 +276,6 @@ func test_random_plans():
 		var temp_result = planner.find_plan(state0.duplicate(true), plan)
 		if not temp_result is bool and temp_result.size():
 			result.append(temp_result)
-		else:
 			break
 	gut.p("Result: %s" % str(result))
 	assert_ne_deep(result, [])
