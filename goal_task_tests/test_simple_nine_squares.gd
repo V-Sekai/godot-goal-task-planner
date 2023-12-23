@@ -113,7 +113,7 @@ func travel_by_foot(state, p, destination):
 	if is_a(p, "character") and is_a(destination, "location"):
 		var current_location = state.loc[p]
 		if current_location == destination:
-			return []
+			return [["idle", p, state["time"][p]]]
 		var path = find_path(state, p, current_location, destination)
 		if path.size() > 0:
 			return path
