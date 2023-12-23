@@ -120,37 +120,46 @@ func travel_by_foot(state, p, destination):
 
 var memo = {}
 
+var prev = {}
+
 func find_path(state, p, destination):
 	var current_location = state["loc"][p]
-	var stack = [[current_location, [], 0]] # Initialize stack with current location, empty path and total time as 0
-	memo = {}
+	var pq = [[0, current_location]] # Initialize priority queue with current location and distance as 0
 
-	while len(stack) > 0:
-		var top = stack.pop_back() # In DFS, we use a stack and pop the last element
-		var new_current_location = top[0]
-		var path = top[1]
-		var total_time = top[2]
+	for loc in types["location"]:
+		dist[loc] = INF # Set initial distances to infinity
+		prev[loc] = null # Set initial previous locations to null
+	dist[current_location] = 0
 
-		if new_current_location == destination:
-			return path
+	while len(pq) > 0:
+		var top = pq.pop_front() # In Dijkstra's, we use a priority queue and pop the smallest element
+		var d = top[0]
+		var u = top[1]
 
-		if new_current_location in memo:
+		if d != dist[u]:
 			continue
 
-		memo[new_current_location] = true
-
 		for loc in types["location"]:
-			if loc == new_current_location or distance(new_current_location, loc) == INF:
+			if loc == u or distance(u, loc) == INF:
 				continue
-			var travel_time_to_loc = travel_time(new_current_location, loc, "foot")
-			var goal_time = total_time + travel_time_to_loc
-			if goal_time < INF and not path_has_location(path, loc):
-				var new_path = path.duplicate()
-				new_path.append(["walk", p, new_current_location, loc, goal_time])
-				stack.append([loc, new_path, goal_time])
+			var travel_time_to_loc = travel_time(u, loc, "foot")
+			if dist[u] + travel_time_to_loc < dist[loc]:
+				dist[loc] = dist[u] + travel_time_to_loc
+				prev[loc] = u # Update the previous location
+				pq.append([dist[loc], loc])
 
-	return []
+	if destination not in dist:
+		return -1
 
+	# If a path exists, reconstruct it by following the previous locations from the destination to the start
+	var path = []
+	var u = destination
+	while not u == null:
+		if prev[u] != null: # Check if there's a previous location
+			path.insert(0, ["walk", p, prev[u], u, dist[u]]) # Insert at the beginning to reverse the path
+		u = prev[u]
+
+	return path
 
 
 func compare_goal_times(a, b):
@@ -232,17 +241,16 @@ func before_each():
 	
 
 func test_isekai_anime():
-	planner.verbose = 3
+	planner.verbose = 1
 	planner.current_domain = the_domain
 
-	var expected =  [["walk", "Mia", "home_Mia", "park", 5], ["walk", "Mia", "park", "museum", 18], ["walk", "Mia", "museum", "zoo", 32], ["walk", "Mia", "zoo", "airport", 47], ["walk", "Mia", "airport", "home_Frank", 64], ["walk", "Mia", "home_Frank", "hospital", 84], ["walk", "Mia", "hospital", "beach", 95], ["walk", "Mia", "beach", "supermarket", 107]]
+	var expected =  [["walk", "Mia", "home_Mia", "cinema", 12], ["walk", "Mia", "cinema", "home_Frank", 16], ["walk", "Mia", "home_Frank", "hospital", 36], ["walk", "Mia", "hospital", "beach", 47], ["walk", "Mia", "beach", "supermarket", 59], ["idle", "Mia", 127]]
 	var result = planner.find_plan(state0.duplicate(true), [goal1])
 	assert_eq_deep(result, expected)
 
 
 func generate_random_plan():
 	var shuffled_state: Dictionary = {"loc": {}, "time": {}}
-
 	var loc_keys = state0["loc"].keys()
 	var travel_destinations = []
 	for key in loc_keys:
@@ -269,7 +277,7 @@ func test_random_plans():
 		var temp_result = planner.find_plan(state0.duplicate(true), plan)
 		if not temp_result is bool and temp_result.size():
 			result.append(temp_result)
-		else: 
+		else:
 			break
 	gut.p("Result: %s" % str(result))
 	assert_ne_deep(result, [])
