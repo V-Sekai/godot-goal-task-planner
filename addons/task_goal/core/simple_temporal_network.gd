@@ -142,8 +142,30 @@ func get_temporal_constraint_by_name(constraint_name: String) -> TemporalConstra
 	return null
 
 
+func is_consistent() -> bool:
+	var constraints_str: String
+	for c in constraints:
+		constraints_str += str(c.to_dictionary()) + ", "
+	if not constraints.size():
+		return true
+
+	constraints.sort_custom(TemporalConstraint.sort_func)
+	for i in range(constraints.size()):
+		for j in range(i+1, constraints.size()):
+			if constraints[i].time_interval.y > constraints[j].time_interval.x and constraints[i].time_interval.x < constraints[j].time_interval.y:
+				print("Overlapping constraints: " + str(constraints[i].to_dictionary()) + " and " + str(constraints[j].to_dictionary()))
+				return false
+		var decompositions = enumerate_decompositions(constraints[i])
+		if decompositions.is_empty():
+			print("No valid decompositions for constraint: " + str(constraints[i].to_dictionary()))
+			return false
+	
+	return true
+	
+	
 # Algorithm to return all the possible instantiations of a given path decomposition tree.
 func enumerate_decompositions(vertex: TemporalConstraint) -> Array[Array]:
+	#print("Enumerating decompositions for vertex: " + str(vertex.to_dictionary()))
 	if not vertex is TemporalConstraint:
 		print("Error: vertex must be an instance of TemporalConstraint.")
 		return [[]]
@@ -195,7 +217,7 @@ func get_children(vertex: TemporalConstraint) -> Array[TemporalConstraint]:
 		return children
 	else:
 		return []
-		
+
 
 # Helper function to calculate the cartesian product of an array of arrays
 func cartesian_product(arrays: Array[Array]) -> Array[Array]:
@@ -211,20 +233,6 @@ func cartesian_product(arrays: Array[Array]) -> Array[Array]:
 		result = temp
 	
 	return result
-
-
-func is_consistent() -> bool:
-	if not constraints.size():
-		return true
-
-	constraints.sort_custom(TemporalConstraint.sort_func)
-	for constraint in constraints:
-		var decompositions = enumerate_decompositions(constraint)
-		if decompositions.is_empty():
-			print("No valid decompositions for constraint: " + str(constraint.to_dictionary()))
-			return false
-	
-	return true
 
 
 func update_state(state: Dictionary) -> void:
