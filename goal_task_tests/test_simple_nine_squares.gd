@@ -114,7 +114,7 @@ func travel_by_foot(state, p, destination):
 		var current_location = state.loc[p]
 		if current_location == destination:
 			return [["idle", p, state["time"][p]]]
-		var path = find_path(state, p, current_location, destination)
+		var path = find_path(state, p, destination)
 		if path.size() > 0:
 			return path
 	return []
@@ -122,7 +122,8 @@ func travel_by_foot(state, p, destination):
 
 var memo = {}
 
-func find_path(state, p, current_location, destination):
+func find_path(state, p, destination):
+	var current_location = state["loc"][p]
 	var queue = [[current_location, [], 0]] # Initialize queue with current location, empty path and total time as 0
 	while queue.size() > 0:
 		var front = queue.pop_front()
@@ -141,11 +142,12 @@ func find_path(state, p, current_location, destination):
 		for loc in types["location"]:
 			if loc == new_current_location or distance(new_current_location, loc) == INF:
 				continue
-			var goal_time = state.time[p] + travel_time(new_current_location, loc, "foot")
+			var travel_time_to_loc = travel_time(new_current_location, loc, "foot")
+			var goal_time = total_time + travel_time_to_loc
 			if goal_time < INF and not path_has_location(path, loc):
 				var new_path = path.duplicate()
-				new_path.append(["walk", p, new_current_location, loc, total_time + goal_time])
-				queue.push_back([loc, new_path, total_time + goal_time])
+				new_path.append(["walk", p, new_current_location, loc, goal_time])
+				queue.push_back([loc, new_path, goal_time])
 
 	return []
 
@@ -190,6 +192,8 @@ func path_has_location(path, location):
 	["station", "cinema"]: 12,
 	["home_Mia", "mall"]: 8,
 	["home_Frank", "mall"]: 10,
+	["home_Frank", "hospital"]: 20,
+	["hospital", "home_Frank"]: 20,
 	["mall", "cinema"]: 7,
 	["home_Mia", "park"]: 5,
 	["park", "restaurant"]: 5,
@@ -230,7 +234,7 @@ func test_isekai_anime():
 	planner.verbose = 0
 	planner.current_domain = the_domain
 
-	var expected = [["walk", "Mia", "home_Mia", "park", 5], ["walk", "Mia", "park", "restaurant", 10], ["walk", "Mia", "restaurant", "school", 16], ["walk", "Mia", "school", "office", 23], ["walk", "Mia", "office", "gym", 31], ["walk", "Mia", "gym", "library", 40], ["walk", "Mia", "library", "hospital", 50], ["walk", "Mia", "hospital", "beach", 61], ["walk", "Mia", "beach", "supermarket", 73], ["idle", "Mia", 109]]
+	var expected =  [["walk", "Mia", "home_Mia", "cinema", 12], ["walk", "Mia", "cinema", "home_Frank", 16], ["walk", "Mia", "home_Frank", "hospital", 36], ["walk", "Mia", "hospital", "beach", 47], ["walk", "Mia", "beach", "supermarket", 59], ["idle", "Mia", 109]]
 	var result = planner.find_plan(state0.duplicate(true), [goal1])
 	assert_eq_deep(result, expected)
 
@@ -263,9 +267,8 @@ func test_random_plans():
 	var result = []
 	for i in range(100):
 		var plan = generate_random_plan()
-		result = planner.find_plan(state0.duplicate(true), plan)
-		if not result is bool and result.size():
-			break
+		var temp_result = planner.find_plan(state0.duplicate(true), plan)
+		if not temp_result is bool and temp_result.size():
+			result.append(temp_result)
 	gut.p("Result: %s" % str(result))
 	assert_ne_deep(result, [])
-	assert_ne_deep(result, false)
