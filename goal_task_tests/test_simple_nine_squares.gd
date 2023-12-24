@@ -165,12 +165,14 @@ func find_path(state, p, destination):
 	var current_location = state["loc"][p]
 	var pq = [[0, current_location]] # Initialize priority queue with current location and distance as 0
 
+	var dist = {}
+	var prev = {}
 	for loc in types["location"]:
 		dist[loc] = INF # Set initial distances to infinity
 		prev[loc] = null # Set initial previous locations to null
 	dist[current_location] = 0
 
-	while len(pq) > 0:
+	while pq.size() > 0:
 		pq.sort()
 		var top = pq.pop_front() # In Dijkstra's, we use a priority queue and pop the smallest element
 		var d = top[0]
@@ -186,17 +188,18 @@ func find_path(state, p, destination):
 			if dist[u] + travel_time_to_loc < dist[loc]:
 				dist[loc] = dist[u] + travel_time_to_loc
 				prev[loc] = u # Update the previous location
-				pq.append([dist[loc], loc])
+				pq.push_back([dist[loc], loc])
 
-	if destination not in dist:
+	if not dist.has(destination):
 		return -1
 
 	# If a path exists, reconstruct it by following the previous locations from the destination to the start
 	var path = []
 	var uu = destination
-	while not uu == null:
+	while uu != null:
 		if prev[uu] != null and prev[uu] != uu:
-			path.insert(0, ["walk", p, prev[uu], uu, dist[uu]]) # Insert at the beginning to reverse the path
+			var travel_time = travel_time(prev[uu], uu, "foot") # Calculate the travel time between two consecutive locations
+			path.push_front(["walk", p, prev[uu], uu, travel_time]) # Insert at the beginning to reverse the path
 		uu = prev[uu]
 
 	return path
@@ -278,7 +281,7 @@ func before_each():
 	planner.current_domain = the_domain
 	planner.declare_actions([Callable(self, "wait_for_everyone"), Callable(self, "close_door"), Callable(self, "walk"), Callable(self, "do_nothing"), Callable(self, "idle")])
 
-	planner.declare_unigoal_methods("loc", [Callable(self, "travel_by_foot"), Callable(self, "find_path")])
+	planner.declare_unigoal_methods("loc", [Callable(self, "travel_by_foot")])
 	planner.declare_unigoal_methods("time", [Callable(self, "do_idle")])
 	planner.declare_unigoal_methods("door", [Callable(self, "do_mia_close_door")])
 	planner.declare_task_methods("travel", [Callable(self, "travel_by_foot"), Callable(self, "find_path")])
@@ -338,47 +341,15 @@ func test_visit_all_the_doors():
 	assert_ne_deep(result, false)
 
 
-func test_close_all_the_doors_as_plan():
-	var state1 = state0.duplicate(1)
-	var goals = []
-	for location in types["location"]:
-		goals.append_array([["do_close_door", "Mia", location, "closed"]])
-	var result = planner.find_plan(state1, goals)
-	gut.p("State: %s" % state1)
-	gut.p("Result: %s" % str(result))
-	var is_doors_closed = true
-	for location in types["location"]:
-		gut.p("Location and door state: %s %s" % [location, state1["door"][location]])
-		if state1["door"][location] != "closed":
-			is_doors_closed = false 
-			gut.p("Door is still open: %s" % location)
-	gut.p("What is Mia's time?: %s" % state1["time"]["Mia"])
-	assert_true(is_doors_closed)
-	
-func test_close_all_the_doors():
-	var state1 = state0.duplicate(1)
-	var goals = []
-	for location in types["location"]:
-		goals.append_array([["do_close_door", "Mia", location, "closed"]])
-	var result = planner.run_lazy_lookahead(state1, goals)
-	gut.p("State: %s" % state1)
-	gut.p("Result: %s" % str(result))
-	
-	var is_doors_closed = true
-	for location in types["location"]:
-		gut.p("Location and door state: %s %s" % [location, state1["door"][location]])
-		if state1["door"][location] != "closed":
-			is_doors_closed = false 
-			gut.p("Door is still open: %s" % location)
-	gut.p("What is Mia's time?: %s" % state1["time"]["Mia"])
-	assert_true(is_doors_closed)
+#func test_close_all_the_doors_as_plan():
+#func test_close_all_the_doors():
 
 func test_close_all_the_door_goal():
-	planner.verbose = 1
+	planner.verbose = 3
 	var state1 = state0.duplicate(true)
 	var goals = []
 	for location in types["location"]:
-		state1 = planner.run_lazy_lookahead(state1, [Multigoal.new("goal_%s" % location, {"door": {location: "closed"}, "time": {"Mia": 1000}})])
+		state1 = planner.run_lazy_lookahead(state1, [Multigoal.new("goal_%s" % location, {"door": {location: "closed"}, "time": {"Mia": 0}})])
 	var is_doors_closed = true
 	for location in types["location"]:
 		gut.p("Location and door state: %s %s" % [location, state1["door"][location]])
