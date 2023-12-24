@@ -22,7 +22,7 @@ func calculate_time_interval(i, temporal_qualifier) -> Array:
 func test_performance_with_large_number_of_constraints() -> void:
 	var start_time = Time.get_ticks_msec()
 
-	for i in range(1300):
+	for i in range(1000):
 		var qualifier_1 = TemporalConstraint.TemporalQualifier.AT_START
 		var interval_1 = calculate_time_interval(i, qualifier_1)
 		var from_constraint = TemporalConstraint.new(interval_1[0], interval_1[1], 5, qualifier_1, "from" + str(i))
@@ -37,13 +37,13 @@ func test_performance_with_large_number_of_constraints() -> void:
 	var end_time = Time.get_ticks_msec()
 	var time_taken = end_time - start_time
 	gut.p("Time taken for constraints: " + str(time_taken) + " ms")
-	assert_true(time_taken < 1000, "Performance test failed: Time taken should be faster than 1 second")
+	assert_true(time_taken < 500, "Performance test failed: Time taken should be faster than 0.5 seconds")
 
 
 func test_performance_with_large_number_of_constraints_failure() -> void:
 	var start_time = Time.get_ticks_msec()
 
-	for i in range(1300):
+	for i in range(1000):
 		var qualifier_1 = TemporalConstraint.TemporalQualifier.AT_START
 		var interval_1 = calculate_time_interval(i, qualifier_1)
 		var from_constraint = TemporalConstraint.new(interval_1[0], interval_1[1], 5, qualifier_1, "from" + str(i))
@@ -66,4 +66,4 @@ func test_performance_with_large_number_of_constraints_failure() -> void:
 	var end_time = Time.get_ticks_msec()
 	var time_taken = end_time - start_time
 	gut.p("Time taken for constraints: " + str(time_taken) + " ms")
-	assert_true(time_taken < 1000, "Performance test failed: Time taken should be faster than 1 second")
+	assert_true(time_taken < 500, "Performance test failed: Time taken should be faster than 0.5 seconds")
