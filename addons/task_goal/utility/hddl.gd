@@ -34,29 +34,34 @@ func parse_sexp(expression: String) -> Array:
 	return stack[0]
 
 
-func parse_method_preconditions(sexp):
-	for s in sexp:
-		if s[0] == ":method":
-			var method_name = s[1]
-			var parameters = {}
-			var task = ""
-			var precondition = []
-			var ordered_subtasks = []
-			
-			for i in range(2, len(s)):
-				var sublist = s[i]
-				if sublist is Array and sublist.size() > 0:
-					if sublist[0] == ":parameters":
-						for j in range(1, sublist.size(), 2):
-							parameters[sublist[j]] = sublist[j+1]
-					elif sublist[0] == ":task":
+func extract_method_info(s: Array) -> Array:
+	var method_name = s[1]
+	var parameters = {}
+	var task = ""
+	var precondition = []
+	var ordered_subtasks = []
+	if s[0] == ":method":
+		for i in range(2, s.size()):
+			var sublist = s[i]
+			if sublist is Array and sublist.size() > 0:
+				match sublist[0]:
+					":parameters":
+						parameters = {sublist[1]: sublist[2]}
+					":task":
 						task = sublist[1]
-					elif sublist[0] == ":precondition":
-						precondition = sublist.slice(1, sublist.size()-1)
-					elif sublist[0] == ":ordered-subtasks":
-						ordered_subtasks = sublist.slice(1, sublist.size()-1)
-					
-			methods[method_name] = {"parameters": parameters, "task": task, "precondition": precondition, "ordered_subtasks": ordered_subtasks}
+					":precondition":
+						precondition = sublist.slice(1, sublist.size())
+					":ordered-subtasks":
+						ordered_subtasks = sublist.slice(1, sublist.size())
+	return [method_name, {"parameters": parameters, "task": task, "precondition": precondition, "ordered_subtasks": ordered_subtasks}]
+	
+
+func parse_method_preconditions(sexp):
+	var methods: Dictionary = {}
+	for s in sexp:
+		var s_info = extract_method_info(s)
+		methods[s_info[0]] = s_info[1]
+	return methods
 
 
 func parse_definition(sexp):
