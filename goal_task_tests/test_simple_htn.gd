@@ -160,11 +160,14 @@ func test_simple_gtn():
 
 	gut.p("Initial state is %s" % state1)
 
-	gut.p(
-		"""
+	(
+		gut
+		. p(
+			"""
 Use find_plan to plan how to get Alice from home to the park.
 We'll do it several times with different values for 'verbose'.
 """
+		)
 	)
 
 	var expected = [
@@ -199,12 +202,15 @@ We'll do it several times with different values for 'verbose'.
 		]
 	)
 
-	gut.p(
-		"""Next, we'll use run_lazy_lookahead to try to get Alice to the park. With
+	(
+		gut
+		. p(
+			"""Next, we'll use run_lazy_lookahead to try to get Alice to the park. With
 Pr = 1/2, the taxi won't arrive. In this case, run_lazy_lookahead will call
 find_plan again, and find_plan will return the same plan as before. This will
 happen repeatedly until either the taxi arrives or run_lazy_lookahead decides
 it has tried too many times."""
+		)
 	)
 	planner.run_lazy_lookahead(state1.duplicate(true), [["travel", "alice", "park"]])
 

@@ -7,6 +7,7 @@ extends "res://addons/gut/test.gd"
 
 var stn = null
 
+
 func before_each():
 	stn = SimpleTemporalNetwork.new()
 

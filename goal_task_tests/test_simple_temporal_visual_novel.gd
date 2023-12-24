@@ -12,6 +12,7 @@ var planner = preload("res://addons/task_goal/core/plan.gd").new()
 
 var stn = SimpleTemporalNetwork.new()
 
+
 func distance(x: String, y: String):
 	var result = dist.get([x, y])
 	if result == null:
@@ -77,7 +78,7 @@ func idle(state, person, goal_time):
 		else:
 			if state.verbose > 0:
 				print("idle error: Failed to add temporal constraint %s" % constraint.to_dictionary())
-	
+
 
 func do_idle(state, person, goal_time):
 	if is_a(person, "character"):
@@ -135,7 +136,7 @@ func wait_for_everyone(state, persons):
 
 var state0: Dictionary = {"loc": {"Hero": "HomeTown", "Villain": "Dungeon_01"}, "cash": {"Hero": 20, "Villain": 15}, "owe": {"Hero": 0, "Villain": 0}, "time": {"Hero": 0, "Villain": 0}}
 
-var goal1: Multigoal = Multigoal.new("goal1", {"loc": {"Hero": "MarketPlace"}, "time": {"Hero":  20}})
+var goal1: Multigoal = Multigoal.new("goal1", {"loc": {"Hero": "MarketPlace"}, "time": {"Hero": 20}})
 
 var goal2: Multigoal = Multigoal.new("goal2", {"loc": {"Hero": "Guild"}, "time": {"Hero": 30}})
 

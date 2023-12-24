@@ -12,6 +12,7 @@ var planner = preload("res://addons/task_goal/core/plan.gd").new()
 
 var stn = SimpleTemporalNetwork.new()
 
+
 func distance(x: String, y: String):
 	var result = dist.get([x, y])
 	if result == null:
@@ -78,7 +79,7 @@ func idle(state, person, goal_time):
 		else:
 			if state.verbose > 0:
 				print("idle error: Failed to add temporal constraint %s" % constraint.to_dictionary())
-	
+
 
 func do_idle(state, person, goal_time):
 	if is_a(person, "character"):
@@ -95,7 +96,7 @@ func travel_by_foot(state, p, y):
 			var goal_time = state.time[p] + _travel_time
 			#print("Goal time for", p, "to reach", y, ":", goal_time)
 			return [["walk", p, x, y, goal_time]]
-			
+
 
 func wait_for_everyone(state, persons):
 	var max_time = 0
@@ -119,7 +120,6 @@ func wait_for_everyone(state, persons):
 	"location": ["Coffee Shop", "Band Meeting", "Home", "Bar Concert"],
 }
 
-
 @export var dist: Dictionary = {
 	["Home", "Coffee Shop"]: 2,
 	["Home", "Band Meeting"]: 4,
@@ -132,7 +132,6 @@ func wait_for_everyone(state, persons):
 	["Bar Concert", "Coffee Shop"]: 4,
 	["Coffee Shop", "Home"]: 1,
 }
-
 
 var state0: Dictionary = {"loc": {"Seb": "Home", "Mia": "Coffee Shop"}, "time": {"Seb": 0, "Mia": 0}}
 

@@ -103,7 +103,7 @@ func ride_car(state, p, y, goal_time):
 			var _travel_time = travel_time(x, y, "car")
 			var current_time = state.time[p]
 			if current_time < goal_time:
-				current_time = goal_time 
+				current_time = goal_time
 			var arrival_time = goal_time + _travel_time
 			var constraint_name = "%s_ride_car_from_%s_to_%s" % [p, x, y]
 			var constraint = TemporalConstraint.new(current_time, arrival_time, goal_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
@@ -139,6 +139,7 @@ func walk(state, p, x, y, goal_time):
 				if state.verbose > 0:
 					print("walk error: Failed to add temporal constraint %s" % constraint.to_dictionary())
 
+
 func travel_time(x, y, mode):
 	var _distance = distance(x, y)
 	if mode == "foot":
@@ -149,7 +150,7 @@ func travel_time(x, y, mode):
 		print("Error: Invalid mode of transportation")
 		return -1
 
-		
+
 func do_nothing(state, p, y):
 	if is_a(p, "character"):
 		state["time"][p] += y
@@ -169,11 +170,11 @@ func travel_by_car(state, p, y):
 	if is_a(p, "character") and is_a(y, "location"):
 		var x = state.loc[p]
 		if x != y and state.cash[p] >= taxi_rate(distance(x, y)):
-			var call_car_goal_time = state.time[p] + 1 # Assuming calling a car takes 1 unit of time
+			var call_car_goal_time = state.time[p] + 1  # Assuming calling a car takes 1 unit of time
 			var ride_car_goal_time = call_car_goal_time + travel_time(x, y, "car")
 			var actions = [["call_car", p, x, call_car_goal_time], ["ride_car", p, y, ride_car_goal_time]]
 			if actions[0][0] == "call_car" and actions[1][0] == "ride_car":
-				var pay_driver_goal_time = ride_car_goal_time + 1 # Assuming payment takes 1 unit of time
+				var pay_driver_goal_time = ride_car_goal_time + 1  # Assuming payment takes 1 unit of time
 				actions.append(["pay_driver", p, y, pay_driver_goal_time])
 			return actions
 
@@ -198,14 +199,14 @@ func travel_by_car(state, p, y):
 	["mall", "cinema"]: 7,
 }
 
-var state0: Dictionary = {"loc": {"Mia": "home_Mia", "Frank": "home_Frank", "car1": "cinema", "car2": "station"}, "cash": {"Mia": 30, "Frank": 35}, "owe": {"Mia": 0, "Frank": 0}, "time": {"Mia": 0, "Frank": 0}, "stn": {"Mia": SimpleTemporalNetwork.new(), "Frank": SimpleTemporalNetwork.new()}
-}
+var state0: Dictionary = {"loc": {"Mia": "home_Mia", "Frank": "home_Frank", "car1": "cinema", "car2": "station"}, "cash": {"Mia": 30, "Frank": 35}, "owe": {"Mia": 0, "Frank": 0}, "time": {"Mia": 0, "Frank": 0}, "stn": {"Mia": SimpleTemporalNetwork.new(), "Frank": SimpleTemporalNetwork.new()}}
 
 var goal2 = Multigoal.new("goal2", {"loc": {"Mia": "mall", "Frank": "mall"}})
 
 var goal3 = Multigoal.new("goal3", {"loc": {"Mia": "cinema", "Frank": "cinema"}, "time": {"Mia": 15, "Frank": 15}})
 
 var goal4 = Multigoal.new("goal4", {"loc": {"Mia": "home_Mia", "Frank": "home_Mia"}, "time": {"Mia": 25, "Frank": 25}})
+
 
 func before_each():
 	planner.verbose = 0
@@ -231,6 +232,4 @@ func test_isekai_anime_02():
 	var state1 = state0.duplicate(true)
 	var plan = planner.find_plan(state1, [goal2, goal3, goal4])
 
-	assert_eq_deep(plan, 
-		 [["call_car", "Mia", "home_Mia", 1], ["ride_car", "Mia", "mall", 2], ["pay_driver", "Mia", "mall", 3], ["call_car", "Frank", "home_Frank", 1], ["ride_car", "Frank", "mall", 3], ["pay_driver", "Frank", "mall", 4], ["call_car", "Mia", "mall", 5], ["ride_car", "Mia", "cinema", 6], ["pay_driver", "Mia", "cinema", 7], ["call_car", "Frank", "mall", 7], ["ride_car", "Frank", "cinema", 8], ["pay_driver", "Frank", "cinema", 9], ["idle", "Mia", 15], ["idle", "Frank", 15], ["call_car", "Mia", "cinema", 16], ["ride_car", "Mia", "home_Mia", 18], ["pay_driver", "Mia", "home_Mia", 19], ["call_car", "Frank", "cinema", 16], ["ride_car", "Frank", "home_Mia", 18], ["pay_driver", "Frank", "home_Mia", 19], ["idle", "Mia", 25], ["idle", "Frank", 25]]
-	)
+	assert_eq_deep(plan, [["call_car", "Mia", "home_Mia", 1], ["ride_car", "Mia", "mall", 2], ["pay_driver", "Mia", "mall", 3], ["call_car", "Frank", "home_Frank", 1], ["ride_car", "Frank", "mall", 3], ["pay_driver", "Frank", "mall", 4], ["call_car", "Mia", "mall", 5], ["ride_car", "Mia", "cinema", 6], ["pay_driver", "Mia", "cinema", 7], ["call_car", "Frank", "mall", 7], ["ride_car", "Frank", "cinema", 8], ["pay_driver", "Frank", "cinema", 9], ["idle", "Mia", 15], ["idle", "Frank", 15], ["call_car", "Mia", "cinema", 16], ["ride_car", "Mia", "home_Mia", 18], ["pay_driver", "Mia", "home_Mia", 19], ["call_car", "Frank", "cinema", 16], ["ride_car", "Frank", "home_Mia", 18], ["pay_driver", "Frank", "home_Mia", 19], ["idle", "Mia", 25], ["idle", "Frank", 25]])

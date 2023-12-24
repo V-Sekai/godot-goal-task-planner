@@ -14,6 +14,7 @@ var node_indices: Dictionary = {}
 
 var node_index_cache = {}
 
+
 func to_dictionary() -> Dictionary:
 	return {"resource_name": resource_name, "constraints": constraints, "number_of_nodes": num_nodes, "node_intervals": node_intervals}
 
@@ -36,7 +37,9 @@ func get_node_index(time_point: int) -> int:
 		print("Time point not found in any interval")
 		return -1
 
+
 var outgoing_edges: Dictionary = {}
+
 
 func add_temporal_constraint(from_constraint: TemporalConstraint, to_constraint: TemporalConstraint = null, min_gap: float = 0, max_gap: float = 0) -> bool:
 	if not validate_constraints(from_constraint, to_constraint, min_gap, max_gap):
@@ -85,7 +88,7 @@ func validate_constraints(from_constraint, to_constraint, min_gap: float, max_ga
 	if not from_constraint:
 		print("from_constraint is None")
 		return false
-		
+
 	if not from_constraint.get("time_interval"):
 		print("from_constraint does not have 'time_interval': %s" % from_constraint.to_dictionary())
 		return false
@@ -93,7 +96,7 @@ func validate_constraints(from_constraint, to_constraint, min_gap: float, max_ga
 	if to_constraint != null and to_constraint.duration > (to_constraint.time_interval.y - to_constraint.time_interval.x):
 		print("Duration is longer than time interval for to_constraint")
 		return false
-		
+
 	if not from_constraint.get("duration"):
 		print("from_constraint does not have 'duration': %s" % from_constraint.to_dictionary())
 		return false
@@ -109,7 +112,7 @@ func validate_constraints(from_constraint, to_constraint, min_gap: float, max_ga
 			return false
 
 	# Check if min_gap and max_gap are valid
-	if typeof(min_gap) != TYPE_FLOAT or min_gap < 0 or (typeof(max_gap) != TYPE_FLOAT and max_gap != float('inf')):
+	if typeof(min_gap) != TYPE_FLOAT or min_gap < 0 or (typeof(max_gap) != TYPE_FLOAT and max_gap != float("inf")):
 		print("Invalid gap values")
 		return false
 
@@ -157,7 +160,7 @@ func is_consistent() -> bool:
 
 	constraints.sort_custom(TemporalConstraint.sort_func)
 	for i in range(constraints.size()):
-		for j in range(i+1, constraints.size()):
+		for j in range(i + 1, constraints.size()):
 			if constraints[i].time_interval.y > constraints[j].time_interval.x and constraints[i].time_interval.x < constraints[j].time_interval.y:
 				print("Overlapping constraints: " + str(constraints[i].to_dictionary()) + " and " + str(constraints[j].to_dictionary()))
 				return false
@@ -165,10 +168,10 @@ func is_consistent() -> bool:
 		if decompositions.is_empty():
 			print("No valid decompositions for constraint: " + str(constraints[i].to_dictionary()))
 			return false
-	
+
 	return true
-	
-	
+
+
 # Algorithm to return all the possible instantiations of a given path decomposition tree.
 func enumerate_decompositions(vertex: TemporalConstraint) -> Array[Array]:
 	#print("Enumerating decompositions for vertex: " + str(vertex.to_dictionary()))
@@ -177,7 +180,7 @@ func enumerate_decompositions(vertex: TemporalConstraint) -> Array[Array]:
 		return [[]]
 	# Initialize empty leafs vector
 	var leafs: Array[Array] = [[]]
-	
+
 	# If vertex is a leaf then
 	if is_leaf(vertex):
 		# Add vertex to leafs
@@ -192,15 +195,15 @@ func enumerate_decompositions(vertex: TemporalConstraint) -> Array[Array]:
 		else:
 			# Initialize empty op vector
 			var op: Array[Array]
-			
+
 			# For all children c of vertex do
 			for child: TemporalConstraint in get_children(vertex):
 				# Enumerate decompositions of child and add to op
 				op += enumerate_decompositions(child)
-			
+
 			# Leafs = cartesian product(op)
 			leafs = cartesian_product(op)
-	
+
 	return leafs
 
 
@@ -228,16 +231,16 @@ func get_children(vertex: TemporalConstraint) -> Array[TemporalConstraint]:
 # Helper function to calculate the cartesian product of an array of arrays
 func cartesian_product(arrays: Array[Array]) -> Array[Array]:
 	var result: Array[Array] = [[]]
-	
+
 	for arr in arrays:
 		var temp: Array[Array] = [[]]
-		
+
 		for res in result:
 			for item in arr:
 				temp.append(res + [item])
-		
+
 		result = temp
-	
+
 	return result
 
 

@@ -51,6 +51,7 @@ func print_domain(domain: Object = null) -> void:
 	print_methods(domain)
 	print_simple_temporary_network(domain)
 
+
 func print_simple_temporary_network(domain) -> void:
 	if domain == null:
 		domain = current_domain
@@ -58,6 +59,7 @@ func print_simple_temporary_network(domain) -> void:
 		print("-- Simple Temporal Network: %s" % domain.stn.to_dictionary())
 	else:
 		print("-- There is no Simple Temporarl Network --")
+
 
 ## Print the names of all the actions
 func print_actions(domain: Object = null) -> void:
@@ -281,6 +283,7 @@ func m_split_multigoal(state, multigoal):
 ##final plan; it just will verify whether m did what it was supposed to do.
 var verify_goals = true
 
+
 ## Action changes the state.
 func _apply_action_and_continue(state: Dictionary, task1: Array, todo_list: Array, plan: Array, depth: int) -> Variant:
 	var action: Callable = current_domain._action_dict[task1[0]]
@@ -293,10 +296,11 @@ func _apply_action_and_continue(state: Dictionary, task1: Array, todo_list: Arra
 			print(new_state)
 		return seek_plan(new_state, todo_list, plan + [task1], depth + 1)
 	if verbose >= 3 and not new_state:
-			print("The new state is not valid %s" % [new_state])
+		print("The new state is not valid %s" % [new_state])
 	if verbose >= 3:
 		print("Not applicable action %s" % [[action.get_method()] + task1.slice(1)])
 	return false
+
 
 ## A task returns a list of actions, tasks or goals.
 func _refine_task_and_continue(state, task1, todo_list, plan, depth) -> Variant:
@@ -438,7 +442,6 @@ func seek_plan(state: Dictionary, todo_list: Array, plan: Array, depth: int) -> 
 	var item1 = todo_list.front()
 	todo_list.pop_front()
 
-
 	if item1 is Multigoal:
 		return _refine_multigoal_and_continue(state, item1, todo_list, plan, depth)
 	elif item1 is Array:
@@ -452,11 +455,11 @@ func seek_plan(state: Dictionary, todo_list: Array, plan: Array, depth: int) -> 
 	print("Depth %s: %s isn't an action, task, unigoal, or multigoal\n" % [depth, item1])
 
 	return false
-	
 
 
 func _item_to_string(item):
 	return str(item)
+
 
 ## An adaptation of the run_lazy_lookahead algorithm from Ghallab et al.
 ## (2016), Automated Planning and Acting. It works roughly like this:

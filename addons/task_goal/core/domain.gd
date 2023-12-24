@@ -18,6 +18,7 @@ extends Resource
 
 const verbose: int = 0
 
+
 func _m_verify_g(state: Dictionary, method: String, state_var: String, arg: String, desired_val: Variant, depth: int) -> Variant:
 	if state[state_var][arg] != desired_val:
 		if verbose >= 3:

@@ -54,7 +54,6 @@ func do_close_door(_state, person, location, status):
 	else:
 		if the_domain.verbose > 0:
 			print("Cant close door %s %s:" % [person, location])
-		
 
 
 func close_door(state, person, location, status):
@@ -101,7 +100,7 @@ func do_idle(state, person, goal_time):
 				print("Error: Goal time is less than current time: %s" % goal_time)
 
 
-func walk(state, p, x, y, goal_time):	
+func walk(state, p, x, y, goal_time):
 	if state["loc"][p] != x:
 		print("Walk error: Character is not at the expected location ", x)
 		return
@@ -136,7 +135,7 @@ func travel_time(x, y, mode):
 		print("Error: Invalid mode of transportation")
 		return -1
 
-		
+
 func do_nothing(state, p, y):
 	if is_a(p, "character"):
 		state["time"][p] += y
@@ -157,20 +156,21 @@ var memo = {}
 
 var prev = {}
 
+
 func find_path(state, p, destination):
 	var current_location = state["loc"][p]
-	var pq = [[0, current_location]] # Initialize priority queue with current location and distance as 0
+	var pq = [[0, current_location]]  # Initialize priority queue with current location and distance as 0
 
 	var dist = {}
 	var prev = {}
 	for loc in types["location"]:
-		dist[loc] = INF # Set initial distances to infinity
-		prev[loc] = null # Set initial previous locations to null
+		dist[loc] = INF  # Set initial distances to infinity
+		prev[loc] = null  # Set initial previous locations to null
 	dist[current_location] = 0
 
 	while pq.size() > 0:
 		pq.sort()
-		var top = pq.pop_front() # In Dijkstra's, we use a priority queue and pop the smallest element
+		var top = pq.pop_front()  # In Dijkstra's, we use a priority queue and pop the smallest element
 		var d = top[0]
 		var u = top[1]
 
@@ -183,7 +183,7 @@ func find_path(state, p, destination):
 			var travel_time_to_loc = travel_time(u, loc, "foot")
 			if dist[u] + travel_time_to_loc < dist[loc]:
 				dist[loc] = dist[u] + travel_time_to_loc
-				prev[loc] = u # Update the previous location
+				prev[loc] = u  # Update the previous location
 				pq.push_back([dist[loc], loc])
 
 	if not dist.has(destination):
@@ -194,12 +194,11 @@ func find_path(state, p, destination):
 	var uu = destination
 	while uu != null:
 		if prev[uu] != null and prev[uu] != uu:
-			var travel_time = travel_time(prev[uu], uu, "foot") # Calculate the travel time between two consecutive locations
-			path.push_front(["walk", p, prev[uu], uu, travel_time]) # Insert at the beginning to reverse the path
+			var travel_time = travel_time(prev[uu], uu, "foot")  # Calculate the travel time between two consecutive locations
+			path.push_front(["walk", p, prev[uu], uu, travel_time])  # Insert at the beginning to reverse the path
 		uu = prev[uu]
 
 	return path
-
 
 
 func compare_goal_times(a, b):
@@ -233,7 +232,6 @@ func path_has_location(path, location):
 
 @export var state0: Dictionary = {"loc": {"Mia": "home_Mia", "Chair": "home_Mia", "Frank": "home_Frank", "car1": "cinema", "car2": "station"}, "cash": {"Mia": 30, "Frank": 35}, "owe": {"Mia": 0, "Frank": 0}, "time": {"Mia": 0, "Frank": 0, "Chair": 0}, "stn": {"Mia": SimpleTemporalNetwork.new(), "Frank": SimpleTemporalNetwork.new(), "Chair": SimpleTemporalNetwork.new()}, "door": {}}
 
-
 @export var dist: Dictionary = {
 	["home_Mia", "cinema"]: 12,
 	["cinema", "home_Mia"]: 12,
@@ -265,10 +263,10 @@ func path_has_location(path, location):
 	["airport", "home_Frank"]: 17,
 }
 
-		
-var goal1 = Multigoal.new("goal1", {"loc": {"Mia": "airport"}, "time": {"Mia": 59 }})
+var goal1 = Multigoal.new("goal1", {"loc": {"Mia": "airport"}, "time": {"Mia": 59}})
 
-var goal2 = Multigoal.new("goal2", {"loc": {"Mia": "supermarket"}, "time": {"Mia": 15 }})
+var goal2 = Multigoal.new("goal2", {"loc": {"Mia": "supermarket"}, "time": {"Mia": 15}})
+
 
 func before_each():
 	for location in types["location"]:
@@ -285,7 +283,7 @@ func before_each():
 	planner.declare_task_methods("find_path", [Callable(self, "find_path")])
 	planner.declare_task_methods("do_close_door", [Callable(self, "do_close_door")])
 	planner.declare_multigoal_methods([planner.m_split_multigoal])
-	
+
 
 func test_isekai_anime():
 	planner.current_domain = the_domain
@@ -309,6 +307,7 @@ func test_visit_all_the_doors():
 #func test_close_all_the_doors_as_plan():
 #func test_close_all_the_doors():
 
+
 func test_close_all_the_door_goal():
 	planner.verbose = 3
 	var state1 = state0.duplicate(true)
@@ -319,7 +318,7 @@ func test_close_all_the_door_goal():
 	for location in types["location"]:
 		gut.p("Location and door state: %s %s" % [location, state1["door"][location]])
 		if state1["door"][location] != "closed":
-			is_doors_closed = false 
+			is_doors_closed = false
 			gut.p("Door is still open: %s" % location)
 	gut.p(state1["loc"])
 	gut.p("What is Mia's time?: %s" % state1["time"]["Mia"])
