@@ -481,14 +481,11 @@ func run_lazy_lookahead(state: Dictionary, todo_list: Array, max_tries: int = 10
 
 	var ordinals = {1: "st", 2: "nd", 3: "rd"}
 	var executed_actions = []
-
 	for tries in range(1, max_tries + 1):
-		var saved_state = state.duplicate(true)
-
 		if verbose >= 1:
 			print("RunLazyLookahead> %s%s call to find_plan:" % [tries, ordinals.get(tries, "")])
 
-		var plan = find_plan(saved_state, todo_list)
+		var plan = find_plan(state, todo_list)
 		if plan == null or (typeof(plan) == TYPE_ARRAY and plan.is_empty()) or (typeof(plan) == TYPE_DICTIONARY and !plan):
 			if verbose >= 1:
 				print("run_lazy_lookahead: find_plan has failed")
@@ -501,7 +498,7 @@ func run_lazy_lookahead(state: Dictionary, todo_list: Array, max_tries: int = 10
 					print("RunLazyLookahead> Command: %s" % [action])
 
 				var new_state = _apply_command_and_continue(state, action_name, action.slice(1))
-				if new_state:
+				if new_state is Dictionary:
 					if verbose >= 2:
 						print(new_state)
 					state = new_state
@@ -509,7 +506,6 @@ func run_lazy_lookahead(state: Dictionary, todo_list: Array, max_tries: int = 10
 				else:
 					if verbose >= 1:
 						print("RunLazyLookahead> WARNING: action %s failed; will call find_plan." % [action_name])
-					state = saved_state
 					break
 
 		if verbose >= 1 and state != null:
