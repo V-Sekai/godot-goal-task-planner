@@ -52,7 +52,7 @@ func print_domain(domain: Object = null) -> void:
 	print_simple_temporal_network(domain)
 
 
-func print_simple_temporal_network(domain) -> void:
+func print_simple_temporal_network(domain: Object = null) -> void:
 	if domain == null:
 		domain = current_domain
 	if domain.stn:
@@ -71,7 +71,7 @@ func print_actions(domain: Object = null) -> void:
 		print("-- There are no actions --")
 
 
-func _print_task_methods(domain) -> void:
+func _print_task_methods(domain: Object = null) -> void:
 	if domain._task_method_dict:
 		print("")
 		print("Task name:         Relevant task methods:")
@@ -85,7 +85,7 @@ func _print_task_methods(domain) -> void:
 		print("-- There are no task methods --")
 
 
-func _print_unigoal_methods(domain: Resource) -> void:
+func _print_unigoal_methods(domain: Object = null) -> void:
 	if domain._unigoal_method_dict:
 		print("Blackboard var name:    Relevant unigoal methods:")
 		print("---------------    -------------------------")
@@ -99,7 +99,7 @@ func _print_unigoal_methods(domain: Resource) -> void:
 		print("-- There are no unigoal methods --")
 
 
-func _print_multigoal_methods(domain: Resource) -> void:
+func _print_multigoal_methods(domain: Object = null) -> void:
 	if domain._multigoal_method_list:
 		var string_array: PackedStringArray = PackedStringArray()
 		for f in domain._multigoal_method_list:
@@ -113,7 +113,7 @@ func _print_multigoal_methods(domain: Resource) -> void:
 
 
 ## Print tables showing what all the methods are
-func print_methods(domain: Resource = null) -> void:
+func print_methods(domain: Object = null) -> void:
 	if domain == null:
 		domain = current_domain
 	_print_task_methods(domain)
