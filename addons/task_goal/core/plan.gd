@@ -49,16 +49,16 @@ func print_domain(domain: Object = null) -> void:
 	print("Domain name: %s" % resource_name)
 	print_actions(domain)
 	print_methods(domain)
-	print_simple_temporary_network(domain)
+	print_simple_temporal_network(domain)
 
 
-func print_simple_temporary_network(domain) -> void:
+func print_simple_temporal_network(domain) -> void:
 	if domain == null:
 		domain = current_domain
 	if domain.stn:
 		print("-- Simple Temporal Network: %s" % domain.stn.to_dictionary())
 	else:
-		print("-- There is no Simple Temporarl Network --")
+		print("-- There is no Simple Temporal Network --")
 
 
 ## Print the names of all the actions
