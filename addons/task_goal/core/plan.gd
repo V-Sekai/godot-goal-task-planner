@@ -281,7 +281,7 @@ func m_split_multigoal(state, multigoal):
 ##final plan; it just will verify whether m did what it was supposed to do.
 var verify_goals = true
 
-
+## Action changes the state.
 func _apply_action_and_continue(state: Dictionary, task1: Array, todo_list: Array, plan: Array, depth: int) -> Variant:
 	if verbose >= 1:
 		print("Depth %s action %s: " % [depth, task1])
@@ -298,7 +298,7 @@ func _apply_action_and_continue(state: Dictionary, task1: Array, todo_list: Arra
 		print("Not applicable")
 	return false
 
-
+## A task returns a list of actions, tasks or goals.
 func _refine_task_and_continue(state, task1, todo_list, plan, depth) -> Variant:
 	var relevant: Array = current_domain._task_method_dict[task1[0]]
 	if verbose >= 3:
@@ -445,10 +445,10 @@ func seek_plan(state: Dictionary, todo_list: Array, plan: Array, depth: int) -> 
 	if item1 is Multigoal:
 		return _refine_multigoal_and_continue(state, item1, todo_list, plan, depth)
 	elif item1 is Array:
-		if item1[0] in current_domain._action_dict.keys():
-			return _apply_action_and_continue(state, item1, todo_list, plan, depth)
-		elif item1[0] in current_domain._task_method_dict.keys():
+		if item1[0] in current_domain._task_method_dict.keys():
 			return _refine_task_and_continue(state, item1, todo_list, plan, depth)
+		elif item1[0] in current_domain._action_dict.keys():
+			return _apply_action_and_continue(state, item1, todo_list, plan, depth)
 		elif item1[0] in current_domain._unigoal_method_dict.keys():
 			return _refine_unigoal_and_continue(state, item1, todo_list, plan, depth)
 

@@ -29,19 +29,26 @@ func is_a(variable, type):
 	return variable in types[type]
 
 
-func do_close_door(state, location, status):
-	if is_a(location, "location") and status == "closed":
-		if state["door"][location] == "opened":
-			if the_domain.verbose > 0:
-				print("Attempting to change door status at location: %s to %s" % [location, status])
-			return [["close_door", location, status]]
+func do_close_door(state, person, location, status):
+	if is_a(person, "character") and is_a(location, "location") and state["door"][location] == "opened":
+		if the_domain.verbose > 0:
+			print("Attempting to change door status at location: %s to %s" % [location, status])
+		var actions = []
+		if state["loc"][person] != location:
+			actions.append(["travel", person, location])
+		actions.append(["close_door", person, location, "closed"])
+		return actions
+	else:
+		if the_domain.verbose > 0:
+			print("Cant close door %s %s:" % [person, location])
+		
 
 
-func close_door(state, location, status):
-	if is_a(location, "location"):
+func close_door(state, person, location, status):
+	if is_a(location, "location") and is_a(person, "character") and state["loc"][person] == location:
 		state["door"][location] = status
 		if the_domain.verbose > 0:
-			print("The door at location %s has been %s." % [location, status])
+			print("The door at location %s has been closed." % [location])
 
 
 func idle(state, person, goal_time):
@@ -254,8 +261,8 @@ func before_each():
 
 	planner.declare_unigoal_methods("loc", [Callable(self, "travel_by_foot"), Callable(self, "find_path")])
 	planner.declare_unigoal_methods("time", [Callable(self, "do_idle")])
-	planner.declare_unigoal_methods("door", [Callable(self, "do_close_door")])
 	planner.declare_task_methods("travel", [Callable(self, "travel_by_foot"), Callable(self, "find_path")])
+	planner.declare_task_methods("do_close_door", [Callable(self, "do_close_door")])
 	planner.declare_multigoal_methods([planner.m_split_multigoal])
 	
 
@@ -311,13 +318,10 @@ func test_visit_all_the_doors():
 
 
 func test_close_all_the_doors():
+	planner.verbose = 3
 	var state1 = state0.duplicate(1)
-	var goals = []
 	for location in types["location"]:
-		var goal = {"loc": {"Mia": location}, "door": {location: "closed"}}
-		var visit_door_goal = Multigoal.new("door_goal", goal)
-		goals.append(visit_door_goal)
-	state1 = planner.run_lazy_lookahead(state1, goals)
+		state1 = planner.run_lazy_lookahead(state1, [["do_close_door", "Mia", location, "closed"]])
 	var is_doors_closed = true
 	for location in types["location"]:
 		gut.p("Location and door state: %s %s" % [location, state1["door"][location]])
