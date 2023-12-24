@@ -29,7 +29,7 @@ func is_a(variable, type):
 	return variable in types[type]
 
 
-func do_close_door(state, location, status):
+func do_close_door(_state, location, status):
 	if is_a(location, "location"):
 		if the_domain.verbose > 0:
 			print("Attempting to change door status at location: %s to %s" % [location, status])
@@ -316,8 +316,6 @@ func test_visit_all_the_doors():
 
 
 func test_visit_all_the_doors_as_goals():
-	planner.verbose = 0
-	var result = []
 	var state1 = state0.duplicate(1)
 	for location in types["location"]:
 		gut.p("Mia's current location: %s" % state1["loc"]["Mia"])
