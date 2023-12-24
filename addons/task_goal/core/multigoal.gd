@@ -28,6 +28,9 @@ class_name Multigoal
 
 var _state: Dictionary = {}
 
+func _to_string():
+	return resource_name
+
 @export var state: Dictionary:
 	get:
 		return _state

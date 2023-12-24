@@ -283,9 +283,9 @@ var verify_goals = true
 
 ## Action changes the state.
 func _apply_action_and_continue(state: Dictionary, task1: Array, todo_list: Array, plan: Array, depth: int) -> Variant:
-	if verbose >= 1:
-		print("Depth %s action %s: " % [depth, task1])
 	var action: Callable = current_domain._action_dict[task1[0]]
+	if verbose >= 1:
+		print("Depth %s action %s: " % [depth, [action.get_method()] + task1.slice(1)])
 	var new_state = action.get_object().callv(action.get_method(), [state] + task1.slice(1))
 	if new_state:
 		if verbose >= 3:
@@ -293,9 +293,9 @@ func _apply_action_and_continue(state: Dictionary, task1: Array, todo_list: Arra
 			print(new_state)
 		return seek_plan(new_state, todo_list, plan + [task1], depth + 1)
 	if verbose >= 3 and not new_state:
-			print("The new state is not valid")
+			print("The new state is not valid %s" % [new_state])
 	if verbose >= 3:
-		print("Not applicable")
+		print("Not applicable action %s" % [[action.get_method()] + task1.slice(1)])
 	return false
 
 ## A task returns a list of actions, tasks or goals.
@@ -401,19 +401,16 @@ func _refine_multigoal_and_continue(state: Dictionary, goal1: Multigoal, todo_li
 				return result
 		else:
 			if verbose >= 3:
-				print("Not applicable")
+				print("Not applicable method %s" % method)
 
 	if verbose >= 3:
 		print("Depth %s could not achieve multigoal %s" % [depth, goal1])
 	return false
 
 
-func find_plan(state: Dictionary, todo_list: Array, stn: SimpleTemporalNetwork = SimpleTemporalNetwork.new()) -> Variant:
+func find_plan(state: Dictionary, todo_list: Array) -> Variant:
 	if verbose >= 1:
-		var todo_array: Array = []
-		for x in todo_list:
-			todo_array.push_back(x)
-		var todo_string = "[" + ", ".join(todo_array) + "]"
+		var todo_string = todo_list
 		print("FindPlan> find_plan, verbose=%s:" % verbose)
 		print("    state = %s\n    todo_list = %s" % [state, todo_string])
 
@@ -445,10 +442,10 @@ func seek_plan(state: Dictionary, todo_list: Array, plan: Array, depth: int) -> 
 	if item1 is Multigoal:
 		return _refine_multigoal_and_continue(state, item1, todo_list, plan, depth)
 	elif item1 is Array:
-		if item1[0] in current_domain._task_method_dict.keys():
-			return _refine_task_and_continue(state, item1, todo_list, plan, depth)
-		elif item1[0] in current_domain._action_dict.keys():
+		if item1[0] in current_domain._action_dict.keys():
 			return _apply_action_and_continue(state, item1, todo_list, plan, depth)
+		elif item1[0] in current_domain._task_method_dict.keys():
+			return _refine_task_and_continue(state, item1, todo_list, plan, depth)
 		elif item1[0] in current_domain._unigoal_method_dict.keys():
 			return _refine_unigoal_and_continue(state, item1, todo_list, plan, depth)
 
@@ -460,7 +457,6 @@ func seek_plan(state: Dictionary, todo_list: Array, plan: Array, depth: int) -> 
 
 func _item_to_string(item):
 	return str(item)
-
 
 ## An adaptation of the run_lazy_lookahead algorithm from Ghallab et al.
 ## (2016), Automated Planning and Acting. It works roughly like this:
@@ -477,45 +473,43 @@ func _item_to_string(item):
 ##
 ## Note: whenever run_lazy_lookahead encounters an action for which there is
 ## no corresponding command definition, it uses the action definition instead.
-func run_lazy_lookahead(state: Dictionary, todo_list: Array, max_tries: int = 10):
+func run_lazy_lookahead(state: Dictionary, todo_list: Array, max_tries: int = 10) -> Array:
 	if verbose >= 1:
 		print("RunLazyLookahead> run_lazy_lookahead, verbose = %s, max_tries = %s" % [verbose, max_tries])
 		print("RunLazyLookahead> initial state: %s" % [state.keys()])
 		print("RunLazyLookahead> To do:", todo_list)
 
 	var ordinals = {1: "st", 2: "nd", 3: "rd"}
+	var executed_actions = []
 
 	for tries in range(1, max_tries + 1):
+		var saved_state = state.duplicate(true)
+
 		if verbose >= 1:
 			print("RunLazyLookahead> %s%s call to find_plan:" % [tries, ordinals.get(tries, "")])
 
-		var plan = find_plan(state, todo_list)
+		var plan = find_plan(saved_state, todo_list)
 		if plan == null or (typeof(plan) == TYPE_ARRAY and plan.is_empty()) or (typeof(plan) == TYPE_DICTIONARY and !plan):
 			if verbose >= 1:
 				print("run_lazy_lookahead: find_plan has failed")
-			return state
-
-		if plan == null or (typeof(plan) == TYPE_ARRAY and plan.is_empty()) or (typeof(plan) == TYPE_DICTIONARY and !plan):
-			if verbose >= 1:
-				print("RunLazyLookahead> Empty plan => success\nafter {tries} calls to find_plan.")
-			if verbose >= 2:
-				print("> final state %s" % [state])
-			return state
+			return executed_actions
 
 		if typeof(plan) != TYPE_BOOL:
 			for action in plan:
 				var action_name = current_domain._action_dict.get(action[0])
 				if verbose >= 1:
-					print("RunLazyLookahead> Command: %s" % [[action_name] + action.slice(1)])
+					print("RunLazyLookahead> Command: %s" % [action])
 
 				var new_state = _apply_command_and_continue(state, action_name, action.slice(1))
-				if new_state is Dictionary:
+				if new_state:
 					if verbose >= 2:
 						print(new_state)
 					state = new_state
+					executed_actions.append([action_name, action.slice(1)])
 				else:
 					if verbose >= 1:
 						print("RunLazyLookahead> WARNING: action %s failed; will call find_plan." % [action_name])
+					state = saved_state
 					break
 
 		if verbose >= 1 and state != null:
@@ -526,12 +520,13 @@ func run_lazy_lookahead(state: Dictionary, todo_list: Array, max_tries: int = 10
 	if verbose >= 2:
 		print("RunLazyLookahead> final state %s" % state)
 
-	return state
+	return executed_actions
+
 
 
 func _apply_command_and_continue(state: Dictionary, command: Callable, args: Array) -> Variant:
 	if verbose >= 3:
-		print("_apply_command_and_continue %s, args = %s" % [command.get_method(), args])
+		print("_apply_command_and_continue %s, args = %s" % [[str(command.get_method())] + [args]])
 
 	var next_state = command.get_object().callv(command.get_method(), [state] + args)
 	if next_state:
@@ -541,5 +536,5 @@ func _apply_command_and_continue(state: Dictionary, command: Callable, args: Arr
 		return next_state
 	else:
 		if verbose >= 3:
-			print("Not applicable")
+			print("Not applicable command %s" % [command.get_method(), args])
 		return false

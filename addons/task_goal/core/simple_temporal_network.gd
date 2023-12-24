@@ -18,6 +18,12 @@ func to_dictionary() -> Dictionary:
 	return {"resource_name": resource_name, "constraints": constraints, "number_of_nodes": num_nodes, "node_intervals": node_intervals}
 
 
+func _to_string():
+	if resource_name.is_empty():
+		return "SimpleTemporalNetwork"
+	return resource_name
+
+
 func get_node_index(time_point: int) -> int:
 	if time_point in node_index_cache:
 		return node_index_cache[time_point]

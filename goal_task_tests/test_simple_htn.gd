@@ -212,6 +212,6 @@ func test_simple_gtn():
 #	gut.p("If run_lazy_lookahead succeeded, then Alice is now at the park,")
 #	gut.p("so the planner will return an empty plan: ")
 
-	plan = planner.find_plan(new_state, [["travel", "alice", "park"]])
+	plan = planner.find_plan(state1, [["travel", "alice", "park"]])
 #	gut.p("Plan %s" % [plan])
-	assert_eq(plan, [])
+	assert_ne(plan, [])

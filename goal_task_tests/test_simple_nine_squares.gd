@@ -29,13 +29,12 @@ func is_a(variable, type):
 	return variable in types[type]
 
 
-func do_close_door(state, person, location, status):
-	if is_a(person, "character") and is_a(location, "location") and state["door"][location] == "opened":
+func do_close_door(_state, person, location, status):
+	if is_a(person, "character") and is_a(location, "location") and is_a(location, "door"):
 		if the_domain.verbose > 0:
 			print("Attempting to change door status at location: %s to %s" % [location, status])
 		var actions = []
-		if state["loc"][person] != location:
-			actions.append(["travel", person, location])
+		actions.append(["travel", person, location])
 		actions.append(["close_door", person, location, "closed"])
 		return actions
 	else:
@@ -49,6 +48,7 @@ func close_door(state, person, location, status):
 		state["door"][location] = status
 		if the_domain.verbose > 0:
 			print("The door at location %s has been closed." % [location])
+		return state
 
 
 func idle(state, person, goal_time):
@@ -89,11 +89,15 @@ func do_idle(state, person, goal_time):
 		else:
 			if the_domain.verbose > 0:
 				print("Error: Goal time is less than current time: %s" % goal_time)
-				
 
-func walk(state, p, x, y, goal_time):
+
+func walk(state, p, x, y, goal_time):	
+	if state["loc"][p] != x:
+		print("Walk error: Character is not at the expected location ", x)
+		return
 	if is_a(p, "character") and is_a(x, "location") and is_a(y, "location") and x != y:
-		if state.loc[p] == x:
+		var current_location = state.loc[p]
+		if current_location == x:
 			var current_time = state.time[p]
 			if current_time < goal_time:
 				current_time = goal_time
@@ -109,8 +113,8 @@ func walk(state, p, x, y, goal_time):
 				if the_domain.verbose > 0:
 					print("walk error: Failed to add temporal constraint %s" % constraint.to_dictionary())
 		else:
-			print("walk error: Character is not at the expected location %s" % state.loc)
-			
+			print("walk error: Character is not at the expected location %s" % current_location)
+
 
 func travel_time(x, y, mode):
 	var _distance = distance(x, y)
@@ -134,9 +138,8 @@ func travel_by_foot(state, p, destination):
 		var current_location = state.loc[p]
 		if current_location == destination:
 			return [["idle", p, state["time"][p]]]
-		var path = find_path(state, p, destination)
-		if path.size() > 0:
-			return path
+		elif current_location != null:
+			return [["find_path", p, destination]]
 	return []
 
 
@@ -154,6 +157,7 @@ func find_path(state, p, destination):
 	dist[current_location] = 0
 
 	while len(pq) > 0:
+		pq.sort()
 		var top = pq.pop_front() # In Dijkstra's, we use a priority queue and pop the smallest element
 		var d = top[0]
 		var u = top[1]
@@ -177,7 +181,7 @@ func find_path(state, p, destination):
 	var path = []
 	var uu = destination
 	while not uu == null:
-		if prev[uu] != null: # Check if there's a previous location
+		if prev[uu] != null and prev[uu] != uu:
 			path.insert(0, ["walk", p, prev[uu], uu, dist[uu]]) # Insert at the beginning to reverse the path
 		uu = prev[uu]
 
@@ -207,6 +211,7 @@ func path_has_location(path, location):
 @export var types = {
 	"character": ["Mia", "Frank", "Chair"],
 	"location": ["home_Mia", "home_Frank", "cinema", "station", "mall", "park", "restaurant", "school", "office", "gym", "library", "hospital", "beach", "supermarket", "museum", "zoo", "airport"],
+	"door": ["home_Mia", "home_Frank", "cinema", "station", "mall", "park", "restaurant", "school", "office", "gym", "library", "hospital", "beach", "supermarket", "museum", "zoo", "airport"],
 	"vehicle": ["car1", "car2"],
 	"owe": [],
 	"stn": [],
@@ -257,11 +262,12 @@ func before_each():
 	planner.verbose = 0
 	planner._domains.push_back(the_domain)
 	planner.current_domain = the_domain
-	planner.declare_actions([Callable(self, "wait_for_everyone"), Callable(self, "close_door"), Callable(self, "walk"), Callable(self, "do_nothing"), Callable(self, "idle"), Callable(self, "find_path")])
+	planner.declare_actions([Callable(self, "wait_for_everyone"), Callable(self, "close_door"), Callable(self, "walk"), Callable(self, "do_nothing"), Callable(self, "idle")])
 
 	planner.declare_unigoal_methods("loc", [Callable(self, "travel_by_foot"), Callable(self, "find_path")])
 	planner.declare_unigoal_methods("time", [Callable(self, "do_idle")])
 	planner.declare_task_methods("travel", [Callable(self, "travel_by_foot"), Callable(self, "find_path")])
+	planner.declare_task_methods("find_path", [Callable(self, "find_path")])
 	planner.declare_task_methods("do_close_door", [Callable(self, "do_close_door")])
 	planner.declare_multigoal_methods([planner.m_split_multigoal])
 	
@@ -318,15 +324,20 @@ func test_visit_all_the_doors():
 
 
 func test_close_all_the_doors():
-	planner.verbose = 3
 	var state1 = state0.duplicate(1)
+	var result = []
 	for location in types["location"]:
-		state1 = planner.run_lazy_lookahead(state1, [["do_close_door", "Mia", location, "closed"]])
+		result.append_array(planner.run_lazy_lookahead(state1, [["do_close_door", "Mia", location, "closed"]]))
+	gut.p("State: %s" % state1)
+	gut.p("Result: %s" % str(result))
+	assert_ne_deep(result, [])
+	assert_ne_deep(result, [])
+	assert_ne_deep(result, false)
+	var plan = planner.find_plan(state0, result)
 	var is_doors_closed = true
 	for location in types["location"]:
 		gut.p("Location and door state: %s %s" % [location, state1["door"][location]])
 		if state1["door"][location] != "closed":
 			is_doors_closed = false 
 			gut.p("Door is still open: %s" % location)
-	gut.p("State: %s" % state1)
 	assert_true(is_doors_closed)
