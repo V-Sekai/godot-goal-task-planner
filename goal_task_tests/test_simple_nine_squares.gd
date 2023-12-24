@@ -316,13 +316,13 @@ func test_close_all_the_doors():
 	var state1 = state0.duplicate(1)
 	var goals = []
 	for location in types["location"]:
-		gut.p("Location and door state: %s" % [location, state1["door"][location]])
 		var goal = {"loc": {"Mia": location}, "door": {location: "closed"}}
 		var visit_door_goal = Multigoal.new("door_goal", goal)
 		goals.append(visit_door_goal)
 	state1 = planner.run_lazy_lookahead(state1, goals)
 	var is_doors_closed = true
 	for location in types["location"]:
+		gut.p("Location and door state: %s %s" % [location, state1["door"][location]])
 		if state1["door"][location] != "closed":
 			is_doors_closed = false 
 			gut.p("Door is still open: %s" % location)
