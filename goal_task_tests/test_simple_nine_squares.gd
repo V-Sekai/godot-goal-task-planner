@@ -29,6 +29,20 @@ func is_a(variable, type):
 	return variable in types[type]
 
 
+func do_mia_close_door(state, location, status):
+	var person = "Mia"
+	if is_a(person, "character") and is_a(location, "location") and is_a(location, "door"):
+		if the_domain.verbose > 0:
+			print("Attempting to change door status at location: %s to %s" % [location, status])
+		var actions = []
+		actions.append(["travel", person, location])
+		actions.append(["close_door", person, location, "closed"])
+		return actions
+	else:
+		if the_domain.verbose > 0:
+			print("Cant close door %s %s:" % [person, location])
+
+
 func do_close_door(_state, person, location, status):
 	if is_a(person, "character") and is_a(location, "location") and is_a(location, "door"):
 		if the_domain.verbose > 0:
@@ -266,6 +280,7 @@ func before_each():
 
 	planner.declare_unigoal_methods("loc", [Callable(self, "travel_by_foot"), Callable(self, "find_path")])
 	planner.declare_unigoal_methods("time", [Callable(self, "do_idle")])
+	planner.declare_unigoal_methods("door", [Callable(self, "do_mia_close_door")])
 	planner.declare_task_methods("travel", [Callable(self, "travel_by_foot"), Callable(self, "find_path")])
 	planner.declare_task_methods("find_path", [Callable(self, "find_path")])
 	planner.declare_task_methods("do_close_door", [Callable(self, "do_close_door")])
@@ -332,11 +347,30 @@ func test_close_all_the_doors():
 	gut.p("State: %s" % state1)
 	gut.p("Result: %s" % str(result))
 	print(result)
+	
 	var is_doors_closed = true
 	for location in types["location"]:
 		gut.p("Location and door state: %s %s" % [location, state1["door"][location]])
 		if state1["door"][location] != "closed":
 			is_doors_closed = false 
 			gut.p("Door is still open: %s" % location)
+	gut.p("What is Mia's time?: %s" % state1["time"]["Mia"])
+	assert_true(is_doors_closed)
+
+func test_close_all_the_door_goal():
+	planner.verbose = 1
+	var state1 = state0.duplicate(true)
+	var goals = []
+	var result = []
+	for location in types["location"]:
+		result += planner.run_lazy_lookahead(state1, [Multigoal.new("goal_%s" % location, {"door": {location: "closed"}, "time": {"Mia": 1000}})])
+	var is_doors_closed = true
+	for location in types["location"]:
+		gut.p("Location and door state: %s %s" % [location, state1["door"][location]])
+		if state1["door"][location] != "closed":
+			is_doors_closed = false 
+			gut.p("Door is still open: %s" % location)
+	gut.p(state1["loc"])
+	assert_ne_deep(result, [])
 	gut.p("What is Mia's time?: %s" % state1["time"]["Mia"])
 	assert_true(is_doors_closed)
