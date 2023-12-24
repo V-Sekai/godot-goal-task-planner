@@ -11,7 +11,7 @@ var actions = {}
 var methods = {}
 
 
-func parse_sexp(expression: String) -> Array[Array]:
+func parse_sexp(expression: String) -> Array:
 	var stack: Array[Array] = [[]]
 	var word: String = ""
 	for char in expression:
@@ -21,7 +21,7 @@ func parse_sexp(expression: String) -> Array[Array]:
 			if word != "":
 				stack[stack.size() - 1].append(word.strip_edges())
 				word = ""
-			var temp: Array[Array] = [stack.pop_back()]
+			var temp: Array = stack.pop_back()
 			stack[stack.size() - 1].append(temp)
 		elif char == ' ':
 			if word != "":
@@ -29,7 +29,7 @@ func parse_sexp(expression: String) -> Array[Array]:
 				word = ""
 		else:
 			word += char
-	return stack
+	return stack[0]
 
 
 func parse_method_preconditions(sexp):
