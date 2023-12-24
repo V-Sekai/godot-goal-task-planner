@@ -281,7 +281,7 @@ func m_split_multigoal(state: Dictionary, multigoal: Multigoal):
 ##refinement produced by m doesn't achieve the goal or multigoal that it is
 ##supposed to achieve. The verification task won't insert anything into the
 ##final plan; it just will verify whether m did what it was supposed to do.
-var verify_goals = true
+var verify_goals: bool = true
 
 
 ## Actions in HTN are atomic units of work, representing the simplest tasks that can't be further broken down. Actions often called primitives.
