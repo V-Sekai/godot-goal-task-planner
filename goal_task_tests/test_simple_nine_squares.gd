@@ -338,6 +338,23 @@ func test_visit_all_the_doors():
 	assert_ne_deep(result, false)
 
 
+func test_close_all_the_doors_as_plan():
+	var state1 = state0.duplicate(1)
+	var goals = []
+	for location in types["location"]:
+		goals.append_array([["do_close_door", "Mia", location, "closed"]])
+	var result = planner.find_plan(state1, goals)
+	gut.p("State: %s" % state1)
+	gut.p("Result: %s" % str(result))
+	var is_doors_closed = true
+	for location in types["location"]:
+		gut.p("Location and door state: %s %s" % [location, state1["door"][location]])
+		if state1["door"][location] != "closed":
+			is_doors_closed = false 
+			gut.p("Door is still open: %s" % location)
+	gut.p("What is Mia's time?: %s" % state1["time"]["Mia"])
+	assert_true(is_doors_closed)
+	
 func test_close_all_the_doors():
 	var state1 = state0.duplicate(1)
 	var goals = []
@@ -346,7 +363,6 @@ func test_close_all_the_doors():
 	var result = planner.run_lazy_lookahead(state1, goals)
 	gut.p("State: %s" % state1)
 	gut.p("Result: %s" % str(result))
-	print(result)
 	
 	var is_doors_closed = true
 	for location in types["location"]:
