@@ -45,12 +45,12 @@ var goal3 = Multigoal.new("goal3", {"loc": {"alice": "park", "bob": "park"}})
 # Helper functions:
 
 
-func taxi_rate(taxi_dist):
+func taxi_rate(taxi_dist) -> float:
 #	"In this domain, the taxi fares are quite low :-)"
 	return 1.5 + 0.5 * taxi_dist
 
 
-func distance(x: String, y: String):
+func distance(x: String, y: String) -> float:
 #	"""
 #	If rigid.dist[(x,y)] = d, this function figures out that d is both
 #	the distance from x to y and the distance from y to x.
@@ -68,7 +68,7 @@ func distance(x: String, y: String):
 	return INF
 
 
-func is_a(variable, type):
+func is_a(variable, type) -> bool:
 #	"""
 #	In most classical planners, one would declare data-types for the parameters
 #	of each action, and the data-type checks would be done by the planner.
@@ -86,21 +86,21 @@ func is_a(variable, type):
 # Actions:
 
 
-func walk(state, p, x, y):
+func walk(state, p, x, y) -> Variant:
 	if is_a(p, "person") and is_a(x, "location") and is_a(y, "location") and x != y:
 		if state.loc[p] == x:
 			state.loc[p] = y
 			return state
+	return false
 
-
-func call_taxi(state, p, x):
+func call_taxi(state, p, x) -> Variant:
 	if is_a(p, "person") and is_a(x, "location"):
 		state.loc["taxi1"] = x
 		state.loc[p] = "taxi1"
 		return state
+	return false
 
-
-func ride_taxi(state, p, y):
+func ride_taxi(state, p, y) -> Variant:
 	# if p is a person, p is in a taxi, and y is a location:
 	if is_a(p, "person") and is_a(state.loc[p], "taxi") and is_a(y, "location"):
 		var taxi = state.loc[p]
@@ -109,43 +109,44 @@ func ride_taxi(state, p, y):
 			state.loc[taxi] = y
 			state.owe[p] = taxi_rate(distance(x, y))
 			return state
+	return false
 
-
-func pay_driver(state: Dictionary, p: String, y: String):
+func pay_driver(state: Dictionary, p: String, y: String) -> Variant:
 	if is_a(p, "person"):
 		if state.cash[p] >= state.owe[p]:
 			state.cash[p] = state.cash[p] - state.owe[p]
 			state.owe[p] = 0
 			state.loc[p] = y
 			return state
-
+	return false
 
 ###############################################################################
 # Methods:
 
 
-func do_nothing(state, p, y):
+func do_nothing(state, p, y) -> Variant:
 	if is_a(p, "person") and is_a(y, "location"):
 		var x = state.loc[p]
 		if x == y:
 			return []
+	return false
 
-
-func travel_by_foot(state, p, y):
+func travel_by_foot(state, p, y) -> Variant:
 	if is_a(p, "person") and is_a(y, "location"):
 		var x = state.loc[p]
 		if x != y and distance(x, y) <= 2:
 			return [["walk", p, x, y]]
+	return false
 
 
-func travel_by_taxi(state, p, y):
+func travel_by_taxi(state, p, y) -> Variant:
 	if is_a(p, "person") and is_a(y, "location"):
 		var x = state.loc[p]
 		if x != y and state.cash[p] >= taxi_rate(distance(x, y)):
 			return [["call_taxi", p, x], ["ride_taxi", p, y], ["pay_driver", p, y]]
+	return false
 
-
-func _ready():
+func _ready() -> void:
 	planner._domains.push_back(the_domain)
 	planner.current_domain = the_domain
 	goal1.state["loc"] = {"alice": "park"}
@@ -171,7 +172,7 @@ func _ready():
 	planner.declare_multigoal_methods([planner.m_split_multigoal])
 
 
-func test_simple_gtn():
+func test_simple_gtn() -> void:
 	# If we've changed to some other domain, this will change us back.
 	planner.current_domain = the_domain
 #	planner.print_domain()

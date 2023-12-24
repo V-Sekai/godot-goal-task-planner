@@ -14,12 +14,12 @@ var the_domain = preload("res://addons/task_goal/core/domain.gd").new(domain_nam
 var planner = preload("res://addons/task_goal/core/plan.gd").new()
 
 
-func travel_location(state, entity, location):
+func travel_location(state, entity, location) -> Dictionary:
 	state.at[entity] = location
 	return state
 
 
-func m_travel_location(state, entity, location):
+func m_travel_location(state, entity, location) -> Variant:
 	if entity in state.entities and location in state.locations and state.at[entity] != location:
 		return [["travel_location", entity, location]]
 	return false
@@ -32,7 +32,7 @@ func has_entity_met_entity(_state: Dictionary, e_1: String, e_2, place: String) 
 var state1: Dictionary
 
 
-func before_each():
+func before_each() -> void:
 	planner._domains.push_back(the_domain)
 
 	# If we've changed to some other domain, this will change us back.
@@ -65,6 +65,6 @@ func before_each():
 	state1.at = {"seb": "home", "mia": "groceries"}
 
 
-func test_together_goal():
+func test_together_goal() -> void:
 	var plan = planner.find_plan(state1.duplicate(true), [["entity_met_entity", "seb", "mia", "coffee_shop"]])
 	assert_eq(plan, [["travel_location", "seb", "coffee_shop"], ["travel_location", "mia", "coffee_shop"]], "")

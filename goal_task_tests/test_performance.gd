@@ -8,18 +8,18 @@ extends "res://addons/gut/test.gd"
 var stn: SimpleTemporalNetwork = null
 
 
-func before_each():
+func before_each() -> void:
 	stn = SimpleTemporalNetwork.new()
 
 
-func calculate_time_interval(i, temporal_qualifier):
+func calculate_time_interval(i, temporal_qualifier) -> Array:
 	if temporal_qualifier == 1:
 		return [i * 10, i * 10 + 5]
 	else:
 		return [(i * 10) + 5, (i + 1) * 10]
 
 
-func test_performance_with_large_number_of_constraints():
+func test_performance_with_large_number_of_constraints() -> void:
 	var start_time = Time.get_ticks_msec()
 
 	for i in range(1300):
