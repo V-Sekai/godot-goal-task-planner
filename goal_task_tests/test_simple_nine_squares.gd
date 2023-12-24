@@ -32,20 +32,7 @@ func is_a(variable, type):
 func do_mia_close_door(state, location, status):
 	var person = "Mia"
 	if is_a(person, "character") and is_a(location, "location") and is_a(location, "door"):
-		if the_domain.verbose > 0:
-			print("Attempting to change door status at location: %s to %s" % [location, status])
-		var actions = []
-		actions.append(["travel", person, location])
-		actions.append(["close_door", person, location, "closed"])
-		return actions
-	else:
-		if the_domain.verbose > 0:
-			print("Cant close door %s %s:" % [person, location])
-
-
-func do_close_door(_state, person, location, status):
-	if is_a(person, "character") and is_a(location, "location") and is_a(location, "door"):
-		if _state[location]["status"] == "closed":
+		if state["door"][location] == 'closed':
 			if the_domain.verbose > 0:
 				print("Door at location: %s is already closed" % location)
 			return []
@@ -54,19 +41,43 @@ func do_close_door(_state, person, location, status):
 				print("Attempting to change door status at location: %s to %s" % [location, status])
 			var actions = []
 			actions.append(["travel", person, location])
-			actions.append(["close_door", person, location, "closed"])
+			actions.append(["close_door", person, location, "closed", 0])
+			actions.append(["idle", person, 0])
 			return actions
 	else:
 		if the_domain.verbose > 0:
 			print("Cant close door %s %s:" % [person, location])
 
 
-func close_door(state, person, location, status):
-	if is_a(location, "location") and is_a(person, "character") and state["loc"][person] == location:
-		state["door"][location] = status
+func do_close_door(state, person, location, status, goal_time):
+	if is_a(person, "character") and is_a(location, "location") and is_a(location, "door"):
+		if state["door"][location] == "closed":
+			if the_domain.verbose > 0:
+				print("Door at location: %s is already closed" % location)
+			return []
+		elif state["door"][location] == "opened":
+			print("Goal time: %s" % goal_time)
+			if the_domain.verbose > 0:
+				print("Attempting to change door status at location: %s to %s" % [location, status])
+			var actions = []
+			actions.append(["travel", person, location])
+			actions.append(["close_door", person, location, "closed", goal_time])
+			actions.append(["idle", person, ])
+			if goal_time >= state["time"][person]:
+				actions.append(["idle", person, goal_time])
+			return actions
+	else:
 		if the_domain.verbose > 0:
-			print("The door at location %s has been closed." % [location])
-		return state
+			print("Cant close door %s %s:" % [person, location])
+
+
+func close_door(state, person, location, status, goal_time):
+	if is_a(location, "location") and is_a(person, "character") and state["loc"][person] == location:
+		if state["door"][location] == "opened":
+			state["door"][location] = status
+			if the_domain.verbose > 0:
+				print("The door at location %s has been closed." % [location])
+			return state
 
 
 func idle(state, person, goal_time):
@@ -314,7 +325,7 @@ func test_visit_all_the_doors():
 
 
 func test_close_all_the_door_goal():
-	planner.verbose = 1
+	planner.verbose = 3
 	var state1 = state0.duplicate(true)
 	var goals = []
 	for location in types["location"]:
