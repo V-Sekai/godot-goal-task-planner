@@ -12,23 +12,25 @@ var methods = {}
 
 
 func parse_sexp(expression: String) -> Array:
-	var stack: Array[Array] = [[]]
+	var stack: Array = [[]]
 	var word: String = ""
 	for char in expression:
 		if char == '(':
 			stack.append([])
 		elif char == ')':
-			if word != "":
+			if word.strip_edges() != "":
 				stack[stack.size() - 1].append(word.strip_edges())
 				word = ""
 			var temp: Array = stack.pop_back()
 			stack[stack.size() - 1].append(temp)
-		elif char == ' ':
-			if word != "":
+		elif char == ' ' or char == '\n':
+			if word.strip_edges() != "":
 				stack[stack.size() - 1].append(word.strip_edges())
 				word = ""
 		else:
 			word += char
+	if word.strip_edges() != "":
+		stack[stack.size() - 1].append(word.strip_edges())
 	return stack[0]
 
 
