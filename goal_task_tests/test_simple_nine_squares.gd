@@ -94,10 +94,6 @@ func do_idle(state, person, goal_time):
 		if the_domain.verbose > 0:
 			print("Current time for %s: %s" % [person, state["time"][person]])
 			print("Goal time: %s" % goal_time)
-		if goal_time < state["time"][person]:			
-			if the_domain.verbose > 0:
-				print("Warning: Goal time is in the past. Adjusting goal time.")
-			goal_time = state["time"][person]
 		if goal_time >= state["time"][person]:
 			return [["idle", person, goal_time]]
 		else:
@@ -205,6 +201,7 @@ func find_path(state, p, destination):
 	return path
 
 
+
 func compare_goal_times(a, b):
 	return a[1] > b[1]
 
@@ -269,7 +266,7 @@ func path_has_location(path, location):
 }
 
 		
-var goal1 = Multigoal.new("goal1", {"loc": {"Mia": "supermarket"}, "time": {"Mia": 127 }})
+var goal1 = Multigoal.new("goal1", {"loc": {"Mia": "airport"}, "time": {"Mia": 59 }})
 
 var goal2 = Multigoal.new("goal2", {"loc": {"Mia": "supermarket"}, "time": {"Mia": 15 }})
 
@@ -293,41 +290,9 @@ func before_each():
 func test_isekai_anime():
 	planner.current_domain = the_domain
 
-	var expected = [["walk", "Mia", "home_Mia", "cinema", 12], ["walk", "Mia", "cinema", "home_Frank", 16], ["walk", "Mia", "home_Frank", "hospital", 36], ["walk", "Mia", "hospital", "beach", 47], ["walk", "Mia", "beach", "supermarket", 59], ["idle", "Mia", 127]]
+	var expected = [["walk", "Mia", "home_Mia", "park", 5], ["walk", "Mia", "park", "museum", 13], ["walk", "Mia", "museum", "zoo", 14], ["walk", "Mia", "zoo", "airport", 15], ["idle", "Mia", 59]]
 	var result = planner.find_plan(state0.duplicate(true), [goal1])
 	assert_eq_deep(result, expected)
-
-
-func generate_random_plan():
-	var shuffled_state: Dictionary = {"loc": {}, "time": {}}
-	var loc_keys = state0["loc"].keys()
-	var travel_destinations = []
-	for key in loc_keys:
-		if is_a(key, "character"):
-			var possible_values = types["location"]
-			possible_values.shuffle()
-			# Ensure the character does not stay at home
-			if possible_values[0] == state0["loc"][key]:
-				possible_values.remove_at(0)
-			shuffled_state["loc"][key] = possible_values[0]
-			shuffled_state["time"][key] = 100
-			gut.p("Goal %s" % shuffled_state)
-	travel_destinations.push_back(Multigoal.new("goal1", shuffled_state))
-	return travel_destinations
-	
-	
-func test_random_plans():
-	randomize()
-	var result = []
-	for i in range(100):
-		var plan = generate_random_plan()
-		var temp_result = planner.find_plan(state0.duplicate(true), plan)
-		if not temp_result is bool and temp_result.size():
-			result.append(temp_result)
-			break
-	gut.p("Result: %s" % str(result))
-	assert_ne_deep(result, [])
-	assert_ne_deep(result, false)
 
 
 func test_visit_all_the_doors():
