@@ -29,22 +29,19 @@ func is_a(variable, type):
 	return variable in types[type]
 
 
-func do_close_door(_state, location, status):
-	if is_a(location, "location"):
-		if the_domain.verbose > 0:
-			print("Attempting to change door status at location: %s to %s" % [location, status])
-		return [["close_door", location, status]]
+func do_close_door(state, location, status):
+	if is_a(location, "location") and status == "closed":
+		if state["door"][location] == "opened":
+			if the_domain.verbose > 0:
+				print("Attempting to change door status at location: %s to %s" % [location, status])
+			return [["close_door", location, status]]
 
 
 func close_door(state, location, status):
 	if is_a(location, "location"):
-		if state["door"][location] == "open":
-			state["door"][location] = status
-			if the_domain.verbose > 0:
-				print("The door at location %s has been %s." % [location, status])
-		else:
-			if the_domain.verbose > 0:
-				print("The door at location %s is already %s." % [location, status])
+		state["door"][location] = status
+		if the_domain.verbose > 0:
+			print("The door at location %s has been %s." % [location, status])
 
 
 func idle(state, person, goal_time):
@@ -219,6 +216,7 @@ func path_has_location(path, location):
 	["station", "home_Mia"]: 1,
 	["station", "home_Frank"]: 10,
 	["station", "cinema"]: 12,
+	["home_Mia", "station"]: 12,
 	["home_Mia", "mall"]: 8,
 	["home_Frank", "mall"]: 10,
 	["home_Frank", "hospital"]: 20,
@@ -244,7 +242,7 @@ func path_has_location(path, location):
 
 func _ready():
 	for location in types["location"]:
-		state0["door"][location] = "open"
+		state0["door"][location] = "opened"
 		
 var goal1 = Multigoal.new("goal1", {"loc": {"Mia": "supermarket"}, "time": {"Mia": 127 }})
 
@@ -306,26 +304,25 @@ func test_random_plans():
 func test_visit_all_the_doors():
 	var door_goals = []
 	for location in types["location"]:
-		var goal = ["travel", "Mia", location]
-		gut.p(goal)
-		var visit_door_goal = goal
-		door_goals.append(visit_door_goal)
+		var task = ["travel", "Mia", location]
+		gut.p(task)
+		door_goals.append(task)
 	var result = planner.find_plan(state0.duplicate(true), door_goals)
 	assert_ne_deep(result, [])
 	assert_ne_deep(result, false)
 
 
-func test_visit_all_the_doors_as_goals():
+func test_close_all_the_doors():
 	var state1 = state0.duplicate(1)
 	for location in types["location"]:
-		gut.p("Mia's current location: %s" % state1["loc"]["Mia"])
+		gut.p("Location and door state: %s" % [location, state1["door"][location]])
 		var goal = {"loc": {"Mia": location}, "door": {location: "closed"}}
-		gut.p("Goal: %s" % goal)
 		var visit_door_goal = Multigoal.new("door_goal", goal)
 		state1 = planner.run_lazy_lookahead(state1, [visit_door_goal])
-		gut.p("Location and door state: %s %s" % [state1["loc"]["Mia"], state1["door"][location]])
 	var is_doors_closed = true
 	for location in types["location"]:
-		if state1["door"][location] == "opened":
+		if state1["door"][location] != "closed":
 			is_doors_closed = false 
+			gut.p("Door is still open: %s" % location)
+	gut.p("State: %s" % state1)
 	assert_true(is_doors_closed)
