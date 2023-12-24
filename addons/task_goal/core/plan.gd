@@ -505,7 +505,7 @@ func run_lazy_lookahead(state: Dictionary, todo_list: Array, max_tries: int = 10
 					if verbose >= 2:
 						print(new_state)
 					state = new_state
-					executed_actions.append([action_name, action.slice(1)])
+					executed_actions.append([action_name.get_method()] + action.slice(1))
 				else:
 					if verbose >= 1:
 						print("RunLazyLookahead> WARNING: action %s failed; will call find_plan." % [action_name])
