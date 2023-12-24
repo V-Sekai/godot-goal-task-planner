@@ -11,7 +11,7 @@ var the_domain = preload("res://addons/task_goal/core/domain.gd").new(domain_nam
 var planner = preload("res://addons/task_goal/core/plan.gd").new()
 
 
-func distance(x: String, y: String):
+func distance(x: String, y: String) -> float:
 	var result = dist.get([x, y])
 	if result == null:
 		return INF
@@ -25,11 +25,11 @@ func distance(x: String, y: String):
 	return INF
 
 
-func is_a(variable, type):
+func is_a(variable, type) -> bool:
 	return variable in types[type]
 
 
-func do_mia_close_door(state, location, status):
+func do_mia_close_door(state, location, status) -> Variant:
 	var person = "Mia"
 	if is_a(person, "character") and is_a(location, "location") and is_a(location, "door"):
 		if state["door"][location] == 'closed':
@@ -47,9 +47,9 @@ func do_mia_close_door(state, location, status):
 	else:
 		if the_domain.verbose > 0:
 			print("Cant close door %s %s:" % [person, location])
+	return false
 
-
-func do_close_door(state, person, location, status, goal_time):
+func do_close_door(state, person, location, status, goal_time) -> Variant:
 	if is_a(person, "character") and is_a(location, "location") and is_a(location, "door"):
 		if state["door"][location] == "closed":
 			if the_domain.verbose > 0:
@@ -69,18 +69,19 @@ func do_close_door(state, person, location, status, goal_time):
 	else:
 		if the_domain.verbose > 0:
 			print("Cant close door %s %s:" % [person, location])
+	return false
 
 
-func close_door(state, person, location, status, goal_time):
+func close_door(state, person, location, status, goal_time) -> Variant:
 	if is_a(location, "location") and is_a(person, "character") and state["loc"][person] == location:
 		if state["door"][location] == "opened":
 			state["door"][location] = status
 			if the_domain.verbose > 0:
 				print("The door at location %s has been closed." % [location])
 			return state
+	return false
 
-
-func idle(state, person, goal_time):
+func idle(state, person, goal_time) -> Variant:
 	if is_a(person, "character"):
 		var current_time = state["time"][person]
 		if current_time > goal_time:
@@ -102,9 +103,9 @@ func idle(state, person, goal_time):
 		else:
 			if the_domain.verbose > 0:
 				print("idle error: Failed to add temporal constraint %s" % constraint.to_dictionary())
+	return false
 
-
-func do_idle(state, person, goal_time):
+func do_idle(state, person, goal_time) -> Variant:
 	if is_a(person, "character"):
 		if the_domain.verbose > 0:
 			print("Current time for %s: %s" % [person, state["time"][person]])
@@ -114,9 +115,9 @@ func do_idle(state, person, goal_time):
 		else:
 			if the_domain.verbose > 0:
 				print("Error: Goal time is less than current time: %s" % goal_time)
+	return false
 
-
-func walk(state, p, x, y, goal_time):
+func walk(state, p, x, y, goal_time) -> Variant:
 	if state["loc"][p] != x:
 		print("Walk error: Character is not at the expected location ", x)
 		return
@@ -139,9 +140,9 @@ func walk(state, p, x, y, goal_time):
 					print("walk error: Failed to add temporal constraint %s" % constraint.to_dictionary())
 		else:
 			print("walk error: Character is not at the expected location %s" % current_location)
+	return false
 
-
-func travel_time(x, y, mode):
+func travel_time(x, y, mode) -> int:
 	var _distance = distance(x, y)
 	if mode == "foot":
 		return _distance / 1
@@ -152,20 +153,21 @@ func travel_time(x, y, mode):
 		return -1
 
 
-func do_nothing(state, p, y):
+func do_nothing(state, p, y) -> Variant:
 	if is_a(p, "character"):
 		state["time"][p] += y
 		return []
+	return false
 
 
-func travel_by_foot(state, p, destination):
+func travel_by_foot(state, p, destination) -> Variant:
 	if is_a(p, "character") and is_a(destination, "location"):
 		var current_location = state.loc[p]
 		if current_location == destination:
 			return [["idle", p, state["time"][p]]]
 		elif current_location != null:
 			return [["find_path", p, destination]]
-	return []
+	return false
 
 
 var memo = {}
@@ -173,7 +175,7 @@ var memo = {}
 var prev = {}
 
 
-func find_path(state, p, destination):
+func find_path(state, p, destination) -> Variant:
 	var current_location = state["loc"][p]
 	var pq = [[0, current_location]]  # Initialize priority queue with current location and distance as 0
 
@@ -203,7 +205,7 @@ func find_path(state, p, destination):
 				pq.push_back([dist[loc], loc])
 
 	if not dist.has(destination):
-		return -1
+		return false
 
 	# If a path exists, reconstruct it by following the previous locations from the destination to the start
 	var path = []
@@ -217,11 +219,11 @@ func find_path(state, p, destination):
 	return path
 
 
-func compare_goal_times(a, b):
+func compare_goal_times(a, b) -> bool:
 	return a[1] > b[1]
 
 
-func path_has_location(path, location):
+func path_has_location(path, location) -> bool:
 	for step in path:
 		if step[3] == location:  # Check the destination of each step
 			if the_domain.verbose > 0:
@@ -284,7 +286,7 @@ var goal1 = Multigoal.new("goal1", {"loc": {"Mia": "airport"}, "time": {"Mia": 5
 var goal2 = Multigoal.new("goal2", {"loc": {"Mia": "supermarket"}, "time": {"Mia": 15}})
 
 
-func before_each():
+func before_each() -> void:
 	for location in types["location"]:
 		state0["door"][location] = "opened"
 	planner.verbose = 0
@@ -301,7 +303,7 @@ func before_each():
 	planner.declare_multigoal_methods([planner.m_split_multigoal])
 
 
-func test_isekai_anime():
+func test_isekai_anime() -> void:
 	planner.current_domain = the_domain
 
 	var expected = [["walk", "Mia", "home_Mia", "park", 5], ["walk", "Mia", "park", "museum", 13], ["walk", "Mia", "museum", "zoo", 14], ["walk", "Mia", "zoo", "airport", 15], ["idle", "Mia", 59]]
@@ -309,7 +311,7 @@ func test_isekai_anime():
 	assert_eq_deep(result, expected)
 
 
-func test_visit_all_the_doors():
+func test_visit_all_the_doors() -> void:
 	var door_goals = []
 	for location in types["location"]:
 		var task = ["travel", "Mia", location]
@@ -324,7 +326,7 @@ func test_visit_all_the_doors():
 #func test_close_all_the_doors():
 
 
-func test_close_all_the_door_goal():
+func test_close_all_the_door_goal() -> void:
 	planner.verbose = 1
 	var state1 = state0.duplicate(true)
 	var goals = []
