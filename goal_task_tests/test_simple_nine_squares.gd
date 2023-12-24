@@ -239,16 +239,14 @@ func path_has_location(path, location):
 	["airport", "home_Frank"]: 17,
 }
 
-
-func _ready():
-	for location in types["location"]:
-		state0["door"][location] = "opened"
 		
 var goal1 = Multigoal.new("goal1", {"loc": {"Mia": "supermarket"}, "time": {"Mia": 127 }})
 
 var goal2 = Multigoal.new("goal2", {"loc": {"Mia": "supermarket"}, "time": {"Mia": 15 }})
 
 func before_each():
+	for location in types["location"]:
+		state0["door"][location] = "opened"
 	planner.verbose = 0
 	planner._domains.push_back(the_domain)
 	planner.current_domain = the_domain
