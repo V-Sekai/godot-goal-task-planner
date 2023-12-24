@@ -154,7 +154,7 @@ func declare_actions(actions):
 ##
 ##	This is like Pyhop's declare_methods function, except that it can be
 ##	called several times to declare more methods for the same task.
-func declare_task_methods(task_name, methods):
+func declare_task_methods(task_name: StringName, methods: Array):
 	if current_domain == null:
 		print("Cannot declare methods until a domain has been created.")
 		return []
@@ -190,7 +190,7 @@ func declare_task_methods(task_name, methods):
 ##
 ##	To see each unigoal's list of relevant methods, use
 ##		current_domain.display()
-func declare_unigoal_methods(state_var_name, methods):
+func declare_unigoal_methods(state_var_name: StringName, methods: Array):
 	if current_domain == null:
 		print("Cannot declare methods until a domain has been created.")
 		return []
@@ -220,7 +220,7 @@ func declare_unigoal_methods(state_var_name, methods):
 ##	multigoal methods to the list.
 ##
 ##	For more information, see the docstring for the Multigoal class.
-func declare_multigoal_methods(methods):
+func declare_multigoal_methods(methods: Array):
 	if current_domain == null:
 		print("Cannot declare methods until a domain has been created.")
 		return []
@@ -255,7 +255,7 @@ func declare_multigoal_methods(methods):
 ##	work much better than others. Thus, rather than using the method as it's
 ##	defined below, one might want to modify it to choose a good order, e.g.,
 ##	by using domain-specific information or a heuristic function.
-func m_split_multigoal(state, multigoal):
+func m_split_multigoal(state: Dictionary, multigoal: Multigoal):
 	var goal_dict: Dictionary = domain_const._goals_not_achieved(state, multigoal)
 	var goal_list: Array = []
 	for state_var_name in goal_dict.keys():
@@ -328,7 +328,7 @@ func _refine_task_and_continue(state, task1, todo_list, plan, depth) -> Variant:
 
 
 ## A unigoal in HTN represent one desired end state that the system is trying to achieve.
-func _refine_unigoal_and_continue(state, goal1, todo_list, plan, depth) -> Variant:
+func _refine_unigoal_and_continue(state: Dictionary, goal1: Array, todo_list: Array, plan: Array, depth: int) -> Variant:
 	if verbose >= 3:
 		print("Depth %s goal %s: " % [depth, goal1])
 
@@ -477,7 +477,7 @@ func _item_to_string(item):
 ##
 ## Note: whenever run_lazy_lookahead encounters an action for which there is
 ## no corresponding command definition, it uses the action definition instead.
-func run_lazy_lookahead(state: Dictionary, todo_list: Array, max_tries: int = 10):
+func run_lazy_lookahead(state: Dictionary, todo_list: Array, max_tries: int = 10) -> Dictionary:
 	if verbose >= 1:
 		print("RunLazyLookahead> run_lazy_lookahead, verbose = %s, max_tries = %s" % [verbose, max_tries])
 		print("RunLazyLookahead> initial state: %s" % [state.keys()])
