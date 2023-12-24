@@ -45,12 +45,17 @@ func do_mia_close_door(state, location, status):
 
 func do_close_door(_state, person, location, status):
 	if is_a(person, "character") and is_a(location, "location") and is_a(location, "door"):
-		if the_domain.verbose > 0:
-			print("Attempting to change door status at location: %s to %s" % [location, status])
-		var actions = []
-		actions.append(["travel", person, location])
-		actions.append(["close_door", person, location, "closed"])
-		return actions
+		if _state[location]["status"] == "closed":
+			if the_domain.verbose > 0:
+				print("Door at location: %s is already closed" % location)
+			return []
+		else:
+			if the_domain.verbose > 0:
+				print("Attempting to change door status at location: %s to %s" % [location, status])
+			var actions = []
+			actions.append(["travel", person, location])
+			actions.append(["close_door", person, location, "closed"])
+			return actions
 	else:
 		if the_domain.verbose > 0:
 			print("Cant close door %s %s:" % [person, location])
@@ -309,7 +314,7 @@ func test_visit_all_the_doors():
 
 
 func test_close_all_the_door_goal():
-	planner.verbose = 3
+	planner.verbose = 1
 	var state1 = state0.duplicate(true)
 	var goals = []
 	for location in types["location"]:
