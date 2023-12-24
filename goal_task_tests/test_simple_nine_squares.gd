@@ -29,6 +29,24 @@ func is_a(variable, type):
 	return variable in types[type]
 
 
+func do_close_door(state, location, status):
+	if is_a(location, "location"):
+		if the_domain.verbose > 0:
+			print("Attempting to change door status at location: %s to %s" % [location, status])
+		return [["close_door", location, status]]
+
+
+func close_door(state, location, status):
+	if is_a(location, "location"):
+		if state["door"][location] == "open":
+			state["door"][location] = status
+			if the_domain.verbose > 0:
+				print("The door at location %s has been %s." % [location, status])
+		else:
+			if the_domain.verbose > 0:
+				print("The door at location %s is already %s." % [location, status])
+
+
 func idle(state, person, goal_time):
 	if is_a(person, "character"):
 		var current_time = state["time"][person]
@@ -236,10 +254,11 @@ func before_each():
 	planner.verbose = 0
 	planner._domains.push_back(the_domain)
 	planner.current_domain = the_domain
-	planner.declare_actions([Callable(self, "wait_for_everyone"), Callable(self, "walk"), Callable(self, "do_nothing"), Callable(self, "idle"), Callable(self, "find_path")])
+	planner.declare_actions([Callable(self, "wait_for_everyone"), Callable(self, "close_door"), Callable(self, "walk"), Callable(self, "do_nothing"), Callable(self, "idle"), Callable(self, "find_path")])
 
 	planner.declare_unigoal_methods("loc", [Callable(self, "travel_by_foot"), Callable(self, "find_path")])
 	planner.declare_unigoal_methods("time", [Callable(self, "do_idle")])
+	planner.declare_unigoal_methods("door", [Callable(self, "do_close_door")])
 	planner.declare_task_methods("travel", [Callable(self, "travel_by_foot"), Callable(self, "find_path")])
 	planner.declare_multigoal_methods([planner.m_split_multigoal])
 	
@@ -294,3 +313,19 @@ func test_visit_all_the_doors():
 	var result = planner.find_plan(state0.duplicate(true), door_goals)
 	assert_ne_deep(result, [])
 	assert_ne_deep(result, false)
+
+
+func test_visit_all_the_doors_as_goals():
+	planner.verbose = 0
+	var result = []
+	var state1 = state0.duplicate(1)
+	for location in types["location"]:
+		var goal = {"loc": {"Mia": location}, "door": {location: "closed"}}
+		gut.p("Goal: %s" % goal)
+		var visit_door_goal = Multigoal.new("door_goal", goal)
+		state1 = planner.run_lazy_lookahead(state1, [visit_door_goal])
+	var is_doors_closed = true
+	for location in types["location"]:
+		if state1["door"][location] == "opened":
+			is_doors_closed = false 
+	assert_true(is_doors_closed)
