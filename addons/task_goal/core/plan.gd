@@ -473,14 +473,14 @@ func _item_to_string(item):
 ##
 ## Note: whenever run_lazy_lookahead encounters an action for which there is
 ## no corresponding command definition, it uses the action definition instead.
-func run_lazy_lookahead(state: Dictionary, todo_list: Array, max_tries: int = 10) -> Array:
+func run_lazy_lookahead(state: Dictionary, todo_list: Array, max_tries: int = 10):
 	if verbose >= 1:
 		print("RunLazyLookahead> run_lazy_lookahead, verbose = %s, max_tries = %s" % [verbose, max_tries])
 		print("RunLazyLookahead> initial state: %s" % [state.keys()])
 		print("RunLazyLookahead> To do:", todo_list)
 
 	var ordinals = {1: "st", 2: "nd", 3: "rd"}
-	var executed_actions = []
+
 	for tries in range(1, max_tries + 1):
 		if verbose >= 1:
 			print("RunLazyLookahead> %s%s call to find_plan:" % [tries, ordinals.get(tries, "")])
@@ -489,20 +489,26 @@ func run_lazy_lookahead(state: Dictionary, todo_list: Array, max_tries: int = 10
 		if plan == null or (typeof(plan) == TYPE_ARRAY and plan.is_empty()) or (typeof(plan) == TYPE_DICTIONARY and !plan):
 			if verbose >= 1:
 				print("run_lazy_lookahead: find_plan has failed")
-			return executed_actions
+			return state
+
+		if plan == null or (typeof(plan) == TYPE_ARRAY and plan.is_empty()) or (typeof(plan) == TYPE_DICTIONARY and !plan):
+			if verbose >= 1:
+				print("RunLazyLookahead> Empty plan => success\nafter {tries} calls to find_plan.")
+			if verbose >= 2:
+				print("> final state %s" % [state])
+			return state
 
 		if typeof(plan) != TYPE_BOOL:
 			for action in plan:
 				var action_name = current_domain._action_dict.get(action[0])
 				if verbose >= 1:
-					print("RunLazyLookahead> Command: %s" % [action])
+					print("RunLazyLookahead> Command: %s" % [[action_name] + action.slice(1)])
 
 				var new_state = _apply_command_and_continue(state, action_name, action.slice(1))
 				if new_state is Dictionary:
 					if verbose >= 2:
 						print(new_state)
 					state = new_state
-					executed_actions.append([action_name.get_method()] + action.slice(1))
 				else:
 					if verbose >= 1:
 						print("RunLazyLookahead> WARNING: action %s failed; will call find_plan." % [action_name])
@@ -516,8 +522,7 @@ func run_lazy_lookahead(state: Dictionary, todo_list: Array, max_tries: int = 10
 	if verbose >= 2:
 		print("RunLazyLookahead> final state %s" % state)
 
-	return executed_actions
-
+	return state
 
 
 func _apply_command_and_continue(state: Dictionary, command: Callable, args: Array) -> Variant:

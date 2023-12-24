@@ -361,9 +361,8 @@ func test_close_all_the_door_goal():
 	planner.verbose = 1
 	var state1 = state0.duplicate(true)
 	var goals = []
-	var result = []
 	for location in types["location"]:
-		result += planner.run_lazy_lookahead(state1, [Multigoal.new("goal_%s" % location, {"door": {location: "closed"}, "time": {"Mia": 1000}})])
+		state1 = planner.run_lazy_lookahead(state1, [Multigoal.new("goal_%s" % location, {"door": {location: "closed"}, "time": {"Mia": 1000}})])
 	var is_doors_closed = true
 	for location in types["location"]:
 		gut.p("Location and door state: %s %s" % [location, state1["door"][location]])
@@ -371,6 +370,5 @@ func test_close_all_the_door_goal():
 			is_doors_closed = false 
 			gut.p("Door is still open: %s" % location)
 	gut.p(state1["loc"])
-	assert_ne_deep(result, [])
 	gut.p("What is Mia's time?: %s" % state1["time"]["Mia"])
 	assert_true(is_doors_closed)
