@@ -1,7 +1,7 @@
 extends "res://addons/task_goal/core/domain.gd"
 
 func _init() -> void:
-	set_name("romantic")
+	set_name("isekai_anime")
 
 ## Function to travel to a location
 func travel_location(state, entity, location) -> Dictionary:
