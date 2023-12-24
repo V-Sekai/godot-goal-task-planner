@@ -90,7 +90,7 @@ func validate_constraints(from_constraint, to_constraint, min_gap: float, max_ga
 		return false
 
 	if not from_constraint.get("time_interval"):
-		print("from_constraint does not have 'time_interval': %s" % from_constraint.to_dictionary())
+		print("from_constraint does not have 'time_interval': %s" % from_constraint)
 		return false
 
 	if to_constraint != null and to_constraint.duration > (to_constraint.time_interval.y - to_constraint.time_interval.x):
@@ -98,17 +98,17 @@ func validate_constraints(from_constraint, to_constraint, min_gap: float, max_ga
 		return false
 
 	if not from_constraint.get("duration"):
-		print("from_constraint does not have 'duration': %s" % from_constraint.to_dictionary())
+		print("from_constraint does not have 'duration': %s" % from_constraint)
 		return false
 
 	# Check if to_constraint exists and has the necessary properties
 	if to_constraint:
 		if not to_constraint.get("time_interval"):
-			print("to_constraint does not have 'time_interval': %s" % from_constraint.to_dictionary())
+			print("to_constraint does not have 'time_interval': %s" % from_constraint)
 			return false
 
 		if not to_constraint.get("duration"):
-			print("to_constraint does not have 'duration': %s" % from_constraint.to_dictionary())
+			print("to_constraint does not have 'duration': %s" % from_constraint)
 			return false
 
 	# Check if min_gap and max_gap are valid
@@ -154,7 +154,7 @@ func get_temporal_constraint_by_name(constraint_name: String) -> TemporalConstra
 func is_consistent() -> bool:
 	var constraints_str: String
 	for c in constraints:
-		constraints_str += str(c.to_dictionary()) + ", "
+		constraints_str += str(c) + ", "
 	if not constraints.size():
 		return true
 
@@ -162,11 +162,11 @@ func is_consistent() -> bool:
 	for i in range(constraints.size()):
 		for j in range(i + 1, constraints.size()):
 			if constraints[i].time_interval.y > constraints[j].time_interval.x and constraints[i].time_interval.x < constraints[j].time_interval.y:
-				print("Overlapping constraints: " + str(constraints[i].to_dictionary()) + " and " + str(constraints[j].to_dictionary()))
+				print("Overlapping constraints: " + str(constraints[i]) + " and " + str(constraints[j]))
 				return false
 		var decompositions = enumerate_decompositions(constraints[i])
 		if decompositions.is_empty():
-			print("No valid decompositions for constraint: " + str(constraints[i].to_dictionary()))
+			print("No valid decompositions for constraint: " + str(constraints[i]))
 			return false
 
 	return true

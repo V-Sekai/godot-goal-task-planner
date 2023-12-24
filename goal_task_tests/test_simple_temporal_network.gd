@@ -52,7 +52,7 @@ func test_print_constraints_and_check_consistency():
 	var constraint = TemporalConstraint.new(1, 2, 3, TemporalConstraint.TemporalQualifier.AT_START, "resource")
 	stn.add_temporal_constraint(constraint)
 	for i in range(stn.constraints.size()):
-		gut.p("Constraint " + str(i) + ": " + str(stn.constraints[i].to_dictionary()), gut.LOG_LEVEL_ALL_ASSERTS)
+		gut.p("Constraint " + str(i) + ": " + str(stn.constraints[i]), gut.LOG_LEVEL_ALL_ASSERTS)
 	var result = stn.is_consistent()
 	assert_true(result, "is_consistent should return true when the network is consistent")
 

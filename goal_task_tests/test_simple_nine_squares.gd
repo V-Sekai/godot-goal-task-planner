@@ -41,7 +41,7 @@ func do_mia_close_door(state, location, status) -> Variant:
 				print("Attempting to change door status at location: %s to %s" % [location, status])
 			var actions = []
 			actions.append(["travel", person, location])
-			actions.append(["close_door", person, location, "closed", 0])
+			actions.append(["close_door", person, location, "closed"])
 			actions.append(["idle", person, 0])
 			return actions
 	else:
@@ -61,8 +61,8 @@ func do_close_door(state, person, location, status, goal_time) -> Variant:
 				print("Attempting to change door status at location: %s to %s" % [location, status])
 			var actions = []
 			actions.append(["travel", person, location])
-			actions.append(["close_door", person, location, "closed", goal_time])
-			actions.append(["idle", person, ])
+			actions.append(["close_door", person, location, "closed"])
+			actions.append(["idle", person, goal_time])
 			if goal_time >= state["time"][person]:
 				actions.append(["idle", person, goal_time])
 			return actions
@@ -72,7 +72,7 @@ func do_close_door(state, person, location, status, goal_time) -> Variant:
 	return false
 
 
-func close_door(state, person, location, status, goal_time) -> Variant:
+func close_door(state, person, location, status) -> Variant:
 	if is_a(location, "location") and is_a(person, "character") and state["loc"][person] == location:
 		if state["door"][location] == "opened":
 			state["door"][location] = status
@@ -327,7 +327,6 @@ func test_visit_all_the_doors() -> void:
 
 
 func test_close_all_the_door_goal() -> void:
-	planner.verbose = 1
 	var state1 = state0.duplicate(true)
 	var goals = []
 	for location in types["location"]:
