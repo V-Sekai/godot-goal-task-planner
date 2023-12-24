@@ -331,13 +331,13 @@ func test_close_all_the_doors():
 	gut.p("State: %s" % state1)
 	gut.p("Result: %s" % str(result))
 	assert_ne_deep(result, [])
-	assert_ne_deep(result, [])
 	assert_ne_deep(result, false)
-	var plan = planner.find_plan(state0, result)
+	var plan = planner.find_plan(state0.duplicate(1), result)
 	var is_doors_closed = true
 	for location in types["location"]:
 		gut.p("Location and door state: %s %s" % [location, state1["door"][location]])
 		if state1["door"][location] != "closed":
 			is_doors_closed = false 
 			gut.p("Door is still open: %s" % location)
+	gut.p("What is Mia's time?: %s" % state1["time"]["Mia"])
 	assert_true(is_doors_closed)
