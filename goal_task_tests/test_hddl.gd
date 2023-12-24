@@ -2,8 +2,53 @@ extends GutTest
 
 var parser = HDDLParser.new()
 
+var test_string = """
+(define (domain basic)
+  (:requirements :hierarchy :negative-preconditions :method-preconditions)
+  (:predicates (have ?a))
+  (:task swap :parameters (?x ?y))
+
+  (:action pickup
+	:parameters (?a)
+	:precondition (not (have ?a))
+	:effect (have ?a)
+  )
+
+  (:action drop
+	:parameters (?a)
+	:precondition (have ?a)
+	:effect (not (have ?a))
+  )
+
+  (:method have_first
+	:parameters (?x ?y)
+	:task (swap ?x ?y)
+	:precondition (and
+	  (have ?x)
+	  (not (have ?y))
+	)
+	:ordered-subtasks (and
+	  (drop ?x)
+	  (pickup ?y)
+	)
+  )
+
+  (:method have_second
+	:parameters (?x ?y)
+	:task (swap ?x ?y)
+	:precondition (and
+	  (have ?y)
+	  (not (have ?x))
+	)
+	:ordered-subtasks (and
+	  (drop ?y)
+	  (pickup ?x)
+	)
+  )
+)"""
+
 func test_parse_sexp():
-	var sexp = "(define (domain blocks) (:requirements :strips :typing))"
-	var expected_output = [["define", ["domain", "blocks"], [":requirements", ":strips", ":typing"]]]
-	print(parser.parse_sexp(sexp))
-	assert_eq(parser.parse_sexp(sexp), expected_output)
+	var sexp = parser.parse_sexp(test_string)
+	var expected_output = [["define", ["domain", "basic"], "", [":requirements", ":hierarchy", ":negative-preconditions", ":method-preconditions"], "", [":predicates", ["have", "?a"]], "", [":task", "swap", ":parameters", ["?x", "?y"]], "", [":action", "pickup\n\t:parameters", ["?a"], ":precondition", ["not", ["have", "?a"]], ":effect", ["have", "?a"], ""], "", [":action", "drop\n\t:parameters", ["?a"], ":precondition", ["have", "?a"], ":effect", ["not", ["have", "?a"]], ""], "", [":method", "have_first\n\t:parameters", ["?x", "?y"], ":task", ["swap", "?x", "?y"], ":precondition", ["and", ["have", "?x"], "", ["not", ["have", "?y"]], ""], ":ordered-subtasks", ["and", ["drop", "?x"], "", ["pickup", "?y"], ""], ""], "", [":method", "have_second\n\t:parameters", ["?x", "?y"], ":task", ["swap", "?x", "?y"], ":precondition", ["and", ["have", "?y"], "", ["not", ["have", "?x"]], ""], ":ordered-subtasks", ["and", ["drop", "?y"], "", ["pickup", "?x"], ""], ""], ""]]
+	print(sexp)
+	assert_eq(sexp, expected_output)
