@@ -325,7 +325,7 @@ func test_visit_all_the_doors():
 
 
 func test_close_all_the_door_goal():
-	planner.verbose = 3
+	planner.verbose = 1
 	var state1 = state0.duplicate(true)
 	var goals = []
 	for location in types["location"]:

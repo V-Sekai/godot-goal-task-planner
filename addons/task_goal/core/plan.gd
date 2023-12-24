@@ -284,7 +284,7 @@ func m_split_multigoal(state, multigoal):
 var verify_goals = true
 
 
-## Action changes the state.
+## Actions in HTN are atomic units of work, representing the simplest tasks that can't be further broken down. Actions often called primitives.
 func _apply_action_and_continue(state: Dictionary, task1: Array, todo_list: Array, plan: Array, depth: int) -> Variant:
 	var action: Callable = current_domain._action_dict[task1[0]]
 	if verbose >= 1:
@@ -302,7 +302,7 @@ func _apply_action_and_continue(state: Dictionary, task1: Array, todo_list: Arra
 	return false
 
 
-## A task returns a list of actions, tasks or goals.
+## A task in HTN is a list of actions, tasks or goals.
 func _refine_task_and_continue(state, task1, todo_list, plan, depth) -> Variant:
 	var relevant: Array = current_domain._task_method_dict[task1[0]]
 	if verbose >= 3:
@@ -327,6 +327,7 @@ func _refine_task_and_continue(state, task1, todo_list, plan, depth) -> Variant:
 	return false
 
 
+## A unigoal in HTN represent one desired end state that the system is trying to achieve.
 func _refine_unigoal_and_continue(state, goal1, todo_list, plan, depth) -> Variant:
 	if verbose >= 3:
 		print("Depth %s goal %s: " % [depth, goal1])
@@ -376,7 +377,7 @@ func _refine_unigoal_and_continue(state, goal1, todo_list, plan, depth) -> Varia
 
 	return false
 
-
+## Goals in a HTN represent the desired end state that the system is trying to achieve.
 func _refine_multigoal_and_continue(state: Dictionary, goal1: Multigoal, todo_list: Array, plan: Array, depth: int) -> Variant:
 	if verbose >= 3:
 		print("Depth %s multigoal %s: " % [depth, goal1])
@@ -505,9 +506,9 @@ func run_lazy_lookahead(state: Dictionary, todo_list: Array, max_tries: int = 10
 			for action in plan:
 				var action_name = current_domain._action_dict.get(action[0])
 				if verbose >= 1:
-					print("RunLazyLookahead> Command: %s" % [[action_name] + action.slice(1)])
+					print("RunLazyLookahead> Task: %s" % [[action_name] + action.slice(1)])
 
-				var new_state = _apply_command_and_continue(state, action_name, action.slice(1))
+				var new_state = _apply_task_and_continue(state, action_name, action.slice(1))
 				if new_state is Dictionary:
 					if verbose >= 2:
 						print(new_state)
@@ -528,7 +529,7 @@ func run_lazy_lookahead(state: Dictionary, todo_list: Array, max_tries: int = 10
 	return state
 
 
-func _apply_command_and_continue(state: Dictionary, command: Callable, args: Array) -> Variant:
+func _apply_task_and_continue(state: Dictionary, command: Callable, args: Array) -> Variant:
 	if verbose >= 3:
 		print("_apply_command_and_continue %s, args = %s" % [[str(command.get_method())] + [args]])
 
