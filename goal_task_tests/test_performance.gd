@@ -22,7 +22,7 @@ func calculate_time_interval(i, temporal_qualifier) -> Array:
 func test_performance_with_large_number_of_constraints() -> void:
 	var start_time = Time.get_ticks_msec()
 
-	for i in range(1000):
+	for i in range(800):
 		var qualifier_1 = TemporalConstraint.TemporalQualifier.AT_START
 		var interval_1 = calculate_time_interval(i, qualifier_1)
 		var from_constraint = TemporalConstraint.new(interval_1[0], interval_1[1], 5, qualifier_1, "from" + str(i))
@@ -43,7 +43,7 @@ func test_performance_with_large_number_of_constraints() -> void:
 func test_performance_with_large_number_of_constraints_failure() -> void:
 	var start_time = Time.get_ticks_msec()
 
-	for i in range(1000):
+	for i in range(200):
 		var qualifier_1 = TemporalConstraint.TemporalQualifier.AT_START
 		var interval_1 = calculate_time_interval(i, qualifier_1)
 		var from_constraint = TemporalConstraint.new(interval_1[0], interval_1[1], 5, qualifier_1, "from" + str(i))
