@@ -90,7 +90,7 @@ func test_sandwich() -> void:
 	]
 
 	# Find a plan to make a sandwich
-	var plan := planner.find_plan(state1.duplicate(true), [["make_sandwich"]])
+	var plan: Array = planner.find_plan(state1.duplicate(true), [["make_sandwich"]])
 
 	# Check if the plan matches the expected result
 	assert_eq(plan, expected)

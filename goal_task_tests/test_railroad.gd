@@ -65,7 +65,7 @@ func test_railroad() -> void:
 	# Set the expected result
 	var expected := [["move_train_1"], ["move_train_2"], ["move_train_3"], ["move_train_4"], ["move_train_5"], ["move_train_6"]]
 
-	var plan := planner.find_plan(state1.duplicate(true), [["make_train_movement"]])
+	var plan: Array = planner.find_plan(state1.duplicate(true), [["make_train_movement"]])
 
 	# Check if the plan matches the expected result
 	assert_eq(plan, expected)
