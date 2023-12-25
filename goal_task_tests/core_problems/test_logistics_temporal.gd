@@ -322,6 +322,15 @@ func test_move_goal_4() -> void:
 	planner.verbose = 0
 	var state2 = state1.duplicate(true)
 	var plan = planner.find_plan(state2, [["at", "package1", "location2"]])
-	assert_eq(plan, [["drive_truck", "truck1", "location1", 1], ["load_truck", "package1", "truck1", 2], ["drive_truck", "truck1", "location2", 3], ["unload_truck", "package1", "location2", 4]])
-	assert_eq(state2.time["truck1"], 3)
-	assert_eq(state2.time["package1"], 4)
+	assert_eq(plan, [["drive_truck", "truck1", "location1", 2], ["load_truck", "package1", "truck1", 3], ["drive_truck", "truck1", "location2", 4], ["unload_truck", "package1", "location2", 5]])
+	assert_eq(state2.time["truck1"], 5)
+	assert_eq(state2.time["package1"], 5)
+
+
+func test_drive_truck():
+	var initial_state = {"truck_at": {"t1": "l1"}, "time": {"t1": 0}, "stn": {"t1": SimpleTemporalNetwork.new()}}
+	var expected_state = {"truck_at": {"t1": "l2"}, "time": {"t1": 10}, "stn": {"t1": SimpleTemporalNetwork.new()}}
+	
+	var result_state = drive_truck(initial_state, "t1", "l2", 10)
+	assert_eq(expected_state.truck_at.t1, "l2")
+	assert_eq(expected_state.time.t1, 10)
