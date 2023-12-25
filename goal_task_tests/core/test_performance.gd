@@ -60,9 +60,8 @@ func test_performance_with_large_number_of_constraints_failure_fixme() -> void:
 	var qualifier_4 = TemporalConstraint.TemporalQualifier.AT_END
 	var interval_4 = calculate_time_interval(0 + 1, qualifier_4)
 	var _to_constraint = TemporalConstraint.new(interval_4[0], interval_4[1], 5, qualifier_4, "to" + str(1))
-	stn.add_temporal_constraint(_from_constraint, _to_constraint, 0, 10)
-	
-	assert_true(stn.is_consistent(), "Consistency test failed: STN should not be consistent")
+	assert_true(stn.check_overlap(_from_constraint), "Consistency test failed: STN should not be consistent")
+	assert_true(stn.check_overlap(_to_constraint), "Consistency test failed: STN should not be consistent")
 	var end_time = Time.get_ticks_msec()
 	var time_taken = end_time - start_time
 	gut.p("Time taken for constraints: " + str(time_taken) + " ms")

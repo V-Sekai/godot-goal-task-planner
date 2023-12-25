@@ -34,7 +34,7 @@
  "post_run_script": "",
  "pre_run_script": "",
  "prefix": "test_",
- "selected": "test_anime.gd",
+ "selected": "test_constraints.gd",
  "should_exit": true,
  "should_exit_on_success": false,
  "should_maximize": false,

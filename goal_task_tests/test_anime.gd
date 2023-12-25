@@ -142,7 +142,7 @@ func test_do_walk():
 	assert_eq_deep(result, expected)
 
 func test_use_move():
-	planner.verbose = 1
+	planner.verbose = 0
 	var state = {
 		"time": {"user1": 0},
 		"stats": {"target1": {"Attack": 5, "Defense": 5}},
