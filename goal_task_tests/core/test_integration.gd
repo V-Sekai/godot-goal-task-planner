@@ -6,7 +6,7 @@
 extends GutTest
 
 ## Preload and instantiate the domain and planner scripts
-var the_domain = preload("res://goal_task_tests/domains/isekai_anime_domain.gd").new()
+var the_domain = preload("res://goal_task_tests/domains/anime_domain.gd").new()
 var planner = preload("res://addons/task_goal/core/plan.gd").new()
 var state0: Dictionary
 
