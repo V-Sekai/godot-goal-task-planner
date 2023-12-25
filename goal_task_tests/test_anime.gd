@@ -57,12 +57,6 @@ func test_isekai_anime_02():
 	assert_eq_deep(plan, [["walk", "Mia", "home_Mia", "mall", 8], ["walk", "Frank", "home_Frank", "mall", 10], ["walk", "Mia", "mall", "cinema", 7], ["walk", "Frank", "mall", "cinema", 7], ["idle", "Mia", 15], ["idle", "Frank", 15], ["walk", "Mia", "cinema", "home_Mia", 12], ["walk", "Frank", "cinema", "home_Mia", 12], ["idle", "Mia", 25], ["idle", "Frank", 25]])
 
 
-# func fight(state, character, enemy):
-# func interact(state, character, npc):
-# func craft(state, character, item):
-# func level_up(state, character):
-
-
 func test_visit_all_the_doors() -> void:
 	var door_goals = []
 	for location in the_domain.types["location"]:
@@ -73,9 +67,6 @@ func test_visit_all_the_doors() -> void:
 	assert_ne_deep(result, [])
 	assert_ne_deep(result, false)
 
-
-#func test_close_all_the_doors_as_plan():
-#func test_close_all_the_doors():
 
 func test_close_all_the_door_goal() -> void:
 	var state1 = state0.duplicate(true)
