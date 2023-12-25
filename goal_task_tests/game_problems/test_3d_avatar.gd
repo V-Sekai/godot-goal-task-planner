@@ -29,7 +29,7 @@ func before_each():
 
 func test_create_existing_avatar():
 	planner.verbose = 0
-	var state0: Dictionary = {"loc": {}, "cash": {}, "owe": {}, "time": {}, "stn": {}, "door": {}}
+	var state0: Dictionary = {"time": {}, "stn": {}}
 	state0.avatar = {}
 	state0.avatar["Nova"] = "rigged"
 	var state1 = state0.duplicate(true)
