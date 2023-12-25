@@ -49,12 +49,11 @@ func is_a(variable, type) -> bool:
 
 
 func close_door(state, person, location, status) -> Variant:
-	if is_a(location, "location") and is_a(person, "character") and state["loc"][person] == location:
-		if state["door"][location] == "opened":
-			state["door"][location] = status
-			if verbose > 0:
-				print("The door at location %s has been closed." % [location])
-			return state
+	if check_location_and_action(state, person, location, "door"):
+		state["door"][location] = status
+		if verbose > 0:
+			print("The door at location %s has been closed." % [location])
+		return state
 	return false
 
 func handle_temporal_constraint(state, person, current_time, goal_time, constraint_name) -> Variant:
@@ -79,20 +78,6 @@ func handle_temporal_constraint(state, person, current_time, goal_time, constrai
 }
 	
 
-func use_move(state, user, target, move, time) -> Variant:
-	if is_a(user, "character") and is_a(target, "character") and move in moves.keys():
-		var move_data = moves[move]
-		var current_time = state["time"][user]
-		var goal_time = time + 1
-		var constraint_name = "%s_uses_%s" % [user, move]
-		state = handle_temporal_constraint(state, user, current_time, goal_time, constraint_name)
-		if state:
-			if move_data["category"] == "Status":
-				return apply_status_move(state, user, target, move)
-			else:
-				return apply_damage_move(state, user, target, move)
-	return false
-
 func apply_status_move(state, user, target, move) -> Variant:
 	if move == "Growl":
 		state["stats"][target]["Attack"] -= 1
@@ -116,6 +101,20 @@ func calculate_damage(state, user, target, move_data) -> int:
 	var damage = (((2 * level / 5 + 2) * power * A / D) / 50) + 2
 	return damage
 
+
+func use_move(state, user, target, move, time) -> Variant:
+	if is_a(user, "character") and is_a(target, "character") and move in moves.keys():
+		var move_data = moves[move]
+		var current_time = state["time"][user]
+		var goal_time = time + 1
+		var constraint_name = "%s_uses_%s" % [user, move]
+		state = handle_temporal_constraint(state, user, current_time, goal_time, constraint_name)
+		if state:
+			if move_data["category"] == "Status":
+				return apply_status_move(state, user, target, move)
+			else:
+				return apply_damage_move(state, user, target, move)
+	return false
 
 func idle(state, person, time) -> Variant:
 	if is_a(person, "character"):
@@ -240,19 +239,14 @@ func do_mia_close_door(state, location, status) -> Variant:
 
 
 func do_close_door(state, person, location, status, time) -> Variant:
-	if is_a(person, "character") and is_a(location, "location") and is_a(location, "door") and state["loc"][person] == location:
-		if state["door"][location] == "closed":
-			if verbose > 0:
-				print("Door at location: %s is already closed" % location)
-			return []
-		elif state["door"][location] == "opened":
-			if state["time"][person] >= time:
-				return false
-			if verbose > 0:
-				print("Attempting to change door status at location: %s to %s" % [location, status])
-			var actions = []
-			actions.append(["close_door", person, location, "closed"])
-			return actions
+	if check_location_and_action(state, person, location, "door"):
+		if state["time"][person] >= time:
+			return false
+		if verbose > 0:
+			print("Attempting to change door status at location: %s to %s" % [location, status])
+		var actions = []
+		actions.append(["close_door", person, location, "closed"])
+		return actions
 	else:
 		if verbose > 0:
 			print("Cant close door %s %s:" % [person, location])
@@ -356,10 +350,27 @@ func find_path(state, p, destination) -> Variant:
 
 	return path
 
+func travel_by_car(state, p, y) -> Variant:
+	if is_a(p, "character") and is_a(y, "location"):
+		var x = state.loc[p]
+		if x == y:
+			return false
+		if x != y and state.cash[p] >= taxi_rate(distance_to(x, y)):
+			var call_car_goal_time = state.time[p] + 1  # Assuming calling a car takes 1 unit of time
+			var ride_car_goal_time = max(call_car_goal_time + travel_time(x, y, "car") + 1, call_car_goal_time + 2)
+			var actions = [["call_car", p, x, call_car_goal_time], ["ride_car", p, y, ride_car_goal_time]]
+			if actions[0][0] == "call_car" and actions[1][0] == "ride_car":
+				var pay_driver_goal_time = ride_car_goal_time + 1  # Assuming payment takes 1 unit of time
+				actions.append(["pay_driver", p, y, pay_driver_goal_time])
+			return actions
+	return false
 
 func compare_goal_times(a, b) -> bool:
 	return a[1] > b[1]
 
+func check_location_and_action(state, person, location, action) -> bool:
+	return is_a(location, "location") and is_a(person, "character") and state["loc"][person] == location and state[action][location] != "closed"
+	
 
 func path_has_location(path, location) -> bool:
 	for step in path:
@@ -388,19 +399,3 @@ func distance_to(x: String, y: String) -> float:
 	if result > 0:
 		return result
 	return INF
-
-
-func travel_by_car(state, p, y) -> Variant:
-	if is_a(p, "character") and is_a(y, "location"):
-		var x = state.loc[p]
-		if x == y:
-			return false
-		if x != y and state.cash[p] >= taxi_rate(distance_to(x, y)):
-			var call_car_goal_time = state.time[p] + 1  # Assuming calling a car takes 1 unit of time
-			var ride_car_goal_time = max(call_car_goal_time + travel_time(x, y, "car") + 1, call_car_goal_time + 2)
-			var actions = [["call_car", p, x, call_car_goal_time], ["ride_car", p, y, ride_car_goal_time]]
-			if actions[0][0] == "call_car" and actions[1][0] == "ride_car":
-				var pay_driver_goal_time = ride_car_goal_time + 1  # Assuming payment takes 1 unit of time
-				actions.append(["pay_driver", p, y, pay_driver_goal_time])
-			return actions
-	return false
