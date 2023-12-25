@@ -333,6 +333,7 @@ func ride_car(state, p, y, goal_time) -> Variant:
 				return state
 	return false
 
+
 func walk(state, p, x, y, goal_time) -> Variant:
 	if is_a(p, "character") and is_a(x, "location") and is_a(y, "location") and x != y:
 		if state.loc[p] == x:
@@ -340,17 +341,19 @@ func walk(state, p, x, y, goal_time) -> Variant:
 			if current_time < goal_time:
 				current_time = goal_time
 			var _travel_time = travel_time(x, y, "foot")
-			var arrival_time = goal_time + _travel_time
+			if _travel_time > goal_time:  # Check if actual travel time is greater than estimated
+				return false
 			var constraint_name = "%s_walk_from_%s_to_%s" % [p, x, y]
-			var constraint = TemporalConstraint.new(current_time, arrival_time, goal_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
+			var constraint = TemporalConstraint.new(current_time, current_time + _travel_time, _travel_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
 			if state["stn"][p].add_temporal_constraint(constraint):
 				state.loc[p] = y
-				state["time"][p] = arrival_time
+				state["time"][p] = _travel_time
 				return state
 			else:
 				if verbose > 0:
 					print("walk error: Failed to add temporal constraint %s" % constraint.to_dictionary())
 	return false
+
 
 func travel_by_car(state, p, y) -> Variant:
 	if is_a(p, "character") and is_a(y, "location"):
