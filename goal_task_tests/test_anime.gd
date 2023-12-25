@@ -11,7 +11,6 @@ var planner = null
 
 func before_each():
 	planner = preload("res://addons/task_goal/core/plan.gd").new()
-	planner.verbose = 0
 	var new_domain = the_domain.duplicate(true)
 	planner._domains.push_back(new_domain)
 	planner.current_domain = new_domain
@@ -40,6 +39,16 @@ func test_find_path():
 	var expected = [["walk", "Mia", "home_Mia", "mall", 8]] 
 	var result = planner.find_plan(state0.duplicate(true), [["find_path", "Mia", "mall"]])
 	assert_eq_deep(result, expected)
+	
+func test_find_path_next_node():
+	planner.verbose = 2
+	var state0: Dictionary = {"loc": {"Mia": "home_Mia", "Chair": "home_Mia", "Frank": "home_Frank", "car1": "cinema", "car2": "station"}, "cash": {"Mia": 30, "Frank": 35}, "owe": {"Mia": 0, "Frank": 0}, "time": {"Mia": 0, "Frank": 0}, "stn": {"Mia": SimpleTemporalNetwork.new(), "Frank": SimpleTemporalNetwork.new(), "Chair": SimpleTemporalNetwork.new()}, "door": {}}
+	var expected = [["walk", "Mia", "home_Mia", "park", 5], ["walk", "Mia", "park", "museum", 13], ["walk", "Mia", "museum", "zoo", 14], ["walk", "Mia", "zoo", "airport", 15]]
+	var result = planner.find_plan(state0, [["find_path", "Mia", "airport"]])
+	assert_eq_deep(result, expected)
+	assert_eq(state0["time"]["Mia"], 15)
+	assert_eq(state0["loc"]["Mia"], "airport")
+	
 	
 func test_isekai_anime_01():
 	var state0: Dictionary = {"loc": {"Mia": "home_Mia", "Chair": "home_Mia", "Frank": "home_Frank", "car1": "cinema", "car2": "station"}, "cash": {"Mia": 30, "Frank": 35}, "owe": {"Mia": 0, "Frank": 0}, "time": {"Mia": 0, "Frank": 0}, "stn": {"Mia": SimpleTemporalNetwork.new(), "Frank": SimpleTemporalNetwork.new(), "Chair": SimpleTemporalNetwork.new()}, "door": {}}
