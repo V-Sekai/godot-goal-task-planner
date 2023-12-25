@@ -41,5 +41,5 @@
  "show_help": false,
  "suffix": ".gd",
  "tests": [],
- "unit_test_name": "test_find_path_next_node"
+ "unit_test_name": null
 }

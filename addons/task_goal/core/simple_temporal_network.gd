@@ -93,21 +93,21 @@ func add_temporal_constraint(from_constraint: TemporalConstraint, to_constraint:
 ## This function validates the constraints and returns a boolean value.
 func validate_constraints(from_constraint, to_constraint, min_gap: float, max_gap: float) -> bool:
 	if not from_constraint or not from_constraint.get("time_interval") or not from_constraint.get("duration"):
-		print("Invalid from_constraint")
+		print("Invalid from_constraint %s" % from_constraint)
 		return false
 
 	if from_constraint['duration'] > (from_constraint['time_interval'][1] - from_constraint['time_interval'][0]):
-		print("Duration is longer than time interval for from_constraint")
+		print("Duration is longer than time interval for from_constraint %s" % from_constraint)
 		return false
 
 	# If to_constraint is not null, check its properties
 	if to_constraint:
 		if not to_constraint.get("time_interval") or not to_constraint.get("duration"):
-			print("Invalid to_constraint")
+			print("Invalid to_constraint %s" % to_constraint)
 			return false
 
 		if to_constraint['duration'] > (to_constraint['time_interval'][1] - to_constraint['time_interval'][0]):
-			print("Duration is longer than time interval for to_constraint")
+			print("Duration is longer than time interval for to_constraint %s" % to_constraint)
 			return false
 
 	# Check if min_gap and max_gap are valid
