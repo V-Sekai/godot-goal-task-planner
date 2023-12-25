@@ -55,21 +55,21 @@ var test_string = """
 func parse_sexp(expression: String) -> Array:
 	var stack: Array = [[]]
 	var word: String = ""
-	for char in expression:
-		if char == '(':
+	for _char in expression:
+		if _char == '(':
 			stack.append([])
-		elif char == ')':
+		elif _char == ')':
 			if word.strip_edges() != "":
 				stack[stack.size() - 1].append(word.strip_edges())
 				word = ""
 			var temp: Array = stack.pop_back()
 			stack[stack.size() - 1].append(temp)
-		elif char == ' ' or char == '\n':
+		elif _char == ' ' or _char == '\n':
 			if word.strip_edges() != "":
 				stack[stack.size() - 1].append(word.strip_edges())
 				word = ""
 		else:
-			word += char
+			word += _char
 	if word.strip_edges() != "":
 		stack[stack.size() - 1].append(word.strip_edges())
 	return stack[0]

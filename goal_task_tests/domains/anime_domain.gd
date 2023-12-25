@@ -195,8 +195,6 @@ func travel_by_foot(state, p, destination) -> Variant:
 
 var memo = {}
 
-var prev = {}
-
 
 func find_path(state, p, destination) -> Variant:
 	var current_location = state["loc"][p]
@@ -234,8 +232,8 @@ func find_path(state, p, destination) -> Variant:
 	var uu = destination
 	while uu != null:
 		if prev[uu] != null and prev[uu] != uu:
-			var travel_time = travel_time(prev[uu], uu, "foot")  # Calculate the travel time between two consecutive locations
-			path.push_front(["walk", p, prev[uu], uu, travel_time])  # Insert at the beginning to reverse the path
+			var _travel_time = travel_time(prev[uu], uu, "foot")  # Calculate the travel time between two consecutive locations
+			path.push_front(["walk", p, prev[uu], uu, _travel_time])  # Insert at the beginning to reverse the path
 		uu = prev[uu]
 
 	return path

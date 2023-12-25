@@ -79,7 +79,6 @@ func test_visit_all_the_doors() -> void:
 
 func test_close_all_the_door_goal() -> void:
 	var state1 = state0.duplicate(true)
-	var goals = []
 	for location in planner.current_domain.types["location"]:
 		state1 = planner.run_lazy_lookahead(state1, [Multigoal.new("goal_%s" % location, {"door": {location: "closed"}, "time": {"Mia": 200}})])
 	var is_doors_closed = true
