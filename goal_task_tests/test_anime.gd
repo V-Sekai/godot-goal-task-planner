@@ -15,7 +15,9 @@ func before_each():
 	var new_domain = the_domain.duplicate(true)
 	planner._domains.push_back(new_domain)
 	planner.current_domain = new_domain
-	planner.declare_actions([Callable(planner.current_domain, "walk"), Callable(planner.current_domain, "close_door"), Callable(planner.current_domain, "call_car"), Callable(planner.current_domain, "do_nothing"), Callable(planner.current_domain, "ride_car"), Callable(planner.current_domain, "pay_driver"), Callable(planner.current_domain, "do_nothing"), Callable(planner.current_domain, "idle"), Callable(planner.current_domain, "wait_for_everyone")])
+	
+	
+	planner.declare_actions([Callable(planner.current_domain, "use_move"), Callable(planner.current_domain, "apply_status_move"), Callable(planner.current_domain, "apply_damage_move"), Callable(planner.current_domain, "walk"), Callable(planner.current_domain, "close_door"), Callable(planner.current_domain, "call_car"), Callable(planner.current_domain, "do_nothing"), Callable(planner.current_domain, "ride_car"), Callable(planner.current_domain, "pay_driver"), Callable(planner.current_domain, "do_nothing"), Callable(planner.current_domain, "idle"), Callable(planner.current_domain, "wait_for_everyone")])
 	planner.declare_unigoal_methods("loc", [Callable(planner.current_domain, "travel_by_foot"), Callable(planner.current_domain, "travel_by_car"), Callable(planner.current_domain, "find_path")])
 	planner.declare_task_methods("travel", [Callable(planner.current_domain, "travel_by_foot"), Callable(planner.current_domain, "travel_by_car"), Callable(planner.current_domain, "find_path")])
 	planner.declare_task_methods("travel_by_car", [Callable(planner.current_domain, "travel_by_car")])
@@ -138,3 +140,20 @@ func test_do_walk():
 	
 	var result = planner.find_plan(state, [["do_walk", "Mia", "home_Mia", "mall", 8]])
 	assert_eq_deep(result, expected)
+
+func test_use_move():
+	planner.verbose = 1
+	var state = {
+		"time": {"user1": 0},
+		"stats": {"target1": {"Attack": 5, "Defense": 5}},
+		"health": {"target1": 100},
+		"level": {"user1": 10},
+		"stn": {"user1": SimpleTemporalNetwork.new(), "target1": SimpleTemporalNetwork.new()},
+	}
+	var user = "user1"
+	var target = "target1"
+	var move = "Growl"
+	var time = 1
+
+	planner.find_plan(state, [["use_move", user, target, move, time]])
+	assert_eq(state["stats"][target]["Attack"], 4)

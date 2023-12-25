@@ -1,7 +1,7 @@
 extends "res://addons/task_goal/core/domain.gd"
 
 @export var types = {
-	"character": ["Mia", "Frank", "Chair", "Hero", "Villain"],
+	"character": ["Mia", "Frank", "Chair", "Hero", "Villain", "user1", "target1"],
 	"location": ["home_Mia", "home_Frank", "cinema", "station", "mall", "park", "restaurant", "school", "office", "gym", "library", "hospital", "beach", "supermarket", "museum", "zoo", "airport"],
 	"door": ["home_Mia", "home_Frank", "cinema", "station", "mall", "park", "restaurant", "school", "office", "gym", "library", "hospital", "beach", "supermarket", "museum", "zoo", "airport"],
 	"vehicle": ["car1", "car2"],
@@ -70,6 +70,51 @@ func handle_temporal_constraint(state, person, current_time, goal_time, constrai
 		if verbose > 0:
 			print("Error: Failed to add temporal constraint %s" % str(constraint))
 	return false
+
+@export var moves = {
+	"Tackle": {"power": 40, "type": "Normal", "category": "Physical"},
+	"Growl": {"power": 0, "type": "Normal", "category": "Status"},
+	"Ember": {"power": 40, "type": "Fire", "category": "Special"},
+	"Tail Whip": {"power": 0, "type": "Normal", "category": "Status"}
+}
+	
+
+func use_move(state, user, target, move, time) -> Variant:
+	if is_a(user, "character") and is_a(target, "character") and move in moves.keys():
+		var move_data = moves[move]
+		var current_time = state["time"][user]
+		var goal_time = time + 1
+		var constraint_name = "%s_uses_%s" % [user, move]
+		state = handle_temporal_constraint(state, user, current_time, goal_time, constraint_name)
+		if state:
+			if move_data["category"] == "Status":
+				return apply_status_move(state, user, target, move)
+			else:
+				return apply_damage_move(state, user, target, move)
+	return false
+
+func apply_status_move(state, user, target, move) -> Variant:
+	if move == "Growl":
+		state["stats"][target]["Attack"] -= 1
+	elif move == "Tail Whip":
+		state["stats"][target]["Defense"] -= 1
+	return state
+
+
+func apply_damage_move(state, user, target, move) -> Variant:
+	var move_data = moves[move]
+	var damage = calculate_damage(state, user, target, move_data)
+	state["health"][target] -= damage
+	return state
+
+
+func calculate_damage(state, user, target, move_data) -> int:
+	var level = state["level"][user]
+	var power = move_data["power"]
+	var A = state["stats"][user]["Attack"]
+	var D = state["stats"][target]["Defense"]
+	var damage = (((2 * level / 5 + 2) * power * A / D) / 50) + 2
+	return damage
 
 
 func idle(state, person, time) -> Variant:
