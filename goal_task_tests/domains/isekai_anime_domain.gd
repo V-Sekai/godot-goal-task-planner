@@ -48,6 +48,22 @@ func is_a(variable, type) -> bool:
 	return variable in types[type]
 
 
+## Function to travel to a location
+func travel_location(state, entity, location) -> Dictionary:
+	state.at[entity] = location
+	return state
+
+## Method for traveling to a location
+func m_travel_location(state, entity, location) -> Variant:
+	if entity in state.entities and location in state.locations and state.at[entity] != location:
+		return [["travel_location", entity, location]]
+	return false
+
+## Check if two entities have met at a place
+func has_entity_met_entity(_state: Dictionary, e_1: String, e_2, place: String) -> Variant:
+	return [Multigoal.new("entities_together", {"at": {e_1: place, e_2: place}})]
+
+
 func do_mia_close_door(state, location, status) -> Variant:
 	var person = "Mia"
 	if is_a(person, "character") and is_a(location, "location") and is_a(location, "door"):
