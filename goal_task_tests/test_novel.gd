@@ -16,7 +16,7 @@ var planner = preload("res://addons/task_goal/core/plan.gd").new()
 # func craft(state, character, item):
 # func level_up(state, character):
 
-var goal1 = Multigoal.new("goal1", {"loc": {"Mia": "airport"}, "time": {"Mia": 59}})
+var goal1 = Multigoal.new("goal1", {"loc": {"Mia": "airport"}, "time": {"Mia": 100}})
 
 var goal2 = Multigoal.new("goal2", {"loc": {"Mia": "supermarket"}, "time": {"Mia": 15}})
 
@@ -59,7 +59,7 @@ func test_close_all_the_door_goal() -> void:
 	var state1 = state0.duplicate(true)
 	var goals = []
 	for location in planner.current_domain.types["location"]:
-		state1 = planner.run_lazy_lookahead(state1, [Multigoal.new("goal_%s" % location, {"door": {location: "closed"}, "time": {"Mia": 0}})])
+		state1 = planner.run_lazy_lookahead(state1, [Multigoal.new("goal_%s" % location, {"door": {location: "closed"}, "time": {"Mia": 200}})])
 	var is_doors_closed = true
 	for location in planner.current_domain.types["location"]:
 		gut.p("Location and door state: %s %s" % [location, state1["door"][location]])

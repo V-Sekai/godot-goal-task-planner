@@ -1,7 +1,7 @@
 extends "res://addons/task_goal/core/domain.gd"
 
 @export var types = {
-	"character": ["Mia", "Frank", "Chair"],
+	"character": ["Mia", "Frank", "Chair", "Hero", "Villain"],
 	"location": ["home_Mia", "home_Frank", "cinema", "station", "mall", "park", "restaurant", "school", "office", "gym", "library", "hospital", "beach", "supermarket", "museum", "zoo", "airport"],
 	"door": ["home_Mia", "home_Frank", "cinema", "station", "mall", "park", "restaurant", "school", "office", "gym", "library", "hospital", "beach", "supermarket", "museum", "zoo", "airport"],
 	"vehicle": ["car1", "car2"],
@@ -46,6 +46,23 @@ func _init() -> void:
 
 func is_a(variable, type) -> bool:
 	return variable in types[type]
+
+
+func wait_for_everyone(state, persons):
+	var max_time = 0
+	for person in persons:
+		if not is_a(person, "character"):
+			return false
+		var time = state.time[person]  # Get the time for each person
+		if time > max_time:
+			max_time = time  # Update the maximum time
+
+		# Have everyone do nothing until the slowest person arrives
+	for person in persons:
+		var time = max_time - state.time[person]
+		if time > 0:
+			state.time[person] += time
+	return state
 
 
 ## Function to travel to a location
@@ -116,29 +133,24 @@ func close_door(state, person, location, status) -> Variant:
 			return state
 	return false
 
+
 func idle(state, person, goal_time) -> Variant:
 	if is_a(person, "character"):
 		var current_time = state["time"][person]
 		if current_time > goal_time:
-			if verbose > 0:
-				print("idle warning: Current time is greater than goal time. Adjusting goal time.")
-			goal_time = current_time
+			print("idle error: Current time is greater than goal time")
+			return false
 		var _idle_time = goal_time - current_time
-		if _idle_time <= 0:
-			if verbose > 0:
-				print("idle warning: Idle time is less than or equal to 0. Adjusting idle time.")
-			_idle_time = 1
 		var constraint_name = "%s_idle_until_%s" % [person, goal_time]
 		var constraint = TemporalConstraint.new(current_time, goal_time, _idle_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
 		if state["stn"][person].add_temporal_constraint(constraint):
-			if verbose > 0:
-				print("idle called")
 			state["time"][person] = goal_time
 			return state
 		else:
 			if verbose > 0:
 				print("idle error: Failed to add temporal constraint %s" % constraint.to_dictionary())
 	return false
+
 
 func do_idle(state, person, goal_time) -> Variant:
 	if is_a(person, "character"):
@@ -190,7 +202,6 @@ func find_path(state, p, destination) -> Variant:
 	var current_location = state["loc"][p]
 	var pq = [[0, current_location]]  # Initialize priority queue with current location and distance as 0
 
-	var dist = {}
 	var prev = {}
 	for loc in types["location"]:
 		dist[loc] = INF  # Set initial distances to infinity
