@@ -113,10 +113,9 @@ func do_close_door(state, person, location, status, goal_time) -> Variant:
 				print("Attempting to change door status at location: %s to %s" % [location, status])
 			var actions = []
 			actions.append(["travel", person, location])
-			actions.append(["close_door", person, location, "closed"])
-			actions.append(["idle", person, goal_time])
 			if goal_time >= state["time"][person]:
 				actions.append(["idle", person, goal_time])
+			actions.append(["close_door", person, location, "closed"])
 			return actions
 	else:
 		if verbose > 0:
