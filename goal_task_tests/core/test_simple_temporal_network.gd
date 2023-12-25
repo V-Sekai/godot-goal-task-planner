@@ -12,11 +12,6 @@ func before_each():
 	stn = SimpleTemporalNetwork.new()
 
 
-func test_to_dictionary():
-	var result = stn.to_dictionary()
-	assert_eq(typeof(result), TYPE_DICTIONARY, "to_dictionary should return a Dictionary")
-
-
 func test_add_temporal_constraint():
 	var from_constraint = TemporalConstraint.new(1, 5, 3, TemporalConstraint.TemporalQualifier.AT_START, "resource")
 	var result = stn.add_temporal_constraint(from_constraint)
@@ -39,13 +34,6 @@ func test_update_state():
 	var state = {"constraint": TemporalConstraint.new(1, 5, 3, TemporalConstraint.TemporalQualifier.AT_START, "resource")}
 	stn.update_state(state)
 	assert_eq(stn.constraints.size(), 1, "update_state should add the constraint to the constraints array")
-
-
-func test_is_consistent_with():
-	var constraint = TemporalConstraint.new(1, 5, 3, TemporalConstraint.TemporalQualifier.AT_START, "resource")
-	stn.add_temporal_constraint(constraint)
-	var result = stn.is_consistent_with(constraint)
-	assert_true(result, "is_consistent_with should return true when the network is consistent with the given constraint")
 
 
 func test_print_constraints_and_check_consistency():

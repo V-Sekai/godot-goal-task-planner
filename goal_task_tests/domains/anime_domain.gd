@@ -311,7 +311,7 @@ func call_car(state, p, x, goal_time) -> Variant:
 			print("call_car error: No available cars at location.")
 			return state
 		else:
-			print("call_car error: Failed to add temporal constraint %s" % constraint.to_dictionary())
+			print("call_car error: Failed to add temporal constraint %s" % str(constraint))
 	return false
 
 func ride_car(state, p, y, goal_time) -> Variant:
@@ -348,7 +348,7 @@ func walk(state, p, x, y, goal_time) -> Variant:
 				state["time"][p] = arrival_time
 				return state
 			else:
-				if state.verbose > 0:
+				if verbose > 0:
 					print("walk error: Failed to add temporal constraint %s" % constraint.to_dictionary())
 	return false
 

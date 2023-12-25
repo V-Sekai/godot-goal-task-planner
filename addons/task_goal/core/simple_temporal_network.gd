@@ -15,11 +15,7 @@ var node_indices: Dictionary = {}
 var node_index_cache = {}
 
 
-func to_dictionary() -> Dictionary:
-	return {"resource_name": resource_name, "constraints": constraints, "number_of_nodes": num_nodes, "node_intervals": node_intervals}
-
-
-func _to_string():
+func _to_string() -> String:
 	if resource_name.is_empty():
 		return "SimpleTemporalNetwork"
 	return resource_name
@@ -41,9 +37,21 @@ func get_node_index(time_point: int) -> int:
 var outgoing_edges: Dictionary = {}
 
 
+func check_overlap(new_constraint: TemporalConstraint) -> bool:
+	for constraint in constraints:
+		if constraint.resource_name == new_constraint.resource_name:
+			if (constraint.time_interval.x < new_constraint.time_interval.y) and (new_constraint.time_interval.x < constraint.time_interval.y):
+				return true
+	return false
+
+
 func add_temporal_constraint(from_constraint: TemporalConstraint, to_constraint: TemporalConstraint = null, min_gap: float = 0, max_gap: float = 0) -> bool:
 	if not validate_constraints(from_constraint, to_constraint, min_gap, max_gap):
 		print("Failed to validate constraints")
+		return false
+
+
+	if check_overlap(from_constraint) or (to_constraint != null and check_overlap(to_constraint)):
 		return false
 
 	add_constraints_to_list(from_constraint, to_constraint)
@@ -84,35 +92,26 @@ func add_temporal_constraint(from_constraint: TemporalConstraint, to_constraint:
 
 ## This function validates the constraints and returns a boolean value.
 func validate_constraints(from_constraint, to_constraint, min_gap: float, max_gap: float) -> bool:
-	# Check if from_constraint exists and has the necessary properties
-	if not from_constraint:
-		print("from_constraint is None")
+	if not from_constraint or not from_constraint.get("time_interval") or not from_constraint.get("duration"):
+		print("Invalid from_constraint")
 		return false
 
-	if not from_constraint.get("time_interval"):
-		print("from_constraint does not have 'time_interval': %s" % from_constraint)
+	if from_constraint['duration'] > (from_constraint['time_interval'][1] - from_constraint['time_interval'][0]):
+		print("Duration is longer than time interval for from_constraint")
 		return false
 
-	if to_constraint != null and to_constraint.duration > (to_constraint.time_interval.y - to_constraint.time_interval.x):
-		print("Duration is longer than time interval for to_constraint")
-		return false
-
-	if not from_constraint.get("duration"):
-		print("from_constraint does not have 'duration': %s" % from_constraint)
-		return false
-
-	# Check if to_constraint exists and has the necessary properties
+	# If to_constraint is not null, check its properties
 	if to_constraint:
-		if not to_constraint.get("time_interval"):
-			print("to_constraint does not have 'time_interval': %s" % from_constraint)
+		if not to_constraint.get("time_interval") or not to_constraint.get("duration"):
+			print("Invalid to_constraint")
 			return false
 
-		if not to_constraint.get("duration"):
-			print("to_constraint does not have 'duration': %s" % from_constraint)
+		if to_constraint['duration'] > (to_constraint['time_interval'][1] - to_constraint['time_interval'][0]):
+			print("Duration is longer than time interval for to_constraint")
 			return false
 
 	# Check if min_gap and max_gap are valid
-	if typeof(min_gap) != TYPE_FLOAT or min_gap < 0 or (typeof(max_gap) != TYPE_FLOAT and max_gap != float("inf")):
+	if typeof(min_gap) != TYPE_FLOAT or min_gap < 0 or (typeof(max_gap) != TYPE_FLOAT and max_gap != INF):
 		print("Invalid gap values")
 		return false
 
@@ -250,12 +249,3 @@ func update_state(state: Dictionary) -> void:
 		if value is TemporalConstraint:
 			var constraint = TemporalConstraint.new(value.time_interval.x, value.time_interval.y, value.duration, value.temporal_qualifier, value.resource_name)
 			add_temporal_constraint(constraint)
-
-
-func is_consistent_with(constraint: TemporalConstraint) -> bool:
-	if not constraint is TemporalConstraint:
-		print("Constraint is not a TemporalConstraint instance")
-		return false
-
-	var temp_stn = self.duplicate()
-	return temp_stn.add_temporal_constraint(constraint) and temp_stn.is_consistent()
