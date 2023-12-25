@@ -24,6 +24,14 @@ func _m_verify_g(state: Dictionary, method: String, state_var: String, arg: Stri
 		if verbose >= 3:
 			print("Depth %s: method %s didn't achieve\nGoal %s[%s] = %s" % [depth, method, state_var, arg, desired_val])
 		return false
+		
+	if state.has("stn"):
+		for p in state["stn"].keys():
+			if not state["stn"][p].is_consistent():
+				if verbose >= 3:
+					print("Depth %s: method %s resulted in inconsistent STN for %s" % [depth, method, p])
+				return false
+
 	if verbose >= 3:
 		print("Depth %s: method %s achieved\nGoal %s[%s] = %s" % [depth, method, state_var, arg, desired_val])
 	return []
@@ -47,6 +55,14 @@ func _m_verify_mg(state: Dictionary, method: String, multigoal: Multigoal, depth
 		if verbose >= 3:
 			print("Depth %s: method %s didn't achieve %s" % [depth, method, multigoal])
 		return false
+
+	if state.has("stn"):
+		for p in state["stn"].keys():
+			if not state["stn"][p].is_consistent():
+				if verbose >= 3:
+					print("Depth %s: method %s resulted in inconsistent STN for %s" % [depth, method, p])
+				return false
+
 	if verbose >= 3:
 		print("Depth %s: method %s achieved %s" % [depth, method, multigoal])
 	return []
