@@ -296,7 +296,7 @@ func _apply_action_and_continue(state: Dictionary, task1: Array, todo_list: Arra
 			print(new_state)
 		return seek_plan(new_state, todo_list, plan + [task1], depth + 1)
 	if verbose >= 3 and not new_state:
-		print("The new state is not valid %s" % [new_state])
+		print("The new state is not valid %s with task %s and state %s" % [new_state, task1, state])
 	if verbose >= 3:
 		print("Not applicable action %s" % [[action.get_method()] + task1.slice(1)])
 	return false

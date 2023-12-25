@@ -74,22 +74,20 @@ func test_isekai_anime_02_fixme():
 
 
 func test_visit_all_the_doors() -> void:
-	planner.verbose = 3
+	planner.verbose = 1
 	var state0: Dictionary = {"loc": {"Mia": "home_Mia", "Chair": "home_Mia", "Frank": "home_Frank", "car1": "cinema", "car2": "station"}, "cash": {"Mia": 30, "Frank": 35}, "owe": {"Mia": 0, "Frank": 0}, "time": {"Mia": 0, "Frank": 0}, "stn": {"Mia": SimpleTemporalNetwork.new(), "Frank": SimpleTemporalNetwork.new(), "Chair": SimpleTemporalNetwork.new()}, "door": {}}
 	var door_goals = []
 	for location in the_domain.types["location"]:
-		if location in ["home_Frank", "home_Mia", "station", "cinema"]:
-			continue
 		var task = ["travel", "Mia", location]
 		gut.p(task)
 		door_goals.append(task)
 	var result = planner.find_plan(state0, door_goals)
-	assert_eq_deep(result, [["walk", "Mia", "home_Mia", "cinema", 12], ["walk", "Mia", "cinema", "home_Frank", 4]])
+	assert_eq_deep(result, [["call_car", "Mia", "cinema", 13], ["ride_car", "Mia", "home_Frank", 15], ["pay_driver", "Mia", "home_Frank", 16], ["walk", "Mia", "home_Frank", "cinema", 21], ["call_car", "Mia", "home_Mia", 34], ["ride_car", "Mia", "station", 37], ["pay_driver", "Mia", "station", 38], ["walk", "Mia", "station", "home_Mia", 40], ["walk", "Mia", "home_Mia", "mall", 47], ["call_car", "Mia", "home_Mia", 60], ["ride_car", "Mia", "park", 62], ["pay_driver", "Mia", "park", 63], ["walk", "Mia", "park", "restaurant", 69], ["walk", "Mia", "restaurant", "school", 75], ["walk", "Mia", "school", "office", 82], ["walk", "Mia", "office", "gym", 90], ["walk", "Mia", "gym", "library", 99], ["walk", "Mia", "library", "hospital", 109], ["walk", "Mia", "hospital", "beach", 120], ["walk", "Mia", "beach", "supermarket", 132], ["call_car", "Mia", "park", 146], ["ride_car", "Mia", "museum", 149], ["pay_driver", "Mia", "museum", 150], ["walk", "Mia", "museum", "zoo", 165], ["walk", "Mia", "zoo", "airport", 180]])
 	assert_ne_deep(result, false)
 
 
 func test_close_all_the_door_goal() -> void:
-	planner.verbose = 1
+	planner.verbose = 0
 	var state0: Dictionary = {"loc": {"Mia": "home_Mia", "Chair": "home_Mia"}, "cash": {"Mia": 30, "Frank": 35}, "owe": {"Mia": 0, "Frank": 0}, "time": {"Mia": 0, "Frank": 0}, "stn": {"Mia": SimpleTemporalNetwork.new(), "Frank": SimpleTemporalNetwork.new(), "Chair": SimpleTemporalNetwork.new()}, "door": {}}
 	var state1 = state0.duplicate(true)	
 	for location in planner.current_domain.types["location"]:
@@ -112,7 +110,7 @@ func test_close_all_the_door_goal() -> void:
 
 
 func test_travel_by_car():
-	planner.verbose = 1
+	planner.verbose = 0
 	var state: Dictionary = {
 		"loc": {"Mia": "home_Mia", "Chair": "home_Mia", "Frank": "home_Frank", "car1": "cinema", "car2": "station"},
 		"cash": {"Mia": 30, "Frank": 35},
@@ -128,7 +126,7 @@ func test_travel_by_car():
 	assert_eq_deep(result, expected)
 
 func test_do_walk():
-	planner.verbose = 1
+	planner.verbose = 0
 	var state: Dictionary = {
 		"loc": {"Mia": "home_Mia", "Chair": "home_Mia", "Frank": "home_Frank", "car1": "cinema", "car2": "station"},
 		"cash": {"Mia": 30, "Frank": 35},

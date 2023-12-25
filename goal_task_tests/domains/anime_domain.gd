@@ -329,7 +329,7 @@ func find_path(state, p, destination) -> Variant:
 	while uu != null:
 		if prev[uu] != null and prev[uu] != uu:
 			var _travel_time = travel_time(prev[uu], uu, "foot")
-			path.push_front(["walk", p, prev[uu], uu, _travel_time])
+			path.push_front(["walk", p, prev[uu], uu, state["time"][p] + _travel_time])
 		uu = prev[uu]
 
 	return path
