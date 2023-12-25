@@ -344,7 +344,6 @@ func walk(state, p, x, y, goal_time) -> Variant:
 			var constraint_name = "%s_walk_from_%s_to_%s" % [p, x, y]
 			var constraint = TemporalConstraint.new(current_time, arrival_time, goal_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
 			if state["stn"][p].add_temporal_constraint(constraint):
-				print("walk called")
 				state.loc[p] = y
 				state["time"][p] = arrival_time
 				return state
