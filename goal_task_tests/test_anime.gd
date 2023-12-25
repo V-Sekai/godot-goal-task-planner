@@ -22,21 +22,15 @@ func before_each():
 	planner.verbose = 0
 	planner._domains.push_back(the_domain)
 	planner.current_domain = the_domain
-	planner.declare_actions([Callable(the_domain, "walk"), Callable(the_domain, "call_car"), Callable(the_domain, "ride_car"), Callable(the_domain, "pay_driver"), Callable(the_domain, "do_nothing"), Callable(the_domain, "idle")])
+	planner.declare_actions([Callable(the_domain, "walk"), Callable(planner.current_domain, "close_door"), Callable(the_domain, "call_car"), Callable(planner.current_domain, "do_nothing"), Callable(the_domain, "ride_car"), Callable(the_domain, "pay_driver"), Callable(the_domain, "do_nothing"), Callable(the_domain, "idle"), Callable(planner.current_domain, "wait_for_everyone")])
 
 	planner.declare_unigoal_methods("loc", [Callable(the_domain, "travel_by_foot"), Callable(the_domain, "travel_by_car")])
 	planner.declare_task_methods("travel", [Callable(the_domain, "travel_by_foot"), Callable(the_domain, "travel_by_car"), Callable(planner.current_domain, "find_path")])
 	planner.declare_unigoal_methods("time", [Callable(the_domain, "do_idle")])
 	planner.declare_multigoal_methods([planner.m_split_multigoal])
-
-	planner.verbose = 0
-	planner._domains.push_back(the_domain.duplicate(true))
-	
-	planner.current_domain = planner._domains.front()
 	for location in planner.current_domain.types["location"]:
 		state0["door"][location] = "opened"
 	
-	planner.declare_actions([Callable(planner.current_domain, "wait_for_everyone"), Callable(planner.current_domain, "close_door"), Callable(planner.current_domain, "walk"), Callable(planner.current_domain, "do_nothing"), Callable(planner.current_domain, "idle")])
 	planner.declare_unigoal_methods("door", [Callable(planner.current_domain, "do_mia_close_door")])
 	planner.declare_task_methods("find_path", [Callable(planner.current_domain, "find_path")])
 	planner.declare_task_methods("do_close_door", [Callable(planner.current_domain, "do_close_door")])
