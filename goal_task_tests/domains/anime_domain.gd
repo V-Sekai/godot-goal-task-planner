@@ -57,6 +57,20 @@ func close_door(state, person, location, status) -> Variant:
 			return state
 	return false
 
+func handle_temporal_constraint(state, person, current_time, goal_time, constraint_name) -> Variant:
+	var constraint = TemporalConstraint.new(current_time, goal_time, goal_time - current_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
+	if state["stn"][person].check_overlap(constraint):
+		if verbose > 0:
+			print("Error: Temporal constraint overlaped %s" % [str(constraint)])
+		return false
+	if state["stn"][person].add_temporal_constraint(constraint):
+		state["time"][person] = goal_time
+		return state
+	else:
+		if verbose > 0:
+			print("Error: Failed to add temporal constraint %s" % str(constraint))
+	return false
+
 
 func idle(state, person, time) -> Variant:
 	if is_a(person, "character"):
@@ -64,17 +78,7 @@ func idle(state, person, time) -> Variant:
 		if current_time >= time:
 			return false
 		var constraint_name = "%s_idle_until_%s" % [person, time]
-		var constraint = TemporalConstraint.new(current_time, time, time - current_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
-		if state["stn"][person].check_overlap(TemporalConstraint.new(current_time, time, time - current_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)):
-			if verbose > 0:
-				print("walk error: Temporal constraint overlaped %s" % [str(constraint)])
-			return false
-		if state["stn"][person].add_temporal_constraint(constraint):
-			state["time"][person] = time
-			return state
-		else:
-			if verbose > 0:
-				print("idle error: Failed to add temporal constraint %s" % constraint.to_dictionary())
+		return handle_temporal_constraint(state, person, current_time, time, constraint_name)
 	return false
 
 
@@ -105,18 +109,12 @@ func ride_car(state, p, y, time) -> Variant:
 				print("ride_car error: Current time %s is bigger than ride car time %s" % [current_time, time])
 				return false
 			var constraint_name = "%s_ride_car_from_%s_to_%s" % [p, x, y]
-			var constraint = TemporalConstraint.new(current_time, time, time - current_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
-			if state["stn"][p].check_overlap(constraint):
-				if verbose > 0:
-					print("walk error: Temporal constraint overlaped %s" % [str(constraint)])
-				return false
-			if state["stn"][p].add_temporal_constraint(constraint):
+			state = handle_temporal_constraint(state, p, current_time, time, constraint_name)
+			if state:
 				state.loc[car] = y
 				state.owe[p] = taxi_rate(distance_to(x, y))
-				state["time"][p] = time
 				return state
 	return false
-
 
 func call_car(state, p, x, goal_time) -> Variant:
 	if is_a(p, "character") and is_a(x, "location"):
@@ -126,23 +124,15 @@ func call_car(state, p, x, goal_time) -> Variant:
 		var _travel_time = 1
 		var arrival_time = goal_time + _travel_time
 		var constraint_name = "%s_call_car_at_%s" % [p, x]
-		var constraint = TemporalConstraint.new(current_time, arrival_time, _travel_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
-		if state["stn"][p].check_overlap(TemporalConstraint.new(current_time, current_time + _travel_time, goal_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)):
-			if verbose > 0:
-				print("walk error: Temporal constraint overlaped %s" % [str(constraint)])
-			return false
-		if state["stn"][p].add_temporal_constraint(constraint):
+		state = handle_temporal_constraint(state, p, current_time, arrival_time, constraint_name)
+		if state:
 			for car in types["vehicle"]:
 				state.loc[car] = x
 				state.loc[p] = car
-				state["time"][p] = arrival_time
 				return state
 			print("call_car error: No available cars at location.")
 			return state
-		else:
-			print("call_car error: Failed to add temporal constraint %s" % str(constraint))
 	return false
-
 
 func pay_driver(state, p, y, goal_time) -> Variant:
 	if is_a(p, "character"):
@@ -154,23 +144,16 @@ func pay_driver(state, p, y, goal_time) -> Variant:
 				current_time = goal_time
 			var post_payment_time = current_time + payment_time
 			var constraint_name = "%s_pay_driver_at_%s" % [p, y]
-			var constraint = TemporalConstraint.new(current_time, post_payment_time, payment_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
-			if state["stn"][p].check_overlap(TemporalConstraint.new(current_time, post_payment_time, payment_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)):
-				if verbose > 0:
-					print("walk error: Temporal constraint overlaped %s" % [str(constraint)])
-				return false
-			if state["stn"][p].add_temporal_constraint(constraint):
+			state = handle_temporal_constraint(state, p, current_time, post_payment_time, constraint_name)
+			if state:
 				state.cash[p] = state.cash[p] - state.owe[p]
 				state.owe[p] = 0
 				state.loc[p] = y
-				state["time"][p] = post_payment_time
 				return state
 			else:
-				print("Constraint: ", constraint)
 				print("Current STN: ", state["stn"][p])
 				print("Temporal constraint could not be added")
 	return false
-
 
 func walk(state, p, x, y, time) -> Variant:
 	if is_a(p, "character") and is_a(x, "location") and is_a(y, "location"):
@@ -183,20 +166,13 @@ func walk(state, p, x, y, time) -> Variant:
 			var current_time = state["time"][p]
 			if current_time >= time:
 				return false
-			var constraint = TemporalConstraint.new(current_time, time, time - current_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
-			if state["stn"][p].check_overlap(constraint):
-				return false
-			if state["stn"][p].add_temporal_constraint(constraint) and state["stn"][p].is_consistent():
+			state = handle_temporal_constraint(state, p, current_time, time, constraint_name)
+			if state and state["stn"][p].is_consistent():
 				state.loc[p] = y
-				state["time"][p] = time
 				return state
-			else:
-				if verbose > 0:
-					print("walk error: Failed to add temporal constraint %s" % [str(constraint)])
 	if verbose > 0:
 		print("Invalid parameters.")
 	return false
-
 
 func do_mia_close_door(state, location, status) -> Variant:
 	var person = "Mia"
@@ -216,6 +192,7 @@ func do_mia_close_door(state, location, status) -> Variant:
 		if verbose > 0:
 			print("Cant close door %s %s:" % [person, location])
 	return false
+
 
 func do_close_door(state, person, location, status, time) -> Variant:
 	if is_a(person, "character") and is_a(location, "location") and is_a(location, "door") and state["loc"][person] == location:
