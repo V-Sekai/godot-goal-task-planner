@@ -9,7 +9,7 @@ extends "res://addons/task_goal/core/domain.gd"
 	"stn": [],
 }
 
-@export var dist: Dictionary = {
+@export var distance: Dictionary = {
 	["home_Mia", "cinema"]: 12,
 	["cinema", "home_Mia"]: 12,
 	["home_Frank", "cinema"]: 4,
@@ -166,7 +166,7 @@ func do_idle(state, person, goal_time) -> Variant:
 
 
 func travel_time(x, y, mode) -> int:
-	var _distance = distance(x, y)
+	var _distance = distance_to(x, y)
 	if mode == "foot":
 		return _distance / 1
 	elif mode == "car":
@@ -199,16 +199,16 @@ var memo = {}
 func find_path(state, p, destination) -> Variant:
 	var current_location = state["loc"][p]
 	var pq = [[0, current_location]]  # Initialize priority queue with current location and distance as 0
-
+	var dist = {}
 	var prev = {}
 	for loc in types["location"]:
-		dist[loc] = INF  # Set initial distances to infinity
-		prev[loc] = null  # Set initial previous locations to null
+		dist[loc] = INF
+		prev[loc] = null
 	dist[current_location] = 0
 
 	while pq.size() > 0:
 		pq.sort()
-		var top = pq.pop_front()  # In Dijkstra's, we use a priority queue and pop the smallest element
+		var top = pq.pop_front()
 		var d = top[0]
 		var u = top[1]
 
@@ -216,24 +216,23 @@ func find_path(state, p, destination) -> Variant:
 			continue
 
 		for loc in types["location"]:
-			if loc == u or distance(u, loc) == INF:
+			if loc == u or distance_to(u, loc) == INF:
 				continue
 			var travel_time_to_loc = travel_time(u, loc, "foot")
 			if dist[u] + travel_time_to_loc < dist[loc]:
 				dist[loc] = dist[u] + travel_time_to_loc
-				prev[loc] = u  # Update the previous location
+				prev[loc] = u
 				pq.push_back([dist[loc], loc])
 
 	if not dist.has(destination):
 		return false
 
-	# If a path exists, reconstruct it by following the previous locations from the destination to the start
 	var path = []
 	var uu = destination
 	while uu != null:
 		if prev[uu] != null and prev[uu] != uu:
-			var _travel_time = travel_time(prev[uu], uu, "foot")  # Calculate the travel time between two consecutive locations
-			path.push_front(["walk", p, prev[uu], uu, _travel_time])  # Insert at the beginning to reverse the path
+			var _travel_time = travel_time(prev[uu], uu, "foot")
+			path.push_front(["walk", p, prev[uu], uu, _travel_time])
 		uu = prev[uu]
 
 	return path
@@ -254,17 +253,17 @@ func path_has_location(path, location) -> bool:
 	return false
 
 
-func taxi_rate(taxi_dist):
+func taxi_rate(taxi_dist) -> float:
 	return 1.5 + 0.5 * taxi_dist
 
 
-func distance(x: String, y: String):
-	var result = dist.get([x, y])
+func distance_to(x: String, y: String) -> float:
+	var result = distance.get([x, y])
 	if result == null:
 		return INF
 	if result > 0:
 		return result
-	result = dist.get([y, x])
+	result = distance.get([y, x])
 	if result == null:
 		return INF
 	if result > 0:
@@ -272,7 +271,7 @@ func distance(x: String, y: String):
 	return INF
 
 
-func pay_driver(state, p, y, goal_time):
+func pay_driver(state, p, y, goal_time) -> Variant:
 	if is_a(p, "character"):
 		if state.cash[p] >= state.owe[p]:
 			var payment_time = 1  # Assuming payment takes no time
@@ -293,10 +292,9 @@ func pay_driver(state, p, y, goal_time):
 				print("Constraint: ", constraint)
 				print("Current STN: ", state["stn"][p])
 				print("Temporal constraint could not be added")
-				return false
+	return false
 
-
-func call_car(state, p, x, goal_time):
+func call_car(state, p, x, goal_time) -> Variant:
 	if is_a(p, "character") and is_a(x, "location"):
 		var current_time = state.time[p]
 		if current_time < goal_time:
@@ -315,9 +313,9 @@ func call_car(state, p, x, goal_time):
 			return state
 		else:
 			print("call_car error: Failed to add temporal constraint %s" % constraint.to_dictionary())
+	return false
 
-
-func ride_car(state, p, y, goal_time):
+func ride_car(state, p, y, goal_time) -> Variant:
 	if is_a(p, "character") and is_a(state.loc[p], "vehicle") and is_a(y, "location"):
 		var car = state.loc[p]
 		var x = state.loc[car]
@@ -331,12 +329,12 @@ func ride_car(state, p, y, goal_time):
 			var constraint = TemporalConstraint.new(current_time, arrival_time, goal_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
 			if state["stn"][p].add_temporal_constraint(constraint):
 				state.loc[car] = y
-				state.owe[p] = taxi_rate(distance(x, y))
+				state.owe[p] = taxi_rate(distance_to(x, y))
 				state["time"][p] = arrival_time
 				return state
+	return false
 
-
-func walk(state, p, x, y, goal_time):
+func walk(state, p, x, y, goal_time) -> Variant:
 	if is_a(p, "character") and is_a(x, "location") and is_a(y, "location") and x != y:
 		if state.loc[p] == x:
 			var current_time = state.time[p]
@@ -354,12 +352,12 @@ func walk(state, p, x, y, goal_time):
 			else:
 				if state.verbose > 0:
 					print("walk error: Failed to add temporal constraint %s" % constraint.to_dictionary())
+	return false
 
-
-func travel_by_car(state, p, y):
+func travel_by_car(state, p, y) -> Variant:
 	if is_a(p, "character") and is_a(y, "location"):
 		var x = state.loc[p]
-		if x != y and state.cash[p] >= taxi_rate(distance(x, y)):
+		if x != y and state.cash[p] >= taxi_rate(distance_to(x, y)):
 			var call_car_goal_time = state.time[p] + 1  # Assuming calling a car takes 1 unit of time
 			var ride_car_goal_time = call_car_goal_time + travel_time(x, y, "car")
 			var actions = [["call_car", p, x, call_car_goal_time], ["ride_car", p, y, ride_car_goal_time]]
@@ -367,3 +365,4 @@ func travel_by_car(state, p, y):
 				var pay_driver_goal_time = ride_car_goal_time + 1  # Assuming payment takes 1 unit of time
 				actions.append(["pay_driver", p, y, pay_driver_goal_time])
 			return actions
+	return false
