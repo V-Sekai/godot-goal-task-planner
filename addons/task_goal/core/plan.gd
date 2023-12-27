@@ -533,12 +533,12 @@ func _apply_task_and_continue(state: Dictionary, command: Callable, args: Array)
 		print("_apply_command_and_continue %s, args = %s" % [[str(command.get_method())] + [args]])
 
 	var next_state = command.get_object().callv(command.get_method(), [state] + args)
-	if next_state:
-		if verbose >= 3:
-			print("Applied")
-			print(next_state)
-		return next_state
-	else:
+	if not next_state:
 		if verbose >= 3:
 			print("Not applicable command %s" % [command.get_method(), args])
 		return false
+
+	if verbose >= 3:
+		print("Applied")
+		print(next_state)
+	return next_state
