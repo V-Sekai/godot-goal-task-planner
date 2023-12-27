@@ -13,8 +13,6 @@ extends Resource
 ## Task Goal is an automated planning system that can plan for both tasks and
 ## goals.
 
-const domain_const = preload("domain.gd")
-
 ## How much information to print while the program is running
 ##
 ## verbose is a global value whose initial value is 1. Its value determines how
@@ -25,21 +23,22 @@ const domain_const = preload("domain.gd")
 ## - verbose = 3: also print some info about intermediate computations
 @export var verbose: int = 0
 
+## A list of all domains that have been created
+@export var domains: Array[Resource] = []
+
+# #The Domain object that find_plan, run_lazy_lookahead, etc., will use.
+@export var current_domain: Resource
+
 ## Sequence number to use when making copies of states.
 var _next_state_number: int = 0
 
 ## Sequence number to use when making copies of multigoals.
 var _next_multigoal_number: int = 0
 
-# #The Domain object that find_plan, run_lazy_lookahead, etc., will use.
-var current_domain: Object = null
-
 ## Sequence number to use when making copies of domains.
 var _next_domain_number: int = 0
 
-## A list of all domains that have been created
-@export var _domains: Array[Resource] = []
-
+const _domain_const = preload("domain.gd")
 
 ##	Print domain's actions, commands, and methods. The optional 'domain'
 ##	argument defaults to the current domain
@@ -256,7 +255,7 @@ func declare_multigoal_methods(methods: Array):
 ##	defined below, one might want to modify it to choose a good order, e.g.,
 ##	by using domain-specific information or a heuristic function.
 func m_split_multigoal(state: Dictionary, multigoal: Multigoal):
-	var goal_dict: Dictionary = domain_const._goals_not_achieved(state, multigoal)
+	var goal_dict: Dictionary = _domain_const._goals_not_achieved(state, multigoal)
 	var goal_list: Array = []
 	for state_var_name in goal_dict.keys():
 		for arg in goal_dict[state_var_name]:

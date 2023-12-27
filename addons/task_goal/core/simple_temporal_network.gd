@@ -14,7 +14,6 @@ var node_indices: Dictionary = {}
 
 var node_index_cache = {}
 
-
 func _to_string() -> String:
 	if resource_name.is_empty():
 		return "SimpleTemporalNetwork"

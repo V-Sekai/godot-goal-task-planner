@@ -146,7 +146,7 @@ func travel_by_taxi(state, p, y) -> Variant:
 	return false
 
 func test_simple_gtn() -> void:
-	planner._domains.push_back(the_domain)
+	planner.domains.push_back(the_domain)
 	planner.current_domain = the_domain
 	planner.declare_actions([Callable(self, "walk"), Callable(self, "call_taxi"), Callable(self, "ride_taxi"), Callable(self, "pay_driver")])
 	planner.declare_task_methods("travel", [Callable(self, "do_nothing"), Callable(self, "travel_by_foot"), Callable(self, "travel_by_taxi")])

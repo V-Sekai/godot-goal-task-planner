@@ -18,6 +18,16 @@ extends Resource
 
 const verbose: int = 0
 
+var _action_dict: Dictionary = {}
+
+var _task_method_dict: Dictionary = {
+	"_verify_g": [Callable(self, "_m_verify_g")],
+	"_verify_mg": [Callable(self, "_m_verify_mg")],
+}
+
+var _unigoal_method_dict: Dictionary = {}
+
+var _multigoal_method_list: Array = []
 
 func _m_verify_g(state: Dictionary, method: String, state_var: String, arg: String, desired_val: Variant, depth: int) -> Variant:
 	if state[state_var][arg] != desired_val:
@@ -66,18 +76,6 @@ func _m_verify_mg(state: Dictionary, method: String, multigoal: Multigoal, depth
 	if verbose >= 3:
 		print("Depth %s: method %s achieved %s" % [depth, method, multigoal])
 	return []
-
-
-var _action_dict: Dictionary = {}
-
-var _task_method_dict: Dictionary = {
-	"_verify_g": [Callable(self, "_m_verify_g")],
-	"_verify_mg": [Callable(self, "_m_verify_mg")],
-}
-
-var _unigoal_method_dict: Dictionary = {}
-
-var _multigoal_method_list: Array = []
 
 
 func _init(domain_name: String) -> void:

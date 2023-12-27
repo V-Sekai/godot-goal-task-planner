@@ -19,7 +19,7 @@ func before_each():
 	planner = preload("res://addons/task_goal/core/plan.gd").new()
 	planner.verbose = 0
 	var new_domain = the_domain.duplicate(true)
-	planner._domains.push_back(new_domain)
+	planner.domains.push_back(new_domain)
 	planner.current_domain = new_domain
 	
 	planner.declare_multigoal_methods([planner.m_split_multigoal])	

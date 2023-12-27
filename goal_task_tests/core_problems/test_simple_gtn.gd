@@ -147,7 +147,7 @@ func travel_by_taxi(state, p, y) -> Variant:
 	return false
 
 func _ready() -> void:
-	planner._domains.push_back(the_domain)
+	planner.domains.push_back(the_domain)
 	planner.current_domain = the_domain
 	goal1.state["loc"] = {"alice": "park"}
 	goal2.state["loc"] = {"bob": "park"}

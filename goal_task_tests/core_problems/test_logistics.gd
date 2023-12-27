@@ -155,7 +155,7 @@ var state1: Dictionary
 
 func before_each() -> void:
 	state1.clear()
-	planner._domains.push_back(the_domain)
+	planner.domains.push_back(the_domain)
 
 	# If we've changed to some other domain, this will change us back.
 	planner.current_domain = the_domain
