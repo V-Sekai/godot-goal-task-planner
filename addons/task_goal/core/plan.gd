@@ -140,16 +140,16 @@ func declare_actions(actions):
 ##	'task_name' should be a character string, and 'methods' should be a list
 ##	of functions. declare_task_methods adds each member of 'methods' to the
 ##	current domain's list of methods to use for tasks of the form
-##		(task_name, arg1, ..., argn).
+##		[task_name, arg1, ..., argn].
 ##
 ##	Example:
 ##		declare_task_methods('travel', travel_by_car, travel_by_foot)
 ##	says that travel_by_car and travel_by_foot are methods and that GTPyhop
 ##	should try using them for any task whose task name is 'travel', e.g.,
-##		('travel', 'alice', 'store')
-##		('travel', 'alice', 'umd', 'ucla')
-##		('travel', 'alice', 'umd', 'ucla', 'slowly')
-##		('travel', 'bob', 'home', 'park', 'looking', 'at', 'birds')
+##		['travel', 'alice', 'store']
+##		['travel', 'alice', 'umd', 'ucla']
+##		['travel', 'alice', 'umd', 'ucla', 'slowly']
+##		['travel', 'bob', 'home', 'park', 'looking', 'at', 'birds']
 ##
 ##	This is like Pyhop's declare_methods function, except that it can be
 ##	called several times to declare more methods for the same task.
