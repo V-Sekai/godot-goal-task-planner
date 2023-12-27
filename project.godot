@@ -14,6 +14,10 @@ config/name="Task Goal Game Project"
 config/features=PackedStringArray("4.2", "Double Precision", "Forward Plus")
 config/icon="res://icon.svg"
 
+[autoload]
+
+VSKVersion="*res://addons/vsk_version/vsk_version.gd"
+
 [debug]
 
 gdscript/warnings/inference_on_variant=1
@@ -23,4 +27,4 @@ gdscript/warnings/onready_with_export=1
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/gut/plugin.cfg")
+enabled=PackedStringArray("res://addons/gut/plugin.cfg", "res://addons/vsk_version/plugin.cfg")
