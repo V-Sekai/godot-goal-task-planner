@@ -1,14 +1,9 @@
 # Copyright (c) 2023-present. This file is part of V-Sekai https://v-sekai.org/.
 # K. S. Ernest (Fire) Lee & Contributors (see .all-contributorsrc).
-# 3d_artwork_domain.gd
+# college_town_domain.gd
 # SPDX-License-Identifier: MIT
 
 extends "res://addons/task_goal/core/domain.gd"
-
-# Brainstorm and sketch out what you want your avatar to look like. Consider things like body proportions, clothing, and accessories. 
-# Create a 3D model of your avatar using software like Blender. Add textures to give your avatar color and detail. 
-# This is done using software like Krita. Add bones to your model so it can move. This is usually done in the same software as the modeling. 
-# Animate your avatar to make it move. This can be done using keyframes in the modeling software, or with a physics engine in the game server.
 
 @export var types = {
 	"character": ["Mia", "Frank", "Chair", "Hero", "Villain", "user1", "target1"],
