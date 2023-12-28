@@ -15,48 +15,10 @@ func _init() -> void:
 
 
 @export var types = {
-	"character": ["Mia", "Frank", "Chair", "Hero", "Villain", "user1", "target1"],
 	"location":
 	[
 		"home_Mia",
-		"home_Frank",
-		"cinema",
-		"station",
-		"mall",
-		"park",
-		"restaurant",
-		"school",
-		"office",
-		"gym",
-		"library",
-		"hospital",
-		"beach",
-		"supermarket",
-		"museum",
-		"zoo",
-		"airport"
 	],
-	"door":
-	[
-		"home_Mia",
-		"home_Frank",
-		"cinema",
-		"station",
-		"mall",
-		"park",
-		"restaurant",
-		"school",
-		"office",
-		"gym",
-		"library",
-		"hospital",
-		"beach",
-		"supermarket",
-		"museum",
-		"zoo",
-		"airport"
-	],
-	"vehicle": ["car1", "car2"],
 	"owe": [],
 	"stn": [],
 }
