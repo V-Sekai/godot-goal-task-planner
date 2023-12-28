@@ -6,7 +6,8 @@
 - Only primitives (actions) can change the state.
 - Tasks are a combination of [goals, other tasks, primitives].
 - Goals represent the desired target state.
-- Simple Temporal Networks (STNs) are used for scheduling primitives and avoiding physical overlaps.
+- Simple Temporal Networks (STNs) are used for scheduling and avoiding physical overlaps.
+- An existing `path_find` function using A\* algorithm is available for spatial reasoning and layout optimization.
 
 ## State Variables
 
@@ -15,19 +16,20 @@
   - `room_list`: Dictionary of rooms, each with properties like size, style, and function.
   - `furniture_positions`: Dictionary detailing the positions and orientations of furniture items.
 
+## Spatial Reasoning with Path Finding
+
+- `path_find` function is utilized for optimizing movement paths and spatial configuration within the apartment.
+- Ensures that furniture and room layouts allow for unobstructed movement and adhere to practical design principles.
+
 ## Avoiding Physical Overlaps
 
 - Constraints are implemented to ensure no two objects occupy the same physical space.
-- When placing furniture (`place_furniture`), checks are performed against `furniture_positions` to avoid overlap.
-- If an overlap is detected, the planner will re-evaluate the placement, adjusting positions or suggesting alternative items.
+- Checks are performed when placing furniture to avoid overlap and optimize spatial layout.
 
 ## Temporal Arrangement of Primitives using STNs
 
 - STNs define the specific times or order in which primitives are executed.
-- Temporal constraints ensure that:
-  - The `create_room` action occurs before `place_furniture`.
-  - The `change_layout` action, if needed, precedes both `create_room` and `place_furniture`.
-- This temporal structuring aids in logical progression and efficiency in the design process.
+- Temporal constraints ensure that actions are logically ordered and efficiently scheduled.
 
 ## Primitives (Actions)
 
@@ -41,7 +43,7 @@
 
 ### `change_layout(apartment_state, new_layout)`
 
-- **Scheduled Time**: At the very beginning of the redesign process.
+- **Scheduled Time**: At the beginning of the redesign process.
 
 ## Tasks
 
@@ -53,7 +55,7 @@
 - Goal1: Design a Complete Apartment
 - Goal2: Redesign an Existing Apartment
 
-## Implementation of STNs
+## Implementation of STNs and Path Finding
 
-- STNs are dynamically updated as the design process progresses, adapting to changes in the project timeline.
-- The planner checks STN consistency regularly to ensure feasible scheduling of all tasks and adherence to spatial constraints.
+- STNs and `path_find` function are dynamically used as the design process progresses.
+- Regular consistency checks ensure feasible scheduling and practical spatial arrangements.
