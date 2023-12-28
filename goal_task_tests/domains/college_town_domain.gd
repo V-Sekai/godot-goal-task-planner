@@ -19,7 +19,6 @@ func _init() -> void:
 	[
 		"home_Mia",
 	],
-	"owe": [],
 	"stn": [],
 }
 
