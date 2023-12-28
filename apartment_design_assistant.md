@@ -12,39 +12,29 @@
 
 ## State Variables
 
-- `apartment_state`: Dictionary representing the overall state of the apartment.
-  - `layout`: Current layout of the apartment (e.g., 'studio', 'one-bedroom').
-  - `room_list`: Dictionary of rooms, each with properties like size, style, and function.
-  - `furniture_positions`: Dictionary detailing the positions and orientations of furniture items.
+- `apartment_state`: Represents apartment's state with `layout`, `room_list` (rooms with properties), and `furniture_positions`.
 
 ## Spatial Reasoning with Path Finding
 
-- `path_find` function is utilized for optimizing movement paths and spatial configuration within the apartment.
-- Ensures that furniture and room layouts allow for unobstructed movement and adhere to practical design principles.
+- `path_find` function optimizes movement paths and spatial configuration, ensuring unobstructed movement and practical design.
 
 ## Avoiding Physical Overlaps
 
-- Constraints are implemented to ensure no two objects occupy the same physical space.
-- Checks are performed when placing furniture to avoid overlap and optimize spatial layout.
+- Constraints prevent object overlap and optimize spatial layout.
 
 ## Temporal Arrangement of Primitives using STNs
 
-- STNs define the specific times or order in which primitives are executed.
-- Temporal constraints ensure that actions are logically ordered and efficiently scheduled.
+- STNs schedule primitives execution and ensure logical and efficient action ordering.
 
 ## Primitives (Actions)
 
 ### `create_room(apartment_state, room_name, size, style, function, pivot, footprint, time)`
-
-- **Proof of Concept**:
 
 ```gdscript
 ["create_room", "bedroom1", "medium", "modern", "sleep", {"pivot": [0, 0, 0], "footprint": [5, 5, 3]}, 10]
 ```
 
 ### `place_furniture(apartment_state, item, room_name, position, orientation, pivot, footprint, time)`
-
-- **Proof of Concept**:
 
 ```gdscript
 ["place_furniture", "bed", "bedroom1", "north-wall", "facing-south", {"pivot": [2, 2, 0], "footprint": [3, 2, 1]}, 15]
@@ -57,15 +47,9 @@
 - `design_room(apartment_state, room_name, size, style, function)`
 - `redesign_apartment(apartment_state, new_layout, room_specifications)`
 
-## Goals
-
-- Goal1: Design a Complete Apartment
-- Goal2: Redesign an Existing Apartment
-
 ## Implementation of STNs and Path Finding
 
-- STNs and `path_find` function are dynamically used as the design process progresses.
-- Regular consistency checks ensure feasible scheduling and practical spatial arrangements.
+- STNs and `path_find` function dynamically used throughout design process for feasible scheduling and spatial arrangements.
 
 ## Example Scenario
 
