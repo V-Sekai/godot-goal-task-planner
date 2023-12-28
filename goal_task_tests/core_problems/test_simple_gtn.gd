@@ -31,7 +31,11 @@ var planner = preload("res://addons/task_goal/core/plan.gd").new()
 }
 
 # prototypical initial state
-var state0: Dictionary = {"loc": {"alice": "home_a", "bob": "home_b", "taxi1": "park", "taxi2": "station"}, "cash": {"alice": 20, "bob": 15}, "owe": {"alice": 0, "bob": 0}}
+var state0: Dictionary = {
+	"loc": {"alice": "home_a", "bob": "home_b", "taxi1": "park", "taxi2": "station"},
+	"cash": {"alice": 20, "bob": 15},
+	"owe": {"alice": 0, "bob": 0}
+}
 
 # initial goal
 var goal1: Multigoal = Multigoal.new("goal1", {"loc": {"alice": "park"}})
@@ -93,12 +97,14 @@ func walk(state, p, x, y) -> Variant:
 			return state
 	return false
 
+
 func call_taxi(state, p, x) -> Variant:
 	if is_a(p, "person") and is_a(x, "location"):
 		state.loc["taxi1"] = x
 		state.loc[p] = "taxi1"
 		return state
 	return false
+
 
 func ride_taxi(state, p, y) -> Variant:
 	# if p is a person, p is in a taxi, and y is a location:
@@ -111,6 +117,7 @@ func ride_taxi(state, p, y) -> Variant:
 			return state
 	return false
 
+
 func pay_driver(state: Dictionary, p: String, y: String) -> Variant:
 	if is_a(p, "person"):
 		if state.cash[p] >= state.owe[p]:
@@ -119,6 +126,7 @@ func pay_driver(state: Dictionary, p: String, y: String) -> Variant:
 			state.loc[p] = y
 			return state
 	return false
+
 
 ###############################################################################
 # Methods:
@@ -130,6 +138,7 @@ func do_nothing(state, p, y) -> Variant:
 		if x == y:
 			return []
 	return false
+
 
 func travel_by_foot(state, p, y) -> Variant:
 	if is_a(p, "person") and is_a(y, "location"):
@@ -146,15 +155,25 @@ func travel_by_taxi(state, p, y) -> Variant:
 			return [["call_taxi", p, x], ["ride_taxi", p, y], ["pay_driver", p, y]]
 	return false
 
+
 func _ready() -> void:
 	planner.domains.push_back(the_domain)
 	planner.current_domain = the_domain
 	goal1.state["loc"] = {"alice": "park"}
 	goal2.state["loc"] = {"bob": "park"}
 	goal3.state["loc"] = {"alice": "park", "bob": "park"}
-	planner.declare_actions([Callable(self, "walk"), Callable(self, "call_taxi"), Callable(self, "ride_taxi"), Callable(self, "pay_driver")])
+	planner.declare_actions(
+		[
+			Callable(self, "walk"),
+			Callable(self, "call_taxi"),
+			Callable(self, "ride_taxi"),
+			Callable(self, "pay_driver")
+		]
+	)
 
-	planner.declare_unigoal_methods("loc", [Callable(self, "travel_by_foot"), Callable(self, "travel_by_taxi")])
+	planner.declare_unigoal_methods(
+		"loc", [Callable(self, "travel_by_foot"), Callable(self, "travel_by_taxi")]
+	)
 
 	# GTPyhop provides a built-in multigoal method called m_split_multigoal to
 	# separate a multigoal G into a�collection of unigoals. It returns a list of
@@ -254,8 +273,18 @@ func test_simple_gtn() -> void:
 	state1 = state0.duplicate(true)
 	plan = planner.find_plan(state1, [goal3])
 	gut.p("Plan %s" % [plan])
-	assert_eq(plan, [["call_taxi", "alice", "home_a"], ["ride_taxi", "alice", "park"], ["pay_driver", "alice", "park"], ["walk", "bob", "home_b", "park"]])
-	var new_plan = planner.run_lazy_lookahead(state1, [Multigoal.new("goal1", {"loc": {"alice": "park"}})])
+	assert_eq(
+		plan,
+		[
+			["call_taxi", "alice", "home_a"],
+			["ride_taxi", "alice", "park"],
+			["pay_driver", "alice", "park"],
+			["walk", "bob", "home_b", "park"]
+		]
+	)
+	var new_plan = planner.run_lazy_lookahead(
+		state1, [Multigoal.new("goal1", {"loc": {"alice": "park"}})]
+	)
 	assert_ne_deep(new_plan, [])
 	gut.p("Alice is now at the park, so the planner will return an empty plan:")
 	plan = planner.find_plan(state1, [Multigoal.new("goal1", {"loc": {"alice": "park"}})])

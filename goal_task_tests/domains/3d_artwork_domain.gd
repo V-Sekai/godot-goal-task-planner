@@ -5,15 +5,53 @@
 
 extends "res://addons/task_goal/core/domain.gd"
 
-# Brainstorm and sketch out what you want your avatar to look like. Consider things like body proportions, clothing, and accessories. 
-# Create a 3D model of your avatar using software like Blender. Add textures to give your avatar color and detail. 
-# This is done using software like Krita. Add bones to your model so it can move. This is usually done in the same software as the modeling. 
+# Brainstorm and sketch out what you want your avatar to look like. Consider things like body proportions, clothing, and accessories.
+# Create a 3D model of your avatar using software like Blender. Add textures to give your avatar color and detail.
+# This is done using software like Krita. Add bones to your model so it can move. This is usually done in the same software as the modeling.
 # Animate your avatar to make it move. This can be done using keyframes in the modeling software, or with a physics engine in the game server.
 
 @export var types = {
 	"character": ["Mia", "Frank", "Chair", "Hero", "Villain", "user1", "target1"],
-	"location": ["home_Mia", "home_Frank", "cinema", "station", "mall", "park", "restaurant", "school", "office", "gym", "library", "hospital", "beach", "supermarket", "museum", "zoo", "airport"],
-	"door": ["home_Mia", "home_Frank", "cinema", "station", "mall", "park", "restaurant", "school", "office", "gym", "library", "hospital", "beach", "supermarket", "museum", "zoo", "airport"],
+	"location":
+	[
+		"home_Mia",
+		"home_Frank",
+		"cinema",
+		"station",
+		"mall",
+		"park",
+		"restaurant",
+		"school",
+		"office",
+		"gym",
+		"library",
+		"hospital",
+		"beach",
+		"supermarket",
+		"museum",
+		"zoo",
+		"airport"
+	],
+	"door":
+	[
+		"home_Mia",
+		"home_Frank",
+		"cinema",
+		"station",
+		"mall",
+		"park",
+		"restaurant",
+		"school",
+		"office",
+		"gym",
+		"library",
+		"hospital",
+		"beach",
+		"supermarket",
+		"museum",
+		"zoo",
+		"airport"
+	],
 	"vehicle": ["car1", "car2"],
 	"owe": [],
 	"stn": [],
@@ -50,6 +88,7 @@ extends "res://addons/task_goal/core/domain.gd"
 	["airport", "home_Frank"]: 17,
 }
 
+
 func _init() -> void:
 	set_name("romantic")
 
@@ -66,8 +105,15 @@ func close_door(state, person, location, status) -> Variant:
 		return state
 	return false
 
+
 func handle_temporal_constraint(state, person, current_time, goal_time, constraint_name) -> Variant:
-	var constraint = TemporalConstraint.new(current_time, goal_time, goal_time - current_time, TemporalConstraint.TemporalQualifier.AT_END, constraint_name)
+	var constraint = TemporalConstraint.new(
+		current_time,
+		goal_time,
+		goal_time - current_time,
+		TemporalConstraint.TemporalQualifier.AT_END,
+		constraint_name
+	)
 	if state["stn"][person].check_overlap(constraint):
 		if verbose > 0:
 			print("Error: Temporal constraint overlaped %s" % [str(constraint)])
@@ -80,13 +126,14 @@ func handle_temporal_constraint(state, person, current_time, goal_time, constrai
 			print("Error: Failed to add temporal constraint %s" % str(constraint))
 	return false
 
+
 @export var moves = {
 	"Tackle": {"power": 40, "type": "Normal", "category": "Physical"},
 	"Growl": {"power": 0, "type": "Normal", "category": "Status"},
 	"Ember": {"power": 40, "type": "Fire", "category": "Special"},
 	"Tail Whip": {"power": 0, "type": "Normal", "category": "Status"}
 }
-	
+
 
 func apply_status_move(state, user, target, move) -> Variant:
 	if move == "Growl":
@@ -126,6 +173,7 @@ func use_move(state, user, target, move, time) -> Variant:
 				return apply_damage_move(state, user, target, move)
 	return false
 
+
 func idle(state, person, time) -> Variant:
 	if is_a(person, "character"):
 		var current_time = state["time"][person]
@@ -160,7 +208,12 @@ func ride_car(state, p, y, time) -> Variant:
 		if is_a(x, "location") and x != y:
 			var current_time = state.time[p]
 			if current_time >= time:
-				print("ride_car error: Current time %s is bigger than ride car time %s" % [current_time, time])
+				print(
+					(
+						"ride_car error: Current time %s is bigger than ride car time %s"
+						% [current_time, time]
+					)
+				)
 				return false
 			var constraint_name = "%s_ride_car_from_%s_to_%s" % [p, x, y]
 			state = handle_temporal_constraint(state, p, current_time, time, constraint_name)
@@ -169,6 +222,7 @@ func ride_car(state, p, y, time) -> Variant:
 				state.owe[p] = taxi_rate(distance_to(x, y))
 				return state
 	return false
+
 
 func call_car(state, p, x, goal_time) -> Variant:
 	if is_a(p, "character") and is_a(x, "location"):
@@ -188,6 +242,7 @@ func call_car(state, p, x, goal_time) -> Variant:
 			return state
 	return false
 
+
 func pay_driver(state, p, y, goal_time) -> Variant:
 	if is_a(p, "character"):
 		if state.cash[p] >= state.owe[p]:
@@ -198,7 +253,9 @@ func pay_driver(state, p, y, goal_time) -> Variant:
 				current_time = goal_time
 			var post_payment_time = current_time + payment_time
 			var constraint_name = "%s_pay_driver_at_%s" % [p, y]
-			state = handle_temporal_constraint(state, p, current_time, post_payment_time, constraint_name)
+			state = handle_temporal_constraint(
+				state, p, current_time, post_payment_time, constraint_name
+			)
 			if state:
 				state.cash[p] = state.cash[p] - state.owe[p]
 				state.owe[p] = 0
@@ -208,6 +265,7 @@ func pay_driver(state, p, y, goal_time) -> Variant:
 				print("Current STN: ", state["stn"][p])
 				print("Temporal constraint could not be added")
 	return false
+
 
 func walk(state, p, x, y, time) -> Variant:
 	if is_a(p, "character") and is_a(x, "location") and is_a(y, "location"):
@@ -228,10 +286,11 @@ func walk(state, p, x, y, time) -> Variant:
 		print("Invalid parameters.")
 	return false
 
+
 func do_mia_close_door(state, location, status) -> Variant:
 	var person = "Mia"
 	if is_a(person, "character") and is_a(location, "location") and is_a(location, "door"):
-		if state["door"][location] == 'closed':
+		if state["door"][location] == "closed":
 			if verbose > 0:
 				print("Door at location: %s is already closed" % location)
 			return []
@@ -287,6 +346,7 @@ func do_walk(state, person, x, y, time) -> Variant:
 			return false
 		return [["walk", person, x, y, time]]
 	return false
+
 
 func travel_time(x, y, mode) -> int:
 	var _distance = distance_to(x, y)
@@ -360,6 +420,7 @@ func find_path(state, p, destination) -> Variant:
 
 	return path
 
+
 func travel_by_car(state, p, y) -> Variant:
 	if is_a(p, "character") and is_a(y, "location"):
 		var x = state.loc[p]
@@ -367,20 +428,31 @@ func travel_by_car(state, p, y) -> Variant:
 			return false
 		if x != y and state.cash[p] >= taxi_rate(distance_to(x, y)):
 			var call_car_goal_time = state.time[p] + 1  # Assuming calling a car takes 1 unit of time
-			var ride_car_goal_time = max(call_car_goal_time + travel_time(x, y, "car") + 1, call_car_goal_time + 2)
-			var actions = [["call_car", p, x, call_car_goal_time], ["ride_car", p, y, ride_car_goal_time]]
+			var ride_car_goal_time = max(
+				call_car_goal_time + travel_time(x, y, "car") + 1, call_car_goal_time + 2
+			)
+			var actions = [
+				["call_car", p, x, call_car_goal_time], ["ride_car", p, y, ride_car_goal_time]
+			]
 			if actions[0][0] == "call_car" and actions[1][0] == "ride_car":
 				var pay_driver_goal_time = ride_car_goal_time + 1  # Assuming payment takes 1 unit of time
 				actions.append(["pay_driver", p, y, pay_driver_goal_time])
 			return actions
 	return false
 
+
 func compare_goal_times(a, b) -> bool:
 	return a[1] > b[1]
 
+
 func check_location_and_action(state, person, location, action) -> bool:
-	return is_a(location, "location") and is_a(person, "character") and state["loc"][person] == location and state[action][location] != "closed"
-	
+	return (
+		is_a(location, "location")
+		and is_a(person, "character")
+		and state["loc"][person] == location
+		and state[action][location] != "closed"
+	)
+
 
 func path_has_location(path, location) -> bool:
 	for step in path:

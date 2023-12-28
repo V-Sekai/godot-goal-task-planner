@@ -5,26 +5,65 @@
 
 extends "res://addons/task_goal/core/domain.gd"
 
-
 @export var distance: Dictionary = {
-	# ["home_Mia", "cinema"]: 12,
+# ["home_Mia", "cinema"]: 12,
 }
+
 
 func _init() -> void:
 	set_name("college_town")
 
+
 @export var types = {
 	"character": ["Mia", "Frank", "Chair", "Hero", "Villain", "user1", "target1"],
-	"location": ["home_Mia", "home_Frank", "cinema", "station", "mall", "park", "restaurant", "school", "office", "gym", "library", "hospital", "beach", "supermarket", "museum", "zoo", "airport"],
-	"door": ["home_Mia", "home_Frank", "cinema", "station", "mall", "park", "restaurant", "school", "office", "gym", "library", "hospital", "beach", "supermarket", "museum", "zoo", "airport"],
+	"location":
+	[
+		"home_Mia",
+		"home_Frank",
+		"cinema",
+		"station",
+		"mall",
+		"park",
+		"restaurant",
+		"school",
+		"office",
+		"gym",
+		"library",
+		"hospital",
+		"beach",
+		"supermarket",
+		"museum",
+		"zoo",
+		"airport"
+	],
+	"door":
+	[
+		"home_Mia",
+		"home_Frank",
+		"cinema",
+		"station",
+		"mall",
+		"park",
+		"restaurant",
+		"school",
+		"office",
+		"gym",
+		"library",
+		"hospital",
+		"beach",
+		"supermarket",
+		"museum",
+		"zoo",
+		"airport"
+	],
 	"vehicle": ["car1", "car2"],
 	"owe": [],
 	"stn": [],
 }
 
+
 func is_a(variable, type) -> bool:
 	return variable in types[type]
-
 
 
 func travel_time(x, y, mode) -> int:
@@ -36,6 +75,7 @@ func travel_time(x, y, mode) -> int:
 	else:
 		print("Error: Invalid mode of transportation")
 		return -1
+
 
 func find_path(state, p, destination) -> Variant:
 	var current_location = state["loc"][p]

@@ -1,6 +1,6 @@
 # Copyright (c) 2023-present. This file is part of V-Sekai https://v-sekai.org/.
 # K. S. Ernest (Fire) Lee & Contributors (see .all-contributorsrc).
-# plan.gd  
+# plan.gd
 # SPDX-License-Identifier: MIT
 
 # SPDX-FileCopyrightText: 2021 University of Maryland
@@ -39,6 +39,7 @@ var _next_multigoal_number: int = 0
 var _next_domain_number: int = 0
 
 const _domain_const = preload("domain.gd")
+
 
 ##	Print domain's actions, commands, and methods. The optional 'domain'
 ##	argument defaults to the current domain
@@ -284,7 +285,9 @@ var verify_goals: bool = true
 
 
 ## Actions in HTN are atomic units of work, representing the simplest tasks that can't be further broken down. Actions often called primitives.
-func _apply_action_and_continue(state: Dictionary, task1: Array, todo_list: Array, plan: Array, depth: int) -> Variant:
+func _apply_action_and_continue(
+	state: Dictionary, task1: Array, todo_list: Array, plan: Array, depth: int
+) -> Variant:
 	var action: Callable = current_domain._action_dict[task1[0]]
 	if verbose >= 2:
 		print("Depth %s, Action %s: " % [depth, str([action.get_method()] + task1.slice(1))])
@@ -300,11 +303,15 @@ func _apply_action_and_continue(state: Dictionary, task1: Array, todo_list: Arra
 		print("Task: ", task1)
 		print("State: ", state)
 	if verbose >= 2:
-		print("Recursive call: Not applicable action: ", str([action.get_method()] + task1.slice(1)))
+		print(
+			"Recursive call: Not applicable action: ", str([action.get_method()] + task1.slice(1))
+		)
 	return false
 
 
-func _refine_task_and_continue(state: Dictionary, task1: Array, todo_list: Array, plan: Array, depth: int) -> Variant:
+func _refine_task_and_continue(
+	state: Dictionary, task1: Array, todo_list: Array, plan: Array, depth: int
+) -> Variant:
 	var relevant: Array = current_domain._task_method_dict[task1[0]]
 	if verbose >= 3:
 		var string_array: PackedStringArray = []
@@ -314,12 +321,14 @@ func _refine_task_and_continue(state: Dictionary, task1: Array, todo_list: Array
 	for method in relevant:
 		if verbose >= 2:
 			print("Depth %s, Trying method %s: " % [depth, method.get_method()])
-		var subtasks: Variant = method.get_object().callv(method.get_method(), [state] + task1.slice(1))
+		var subtasks: Variant = method.get_object().callv(
+			method.get_method(), [state] + task1.slice(1)
+		)
 		if subtasks is Array:
 			if verbose >= 3:
 				print("Intermediate computation: Method applicable.")
 				print("Depth %s, Subtasks: %s" % [depth, subtasks])
-				
+
 			var result: Variant = seek_plan(state, subtasks + todo_list, plan, depth + 1)
 			if result is Array:
 				return result
@@ -328,7 +337,9 @@ func _refine_task_and_continue(state: Dictionary, task1: Array, todo_list: Array
 	return false
 
 
-func _refine_unigoal_and_continue(state: Dictionary, goal1: Array, todo_list: Array, plan: Array, depth: int) -> Variant:
+func _refine_unigoal_and_continue(
+	state: Dictionary, goal1: Array, todo_list: Array, plan: Array, depth: int
+) -> Variant:
 	if verbose >= 3:
 		print("Depth %s, Goal %s: " % [depth, goal1])
 
@@ -362,7 +373,9 @@ func _refine_unigoal_and_continue(state: Dictionary, goal1: Array, todo_list: Ar
 			var verification = []
 
 			if verify_goals:
-				verification = [["_verify_g", str(method.get_method()), state_var_name, arg, val, depth]]
+				verification = [
+					["_verify_g", str(method.get_method()), state_var_name, arg, val, depth]
+				]
 			else:
 				verification = []
 
@@ -378,7 +391,9 @@ func _refine_unigoal_and_continue(state: Dictionary, goal1: Array, todo_list: Ar
 	return false
 
 
-func _refine_multigoal_and_continue(state: Dictionary, goal1: Multigoal, todo_list: Array, plan: Array, depth: int) -> Variant:
+func _refine_multigoal_and_continue(
+	state: Dictionary, goal1: Multigoal, todo_list: Array, plan: Array, depth: int
+) -> Variant:
 	if verbose >= 3:
 		print("Depth %s, Multigoal %s: " % [depth, goal1])
 
@@ -489,7 +504,12 @@ func _item_to_string(item):
 ## no corresponding command definition, it uses the action definition instead.
 func run_lazy_lookahead(state: Dictionary, todo_list: Array, max_tries: int = 10) -> Dictionary:
 	if verbose >= 1:
-		print("RunLazyLookahead> run_lazy_lookahead, verbose = %s, max_tries = %s" % [verbose, max_tries])
+		print(
+			(
+				"RunLazyLookahead> run_lazy_lookahead, verbose = %s, max_tries = %s"
+				% [verbose, max_tries]
+			)
+		)
 		print("RunLazyLookahead> initial state: %s" % [state.keys()])
 		print("RunLazyLookahead> To do:", todo_list)
 
@@ -500,12 +520,20 @@ func run_lazy_lookahead(state: Dictionary, todo_list: Array, max_tries: int = 10
 			print("RunLazyLookahead> %s%s call to find_plan:" % [tries, ordinals.get(tries, "")])
 
 		var plan = find_plan(state, todo_list)
-		if plan == null or (typeof(plan) == TYPE_ARRAY and plan.is_empty()) or (typeof(plan) == TYPE_DICTIONARY and !plan):
+		if (
+			plan == null
+			or (typeof(plan) == TYPE_ARRAY and plan.is_empty())
+			or (typeof(plan) == TYPE_DICTIONARY and !plan)
+		):
 			if verbose >= 1:
 				print("run_lazy_lookahead: find_plan has failed")
 			return state
 
-		if plan == null or (typeof(plan) == TYPE_ARRAY and plan.is_empty()) or (typeof(plan) == TYPE_DICTIONARY and !plan):
+		if (
+			plan == null
+			or (typeof(plan) == TYPE_ARRAY and plan.is_empty())
+			or (typeof(plan) == TYPE_DICTIONARY and !plan)
+		):
 			if verbose >= 1:
 				print("RunLazyLookahead> Empty plan => success\nafter {tries} calls to find_plan.")
 			if verbose >= 2:
@@ -525,7 +553,12 @@ func run_lazy_lookahead(state: Dictionary, todo_list: Array, max_tries: int = 10
 					state = new_state
 				else:
 					if verbose >= 1:
-						print("RunLazyLookahead> WARNING: action %s failed; will call find_plan." % [action_name])
+						print(
+							(
+								"RunLazyLookahead> WARNING: action %s failed; will call find_plan."
+								% [action_name]
+							)
+						)
 					break
 
 		if verbose >= 1 and state != null:

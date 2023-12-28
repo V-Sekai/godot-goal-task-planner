@@ -34,7 +34,11 @@ var planner = preload("res://addons/task_goal/core/plan.gd").new()
 }
 
 # prototypical initial state
-var state0: Dictionary = {"loc": {"alice": "home_a", "bob": "home_b", "taxi1": "park", "taxi2": "station"}, "cash": {"alice": 20, "bob": 15}, "owe": {"alice": 0, "bob": 0}}
+var state0: Dictionary = {
+	"loc": {"alice": "home_a", "bob": "home_b", "taxi1": "park", "taxi2": "station"},
+	"cash": {"alice": 20, "bob": 15},
+	"owe": {"alice": 0, "bob": 0}
+}
 
 ###############################################################################
 # Helper functions:
@@ -87,6 +91,7 @@ func walk(state, p, x, y) -> Variant:
 			state.loc[p] = y
 			return state
 	return false
+
 
 func call_taxi(state, p, x) -> Variant:
 	if is_a(p, "person") and is_a(x, "location"):
@@ -145,11 +150,26 @@ func travel_by_taxi(state, p, y) -> Variant:
 			return [["call_taxi", p, x], ["ride_taxi", p, y], ["pay_driver", p, y]]
 	return false
 
+
 func test_simple_gtn() -> void:
 	planner.domains.push_back(the_domain)
 	planner.current_domain = the_domain
-	planner.declare_actions([Callable(self, "walk"), Callable(self, "call_taxi"), Callable(self, "ride_taxi"), Callable(self, "pay_driver")])
-	planner.declare_task_methods("travel", [Callable(self, "do_nothing"), Callable(self, "travel_by_foot"), Callable(self, "travel_by_taxi")])
+	planner.declare_actions(
+		[
+			Callable(self, "walk"),
+			Callable(self, "call_taxi"),
+			Callable(self, "ride_taxi"),
+			Callable(self, "pay_driver")
+		]
+	)
+	planner.declare_task_methods(
+		"travel",
+		[
+			Callable(self, "do_nothing"),
+			Callable(self, "travel_by_foot"),
+			Callable(self, "travel_by_taxi")
+		]
+	)
 
 	###############################################################################
 	# Running the examples
@@ -194,7 +214,9 @@ We'll do it several times with different values for 'verbose'.
 	gut.p("-- If verbose=3, the planner will print even more information.")
 
 	gut.p("Find a plan that will first get Alice to the park, then get Bob to the park.")
-	var plan = planner.find_plan(state1.duplicate(true), [["travel", "alice", "park"], ["travel", "bob", "park"]])
+	var plan = planner.find_plan(
+		state1.duplicate(true), [["travel", "alice", "park"], ["travel", "bob", "park"]]
+	)
 
 	gut.p("Plan %s" % [plan])
 	assert_eq(

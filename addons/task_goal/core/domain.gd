@@ -29,21 +29,44 @@ var _unigoal_method_dict: Dictionary = {}
 
 var _multigoal_method_list: Array = []
 
-func _m_verify_g(state: Dictionary, method: String, state_var: String, arg: String, desired_val: Variant, depth: int) -> Variant:
+
+func _m_verify_g(
+	state: Dictionary,
+	method: String,
+	state_var: String,
+	arg: String,
+	desired_val: Variant,
+	depth: int
+) -> Variant:
 	if state[state_var][arg] != desired_val:
 		if verbose >= 3:
-			print("Depth %s: method %s didn't achieve\nGoal %s[%s] = %s" % [depth, method, state_var, arg, desired_val])
+			print(
+				(
+					"Depth %s: method %s didn't achieve\nGoal %s[%s] = %s"
+					% [depth, method, state_var, arg, desired_val]
+				)
+			)
 		return false
-		
+
 	if state.has("stn"):
 		for p in state["stn"].keys():
 			if not state["stn"][p].is_consistent():
 				if verbose >= 3:
-					print("Depth %s: method %s resulted in inconsistent STN for %s" % [depth, method, p])
+					print(
+						(
+							"Depth %s: method %s resulted in inconsistent STN for %s"
+							% [depth, method, p]
+						)
+					)
 				return false
 
 	if verbose >= 3:
-		print("Depth %s: method %s achieved\nGoal %s[%s] = %s" % [depth, method, state_var, arg, desired_val])
+		print(
+			(
+				"Depth %s: method %s achieved\nGoal %s[%s] = %s"
+				% [depth, method, state_var, arg, desired_val]
+			)
+		)
 	return []
 
 
@@ -70,7 +93,12 @@ func _m_verify_mg(state: Dictionary, method: String, multigoal: Multigoal, depth
 		for p in state["stn"].keys():
 			if not state["stn"][p].is_consistent():
 				if verbose >= 3:
-					print("Depth %s: method %s resulted in inconsistent STN for %s" % [depth, method, p])
+					print(
+						(
+							"Depth %s: method %s resulted in inconsistent STN for %s"
+							% [depth, method, p]
+						)
+					)
 				return false
 
 	if verbose >= 3:

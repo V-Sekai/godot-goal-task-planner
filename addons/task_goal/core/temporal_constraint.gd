@@ -26,8 +26,18 @@ func _init(start: int, end: int, duration: int, qualifier: TemporalQualifier, re
 
 
 func _to_string() -> String:
-	return str({"resource_name": resource_name, "time_interval": time_interval, "duration": duration, "temporal_qualifier": temporal_qualifier})
+	return str(
+		{
+			"resource_name": resource_name,
+			"time_interval": time_interval,
+			"duration": duration,
+			"temporal_qualifier": temporal_qualifier
+		}
+	)
 
 
 static func sort_func(a: TemporalConstraint, b: TemporalConstraint) -> bool:
-	return a.time_interval.x < b.time_interval.x or (a.time_interval.x == b.time_interval.x and a.time_interval.y < b.time_interval.y)
+	return (
+		a.time_interval.x < b.time_interval.x
+		or (a.time_interval.x == b.time_interval.x and a.time_interval.y < b.time_interval.y)
+	)

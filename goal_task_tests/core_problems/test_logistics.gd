@@ -89,7 +89,11 @@ func find_airport(state, l) -> Variant:
 
 
 func m_drive_truck(state, t, l) -> Variant:
-	if t in state.trucks and l in state.locations and state.in_city[state.truck_at[t]] == state.in_city[l]:
+	if (
+		t in state.trucks
+		and l in state.locations
+		and state.in_city[state.truck_at[t]] == state.in_city[l]
+	):
 		return [["drive_truck", t, l]]
 	return false
 
@@ -99,10 +103,12 @@ func m_load_truck(state, o, t) -> Variant:
 		return [["load_truck", o, t]]
 	return false
 
+
 func m_unload_truck(state, o, l) -> Variant:
 	if o in state.packages and state.at[o] in state.trucks and l in state.locations:
 		return [["unload_truck", o, l]]
 	return false
+
 
 func m_fly_plane(state, plane, a) -> Variant:
 	if plane in state.airplanes and a in state.airports:
@@ -126,7 +132,11 @@ func m_unload_plane(state, o, a) -> Variant:
 
 
 func move_within_city(state, o, l) -> Variant:
-	if o in state.packages and state.at[o] in state.locations and state.in_city[state.at[o]] == state.in_city[l]:
+	if (
+		o in state.packages
+		and state.at[o] in state.locations
+		and state.in_city[state.at[o]] == state.in_city[l]
+	):
 		var t = find_truck(state, o)
 		if t:
 			return [["truck_at", t, state.at[o]], ["at", o, t], ["truck_at", t, l], ["at", o, l]]
@@ -134,15 +144,29 @@ func move_within_city(state, o, l) -> Variant:
 
 
 func move_between_airports(state, o, a) -> Variant:
-	if o in state.packages and state.at[o] in state.airports and a in state.airports and state.in_city[state.at[o]] != state.in_city[a]:
+	if (
+		o in state.packages
+		and state.at[o] in state.airports
+		and a in state.airports
+		and state.in_city[state.at[o]] != state.in_city[a]
+	):
 		var plane = find_plane(state, o)
 		if plane:
-			return [["plane_at", plane, state.at[o]], ["at", o, plane], ["plane_at", plane, a], ["at", o, a]]
+			return [
+				["plane_at", plane, state.at[o]],
+				["at", o, plane],
+				["plane_at", plane, a],
+				["at", o, a]
+			]
 	return false
 
 
 func move_between_city(state, o, l) -> Variant:
-	if o in state.packages and state.at[o] in state.locations and state.in_city[state.at[o]] != state.in_city[l]:
+	if (
+		o in state.packages
+		and state.at[o] in state.locations
+		and state.in_city[state.at[o]] != state.in_city[l]
+	):
 		var a1 = find_airport(state, state.at[o])
 		var a2 = find_airport(state, l)
 		if a1 and a2:
@@ -159,13 +183,37 @@ func before_each() -> void:
 
 	# If we've changed to some other domain, this will change us back.
 	planner.current_domain = the_domain
-	planner.declare_actions([Callable(self, "drive_truck"), Callable(self, "load_truck"), Callable(self, "unload_truck"), Callable(self, "fly_plane"), Callable(self, "load_plane"), Callable(self, "unload_plane")])
+	planner.declare_actions(
+		[
+			Callable(self, "drive_truck"),
+			Callable(self, "load_truck"),
+			Callable(self, "unload_truck"),
+			Callable(self, "fly_plane"),
+			Callable(self, "load_plane"),
+			Callable(self, "unload_plane")
+		]
+	)
 
-	planner.declare_unigoal_methods("at", [Callable(self, "m_load_truck"), Callable(self, "m_unload_truck"), Callable(self, "m_load_plane"), Callable(self, "m_unload_plane")])
+	planner.declare_unigoal_methods(
+		"at",
+		[
+			Callable(self, "m_load_truck"),
+			Callable(self, "m_unload_truck"),
+			Callable(self, "m_load_plane"),
+			Callable(self, "m_unload_plane")
+		]
+	)
 	planner.declare_unigoal_methods("truck_at", [Callable(self, "m_drive_truck")])
 	planner.declare_unigoal_methods("plane_at", [Callable(self, "m_fly_plane")])
 
-	planner.declare_unigoal_methods("at", [Callable(self, "move_within_city"), Callable(self, "move_between_airports"), Callable(self, "move_between_city")])
+	planner.declare_unigoal_methods(
+		"at",
+		[
+			Callable(self, "move_within_city"),
+			Callable(self, "move_between_airports"),
+			Callable(self, "move_between_city")
+		]
+	)
 
 #	planner.print_domain()
 
@@ -179,18 +227,54 @@ func before_each() -> void:
 	state1.at = {"package1": "location1", "package2": "location2"}
 	state1.truck_at = {"truck1": "location3", "truck6": "location10"}
 	state1.plane_at = {"plane2": "airport2"}
-	state1.in_city = {"location1": "city1", "location2": "city1", "location3": "city1", "airport1": "city1", "location10": "city2", "airport2": "city2"}
+	state1.in_city = {
+		"location1": "city1",
+		"location2": "city1",
+		"location3": "city1",
+		"airport1": "city1",
+		"location10": "city2",
+		"airport2": "city2"
+	}
 
 
 func test_move_goal_1() -> void:
-	var plan = planner.find_plan(state1.duplicate(true), [["at", "package1", "location2"], ["at", "package2", "location3"]])
-	assert_eq(plan, [["drive_truck", "truck1", "location1"], ["load_truck", "package1", "truck1"], ["drive_truck", "truck1", "location2"], ["unload_truck", "package1", "location2"], ["load_truck", "package2", "truck1"], ["drive_truck", "truck1", "location3"], ["unload_truck", "package2", "location3"]])
+	var plan = planner.find_plan(
+		state1.duplicate(true), [["at", "package1", "location2"], ["at", "package2", "location3"]]
+	)
+	assert_eq(
+		plan,
+		[
+			["drive_truck", "truck1", "location1"],
+			["load_truck", "package1", "truck1"],
+			["drive_truck", "truck1", "location2"],
+			["unload_truck", "package1", "location2"],
+			["load_truck", "package2", "truck1"],
+			["drive_truck", "truck1", "location3"],
+			["unload_truck", "package2", "location3"]
+		]
+	)
 
 
 ##	Goal 2: package1 is at location10 (transport to a different city)
 func test_move_goal_2() -> void:
 	var plan = planner.find_plan(state1.duplicate(true), [["at", "package1", "location10"]])
-	assert_eq(plan, [["drive_truck", "truck1", "location1"], ["load_truck", "package1", "truck1"], ["drive_truck", "truck1", "airport1"], ["unload_truck", "package1", "airport1"], ["fly_plane", "plane2", "airport1"], ["load_plane", "package1", "plane2"], ["fly_plane", "plane2", "airport2"], ["unload_plane", "package1", "airport2"], ["drive_truck", "truck6", "airport2"], ["load_truck", "package1", "truck6"], ["drive_truck", "truck6", "location10"], ["unload_truck", "package1", "location10"]])
+	assert_eq(
+		plan,
+		[
+			["drive_truck", "truck1", "location1"],
+			["load_truck", "package1", "truck1"],
+			["drive_truck", "truck1", "airport1"],
+			["unload_truck", "package1", "airport1"],
+			["fly_plane", "plane2", "airport1"],
+			["load_plane", "package1", "plane2"],
+			["fly_plane", "plane2", "airport2"],
+			["unload_plane", "package1", "airport2"],
+			["drive_truck", "truck6", "airport2"],
+			["load_truck", "package1", "truck6"],
+			["drive_truck", "truck6", "location10"],
+			["unload_truck", "package1", "location10"]
+		]
+	)
 
 
 ## Goal 3: package1 is at location1 (no actions needed)
@@ -202,4 +286,12 @@ func test_move_goal_3() -> void:
 ##	Goal 4: package1 is at location2
 func test_move_goal_4() -> void:
 	var plan = planner.find_plan(state1.duplicate(true), [["at", "package1", "location2"]])
-	assert_eq(plan, [["drive_truck", "truck1", "location1"], ["load_truck", "package1", "truck1"], ["drive_truck", "truck1", "location2"], ["unload_truck", "package1", "location2"]])
+	assert_eq(
+		plan,
+		[
+			["drive_truck", "truck1", "location1"],
+			["load_truck", "package1", "truck1"],
+			["drive_truck", "truck1", "location2"],
+			["unload_truck", "package1", "location2"]
+		]
+	)
