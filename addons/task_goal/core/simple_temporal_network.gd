@@ -23,14 +23,15 @@ func _to_string() -> String:
 func get_node_index(time_point: int) -> int:
 	if time_point in node_index_cache:
 		return node_index_cache[time_point]
-	else:
-		for interval in node_intervals:
-			if interval.x <= time_point and time_point <= interval.y:
-				var index = node_indices[interval]
-				node_index_cache[time_point] = index
-				return index
-		print("Time point not found in any interval")
-		return -1
+
+	for interval in node_intervals:
+		if interval.x <= time_point and time_point <= interval.y:
+			var index = node_indices[interval]
+			node_index_cache[time_point] = index
+			return index
+
+	print("Time point not found in any interval")
+	return -1
 
 
 var outgoing_edges: Dictionary = {}
@@ -49,7 +50,6 @@ func add_temporal_constraint(from_constraint: TemporalConstraint, to_constraint:
 		print("Failed to validate constraints")
 		return false
 
-
 	if check_overlap(from_constraint) or (to_constraint != null and check_overlap(to_constraint)):
 		return false
 
@@ -59,34 +59,28 @@ func add_temporal_constraint(from_constraint: TemporalConstraint, to_constraint:
 	if not from_node:
 		print("Failed to process from_constraint")
 		return false
-	var to_node: TemporalConstraint = null
+
+	var to_node = null
 	if to_constraint != null:
 		to_node = process_constraint(to_constraint)
 		if not to_node:
 			print("Failed to process to_constraint")
 			return false
+		outgoing_edges[from_node] = outgoing_edges.get(from_node, []) + [to_node]
 
-		# Add the constraint to the list of outgoing edges for the from_node
-		if from_node in outgoing_edges:
-			outgoing_edges[from_node].append(to_node)
-		else:
-			outgoing_edges[from_node] = [to_node]
-
-	# Update the constraints list with the processed nodes
-	var index_from = constraints.find(from_constraint)
-	if index_from != -1:
-		constraints[index_from] = from_node
-	else:
-		constraints.append(from_node)
-
+	update_constraints_list(from_constraint, from_node)
 	if to_constraint != null:
-		var index_to = constraints.find(to_constraint)
-		if index_to != -1:
-			constraints[index_to] = to_node
-		else:
-			constraints.append(to_node)
+		update_constraints_list(to_constraint, to_node)
 
 	return true
+
+
+func update_constraints_list(constraint: TemporalConstraint, node: TemporalConstraint) -> void:
+	var index = constraints.find(constraint)
+	if index != -1:
+		constraints[index] = node
+	else:
+		constraints.append(node)
 
 
 ## This function validates the constraints and returns a boolean value.
