@@ -6,6 +6,7 @@
 - Only primitives (actions) can change the state.
 - Tasks are a combination of [goals, other tasks, primitives].
 - Goals represent the desired target state.
+- Simple Temporal Networks (STNs) are used to arrange the order of design operations temporally.
 
 ## State Variables
 
@@ -14,47 +15,26 @@
   - `room_list`: Dictionary of rooms, each with properties like size, style, and function.
   - `furniture_positions`: Dictionary detailing the positions and orientations of furniture items.
 
+## Using STNs for Temporal Arrangement
+
+- STNs are employed to schedule and sequence the design tasks.
+- The order of design operations (room creation, furniture placement, etc.) is managed temporally to optimize the workflow.
+- Constraints are set to ensure that certain tasks are completed before others, respecting dependencies and logical sequences in the design process.
+
 ## Primitives (Actions)
 
-### `create_room(apartment_state, room_name, size, style, function)`
-
-- **Effect**: Adds a new room to `apartment_state['room_list']` with specified properties.
-
-### `place_furniture(apartment_state, item, room_name, position, orientation)`
-
-- **Effect**: Updates `apartment_state['furniture_positions']`, placing an item in a specified room.
-
-### `change_layout(apartment_state, new_layout)`
-
-- **Effect**: Alters the `apartment_state['layout']` of the apartment.
+- `create_room(apartment_state, room_name, size, style, function)`
+- `place_furniture(apartment_state, item, room_name, position, orientation)`
+- `change_layout(apartment_state, new_layout)`
 
 ## Tasks
 
-### `design_room(apartment_state, room_name, size, style, function)`
-
-- **Components**:
-  - **Goals**: Room designed according to specifications.
-  - **Sub-tasks**: N/A.
-  - **Primitives**: `create_room(apartment_state, room_name, size, style, function)`, `place_furniture` for selected items.
-
-### `redesign_apartment(apartment_state, new_layout, room_specifications)`
-
-- **Components**:
-  - **Goals**: Apartment redesigned to new layout with updated rooms.
-  - **Sub-tasks**: `design_room` for each room in `room_specifications`.
-  - **Primitives**: `change_layout(apartment_state, new_layout)`.
+- `design_room(apartment_state, room_name, size, style, function)`
+- `redesign_apartment(apartment_state, new_layout, room_specifications)`
 
 ## Goals
 
-### Goal1: Design a Complete Apartment
-
-- **Target State**:
-  - `apartment_state['layout']` set to a specific type.
-  - `apartment_state['room_list']` filled with designed rooms.
-  - `apartment_state['furniture_positions']` populated with furniture items appropriately placed.
-
-### Goal2: Redesign an Existing Apartment
-
-- **Target State**:
-  - `apartment_state['layout']` modified to a new type.
-  - `apartment_state['room_list']` and `apartment_state['furniture_positions']` updated to reflect new design requirements.
+- Goal1: Design a Complete Apartment
+  - Sequential tasks: Layout creation, room designing, furniture placement.
+- Goal2: Redesign an Existing Apartment
+  - Temporal constraints: Adjust layout before room redesign, update furniture post-room modifications.
