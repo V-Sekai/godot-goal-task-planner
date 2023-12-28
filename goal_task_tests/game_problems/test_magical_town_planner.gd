@@ -16,6 +16,8 @@ func before_each():
 	var new_domain = the_domain.duplicate(true)
 	planner.domains.push_back(new_domain)
 	planner.current_domain = new_domain
+	new_domain.simple_temporal_networks = {"Mia": SimpleTemporalNetwork.new()}
+	new_domain.types = {"character": ["Mia"], "room": ["bedroom1", "bedroom2"]}
 
 	planner.declare_actions(
 		[
