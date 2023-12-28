@@ -88,17 +88,3 @@ func distance_to(x: String, y: String) -> float:
 	if result > 0:
 		return result
 	return INF
-
-
-func create_room(room_name: String, size: String, style: String, purpose: String) -> Variant:
-	return []
-
-
-func place_furniture(
-	furniture: String, room_name: String, wall: String, direction: String, position: Dictionary
-) -> Variant:
-	return []
-
-
-func change_layout() -> Variant:
-	return []
