@@ -37,7 +37,7 @@ func before_each():
 
 
 func test_college_town_plan():
-	planner.verbose = 0
+	planner.verbose = 3
 	var town_state: Dictionary = {}  # TODO
 	var result = planner.find_plan(
 		town_state.duplicate(true),

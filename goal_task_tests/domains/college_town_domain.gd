@@ -14,13 +14,9 @@ func _init() -> void:
 	set_name("college_town")
 
 
-@export var types = {
-	"location":
-	[
-		"home_Mia",
-	],
-	"stn": [],
-}
+@export var types = {}
+
+@export var simple_temporal_networks = {}
 
 
 func is_a(variable, type) -> bool:
@@ -92,3 +88,17 @@ func distance_to(x: String, y: String) -> float:
 	if result > 0:
 		return result
 	return INF
+
+
+func create_room(room_name: String, size: String, style: String, purpose: String) -> Variant:
+	return []
+
+
+func place_furniture(
+	furniture: String, room_name: String, wall: String, direction: String, position: Dictionary
+) -> Variant:
+	return []
+
+
+func change_layout() -> Variant:
+	return []
