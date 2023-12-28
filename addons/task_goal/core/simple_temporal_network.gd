@@ -164,38 +164,24 @@ func is_consistent() -> bool:
 	return true
 
 
-# Algorithm to return all the possible instantiations of a given path decomposition tree.
 func enumerate_decompositions(vertex: TemporalConstraint) -> Array[Array]:
-	#print("Enumerating decompositions for vertex: " + str(vertex.to_dictionary()))
 	if not vertex is TemporalConstraint:
 		print("Error: vertex must be an instance of TemporalConstraint.")
 		return [[]]
-	# Initialize empty leafs vector
 	var leafs: Array[Array] = [[]]
 
-	# If vertex is a leaf then
 	if is_leaf(vertex):
-		# Add vertex to leafs
+
 		leafs.append([vertex])
 	else:
-		# If vertex is OR then
 		if is_or(vertex):
-			# For all children c of vertex do
 			for child: TemporalConstraint in get_children(vertex):
-				# Enumerate decompositions of child and add to leafs
 				leafs += enumerate_decompositions(child)
 		else:
-			# Initialize empty op vector
 			var op: Array[Array]
-
-			# For all children c of vertex do
 			for child: TemporalConstraint in get_children(vertex):
-				# Enumerate decompositions of child and add to op
 				op += enumerate_decompositions(child)
-
-			# Leafs = cartesian product(op)
 			leafs = cartesian_product(op)
-
 	return leafs
 
 
