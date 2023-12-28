@@ -286,50 +286,51 @@ var verify_goals: bool = true
 ## Actions in HTN are atomic units of work, representing the simplest tasks that can't be further broken down. Actions often called primitives.
 func _apply_action_and_continue(state: Dictionary, task1: Array, todo_list: Array, plan: Array, depth: int) -> Variant:
 	var action: Callable = current_domain._action_dict[task1[0]]
-	if verbose >= 1:
-		print("Depth %s action %s: " % [depth, [action.get_method()] + task1.slice(1)])
+	if verbose >= 2:
+		print("Depth %s, Action %s: " % [depth, str([action.get_method()] + task1.slice(1))])
 	var new_state = action.get_object().callv(action.get_method(), [state] + task1.slice(1))
 	if new_state:
 		if verbose >= 3:
-			print("Applied")
-			print(new_state)
+			print("Intermediate computation: Action applied successfully.")
+			print("New state: ", new_state)
 		return seek_plan(new_state, todo_list, plan + [task1], depth + 1)
-	if verbose >= 3 and not new_state:
-		print("The new state is not valid %s with task %s and state %s" % [new_state, task1, state])
 	if verbose >= 3:
-		print("Not applicable action %s" % [[action.get_method()] + task1.slice(1)])
+		print("Intermediate computation: Failed to apply action. The new state is not valid.")
+		print("New state: ", new_state)
+		print("Task: ", task1)
+		print("State: ", state)
+	if verbose >= 2:
+		print("Recursive call: Not applicable action: ", str([action.get_method()] + task1.slice(1)))
 	return false
 
 
-## A task in HTN is a list of actions, tasks or goals.
-func _refine_task_and_continue(state, task1, todo_list, plan, depth) -> Variant:
+func _refine_task_and_continue(state: Dictionary, task1: Array, todo_list: Array, plan: Array, depth: int) -> Variant:
 	var relevant: Array = current_domain._task_method_dict[task1[0]]
 	if verbose >= 3:
 		var string_array: PackedStringArray = []
 		for m in relevant:
 			string_array.push_back(m.get_method())
-		print("Depth %s task %s methods %s" % [depth, task1, string_array])
+		print("Depth %s, Task %s, Methods %s" % [depth, task1, string_array])
 	for method in relevant:
-		if verbose >= 3:
-			print("Depth %s trying %s: " % [depth, method.get_method()])
+		if verbose >= 2:
+			print("Depth %s, Trying method %s: " % [depth, method.get_method()])
 		var subtasks: Variant = method.get_object().callv(method.get_method(), [state] + task1.slice(1))
-		# Can't just say "if subtasks:", because that's wrong if subtasks == []
 		if subtasks is Array:
 			if verbose >= 3:
-				print("Applicable")
-				print("Depth %s subtasks: %s" % [depth, subtasks])
+				print("Intermediate computation: Method applicable.")
+				print("Depth %s, Subtasks: %s" % [depth, subtasks])
+				
 			var result: Variant = seek_plan(state, subtasks + todo_list, plan, depth + 1)
 			if result is Array:
 				return result
-	if verbose >= 3:
-		print("Depth %s could not accomplish task %s" % [depth, task1])
+	if verbose >= 2:
+		print("Recursive call: Failed to accomplish task: ", task1)
 	return false
 
 
-## A unigoal in HTN represent one desired end state that the system is trying to achieve.
 func _refine_unigoal_and_continue(state: Dictionary, goal1: Array, todo_list: Array, plan: Array, depth: int) -> Variant:
 	if verbose >= 3:
-		print("Depth %s goal %s: " % [depth, goal1])
+		print("Depth %s, Goal %s: " % [depth, goal1])
 
 	var state_var_name: String = goal1[0]
 	var arg: String = goal1[1]
@@ -337,7 +338,7 @@ func _refine_unigoal_and_continue(state: Dictionary, goal1: Array, todo_list: Ar
 
 	if state.get(state_var_name).get(arg) == val:
 		if verbose >= 3:
-			print("Already achieved")
+			print("Intermediate computation: Goal already achieved.")
 		return seek_plan(state, todo_list, plan, depth + 1)
 
 	var relevant = current_domain._unigoal_method_dict[state_var_name]
@@ -349,14 +350,14 @@ func _refine_unigoal_and_continue(state: Dictionary, goal1: Array, todo_list: Ar
 		print("Methods %s " % string_array)
 
 	for method in relevant:
-		if verbose >= 3:
-			print("Depth %s trying method %s: " % [depth, method.get_method()])
+		if verbose >= 2:
+			print("Depth %s, Trying method %s: " % [depth, method.get_method()])
 
 		var subgoals: Variant = method.get_object().callv(method.get_method(), [state] + [arg, val])
 
 		if subgoals is Array:
 			if verbose >= 3:
-				print("Depth %s subgoals: %s" % [depth, subgoals])
+				print("Depth %s, Subgoals: %s" % [depth, subgoals])
 
 			var verification = []
 
@@ -371,44 +372,54 @@ func _refine_unigoal_and_continue(state: Dictionary, goal1: Array, todo_list: Ar
 			if result is Array:
 				return result
 
-	if verbose >= 3:
-		print("Depth %s could not achieve goal %s" % [depth, goal1])
+	if verbose >= 2:
+		print("Recursive call: Failed to achieve goal: ", goal1)
 
 	return false
 
-## Goals in a HTN represent the desired end state that the system is trying to achieve.
+
 func _refine_multigoal_and_continue(state: Dictionary, goal1: Multigoal, todo_list: Array, plan: Array, depth: int) -> Variant:
 	if verbose >= 3:
-		print("Depth %s multigoal %s: " % [depth, goal1])
+		print("Depth %s, Multigoal %s: " % [depth, goal1])
+
 	var relevant: Array = current_domain._multigoal_method_list
+
 	if verbose >= 3:
 		var string_array: PackedStringArray = PackedStringArray()
 		for m in relevant:
 			string_array.push_back(m.get_method())
 		print("Methods %s" % string_array)
+
 	for method in relevant:
-		if verbose >= 3:
-			print("Depth %s trying method %s: " % [depth, method.get_method()])
+		if verbose >= 2:
+			print("Depth %s, Trying method %s: " % [depth, method.get_method()])
+
 		var subgoals: Variant = method.get_object().callv(method.get_method(), [state, goal1])
+
 		if subgoals is Array:
 			if verbose >= 3:
-				print("Applicable")
-				print("Depth %s subgoals: %s" % [depth, subgoals])
+				print("Intermediate computation: Method applicable.")
+				print("Depth %s, Subgoals: %s" % [depth, subgoals])
+
 			var verification = []
+
 			if verify_goals:
 				verification = [["_verify_mg", str(method.get_method()), goal1, depth]]
 			else:
 				verification = []
+
 			todo_list = subgoals + verification + todo_list
 			var result: Variant = seek_plan(state, todo_list, plan, depth + 1)
+
 			if result is Array:
 				return result
 		else:
 			if verbose >= 3:
-				print("Not applicable method %s" % method)
+				print("Intermediate computation: Method not applicable: ", method)
 
-	if verbose >= 3:
-		print("Depth %s could not achieve multigoal %s" % [depth, goal1])
+	if verbose >= 2:
+		print("Recursive call: Failed to achieve multigoal: ", goal1)
+
 	return false
 
 
