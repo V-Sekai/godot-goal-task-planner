@@ -1,0 +1,25 @@
+Activity ID, Activity Name, Duration, Early Start, Early Finish, Late Start, Late Finish, Slack Time, "Predecessor Activities", "Successor Activities", On Critical Path (Yes/No)
+a, Start, 0, NA, NA, NA, NA, NA, "", "b", NA
+p, Finish roofing and flashing, 2, NA, NA, NA, NA, NA, "e", "q", NA
+m, Install kitchen fixtures, 1, NA, NA, NA, NA, NA, "l", "t", NA
+e, Lay brickwork, 6, NA, NA, NA, NA, NA, "d", "p", NA
+h, Install rough plumbing, 3, NA, NA, NA, NA, NA, "f", "k", NA
+j, Install heating and ventilating, 4, NA, NA, NA, NA, NA, "d,g", "k", NA
+v, Finish grading, 2, NA, NA, NA, NA, NA, "q,r", "w", NA
+r, Lay storm drains for rain water, 1, NA, NA, NA, NA, NA, "c", "v", NA
+o, Finish carpentry, 3, NA, NA, NA, NA, NA, "l", "s", NA
+t, Paint, 3, NA, NA, NA, NA, NA, "m,n", "u", NA
+g, Pour basement floor, 2, NA, NA, NA, NA, NA, "f", "j", NA
+c, Pour concrete foundation, 2, NA, NA, NA, NA, NA, "b", "d,r", NA
+i, Install rough wiring, 2, NA, NA, NA, NA, NA, "d", "k", NA
+d, Erect wooden frame including rough roof, 4, NA, NA, NA, NA, NA, "c", "e,i", NA
+s, Sand and varnish flooring, 2, NA, NA, NA, NA, NA, "o,f", "x", NA
+l, Lay finish flooring, 3, NA, NA, NA, NA, NA, "k", "m,n,o", NA
+b, Excavate and pour footers, 4, NA, NA, NA, NA, NA, "a", "c", NA
+f, Install basement drains and plumbing, 4, NA, NA, NA, NA, NA, "c", "g,h,s", NA
+n, Install finish plumbing, 2, NA, NA, NA, NA, NA, "l", "t", NA
+q, Fasten gutters and downspouts, 1, NA, NA, NA, NA, NA, "p", "v", NA
+k, Fasten plaster board and plaster (including drying), 10, NA, NA, NA, NA, NA, "i,j,h", "l", NA
+u, Finish electrical work, 1, NA, NA, NA, NA, NA, "a", "x", NA
+w, Pour walks and complete landscaping, 5, NA, NA, NA, NA, NA, "v", "x", NA
+x, Finish, 0, NA, NA, NA, NA, NA, "s,u,w", "", NA
