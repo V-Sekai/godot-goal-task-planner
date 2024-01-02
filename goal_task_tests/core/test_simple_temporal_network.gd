@@ -69,6 +69,8 @@ func test_validate_constraints():
 		stn.validate_constraints(from_constraint, to_constraint, 0, 0),
 		"validate_constraints should return true when constraints are valid"
 	)
+	var result = stn.is_consistent()
+	assert_true(result, "is_consistent should return true when constraints are consistent")
 
 
 func test_add_constraints_to_list():
