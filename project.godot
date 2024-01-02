@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Task Goal Game Project"
-config/features=PackedStringArray("4.2", "Double Precision", "Forward Plus")
+config/features=PackedStringArray("4.3", "Double Precision")
 config/icon="res://icon.svg"
 
 [autoload]
