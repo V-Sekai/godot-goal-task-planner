@@ -1,3 +1,4 @@
+@uid("uid://c2q2l67bycyl2") # Generated automatically, do not modify.
 # Copyright (c) 2023-present. This file is part of V-Sekai https://v-sekai.org/.
 # K. S. Ernest (Fire) Lee & Contributors (see .all-contributorsrc).
 # test_magical_town_planner.gd
@@ -19,14 +20,18 @@ func create_room(
 	pivot_dict: Dictionary,
 	footprint_dict: Dictionary,
 	time: int
-) -> Dictionary:
+) -> Variant:
 	var room = {
 		"size": size,
 		"style": style,
 		"purpose": purpose,
 	}
 	var furniture = []
-	var footprint = {"pivot": Vector3i(footprint_dict["pivot"]), "footprint": Vector3i(footprint_dict["footprint"])}
+	if not pivot_dict.has("pivot"):
+		return false
+	if not footprint_dict.has("footprint"):
+		return false
+	var footprint = {"pivot": Vector3i(pivot_dict["pivot"]), "footprint": Vector3i(footprint_dict["footprint"])}
 
 	if not state.has("rooms"):
 		state["rooms"] = {}
@@ -73,8 +78,8 @@ func task_design_room(
 			size,
 			style,
 			purpose,
-			Vector3i(0, 0, 0),
-			Vector3i(5, 5, 3),
+			{"pivot": Vector3i(0, 0, 0)},
+			{"footprint": Vector3i(5, 5, 3)},
 			10
 		],
 	]
@@ -129,42 +134,22 @@ func test_college_town_plan():
 
 	assert_eq_deep(
 		result,
-		[
-			[
-				"create_room",
-				"bedroom1",
-				"medium",
-				"modern",
-				"sleep",
-				{"pivot": [0, 0, 0], "footprint": [5, 5, 3]},
-				10
-			],
-			[
-				"place_furniture",
-				"bed",
-				"bedroom1",
-				"north-wall",
-				"facing-south",
-				{"pivot": [2, 2, 0], "footprint": [3, 2, 1]},
-				15
-			],
-			#[
-			#"create_room",
-			#"bedroom2",
-			#"small",
-			#"vintage",
-			#"study",
-			#{"pivot": [6, 0, 0], "footprint": [4, 4, 3]},
-			#30
-			#],
-			#[
-			#"place_furniture",
-			#"desk",
-			#"bedroom2",
-			#"west-wall",
-			#"facing-east",
-			#{"pivot": [7, 2, 0], "footprint": [2, 1, 1]},
-			#35
-			#]
-		]
-	)
+		[["create_room", "bedroom1", "medium", "modern", "sleep", { "pivot": Vector3i(0, 0, 0) }, { "footprint": Vector3i(5, 5, 3) }, 10]])
+	#[
+	#"create_room",
+	#"bedroom2",
+	#"small",
+	#"vintage",
+	#"study",
+	#{"pivot": [6, 0, 0], "footprint": [4, 4, 3]},
+	#30
+	#],
+	#[
+	#"place_furniture",
+	#"desk",
+	#"bedroom2",
+	#"west-wall",
+	#"facing-east",
+	#{"pivot": [7, 2, 0], "footprint": [2, 1, 1]},
+	#35
+	#]

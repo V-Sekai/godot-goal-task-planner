@@ -1,3 +1,4 @@
+@uid("uid://cu1xird87lctn") # Generated automatically, do not modify.
 # Copyright (c) 2023-present. This file is part of V-Sekai https://v-sekai.org/.
 # K. S. Ernest (Fire) Lee & Contributors (see .all-contributorsrc).
 # test_performance.gd
@@ -49,7 +50,7 @@ func test_performance_with_large_number_of_constraints_fixme() -> void:
 func test_performance_with_large_number_of_constraints_failure_fixme() -> void:
 	var start_time = Time.get_ticks_msec()
 
-	for i in range(200):
+	for i in range(500):
 		var qualifier_1 = TemporalConstraint.TemporalQualifier.AT_START
 		var interval_1 = calculate_time_interval(i, qualifier_1)
 		var from_constraint = TemporalConstraint.new(

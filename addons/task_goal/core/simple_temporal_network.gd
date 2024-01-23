@@ -1,3 +1,4 @@
+@uid("uid://ol51kvj43wbv") # Generated automatically, do not modify.
 # Copyright (c) 2023-present. This file is part of V-Sekai https://v-sekai.org/.
 # K. S. Ernest (Fire) Lee & Contributors (see .all-contributorsrc).
 # simple_temporal_network.gd
@@ -41,10 +42,7 @@ var outgoing_edges: Dictionary = {}
 func check_overlap(new_constraint: TemporalConstraint) -> bool:
 	for constraint in constraints:
 		if constraint.resource_name == new_constraint.resource_name:
-			if (
-				(constraint.time_interval.x < new_constraint.time_interval.y)
-				and (new_constraint.time_interval.x < constraint.time_interval.y)
-			):
+			if constraint.overlaps_with(new_constraint):
 				return true
 	return false
 
@@ -169,11 +167,11 @@ func get_temporal_constraint_by_name(constraint_name: String) -> TemporalConstra
 
 
 func is_consistent() -> bool:
+	if not constraints.size():
+		return true
 	var constraints_str: String
 	for c in constraints:
 		constraints_str += str(c) + ", "
-	if not constraints.size():
-		return true
 
 	constraints.sort_custom(TemporalConstraint.sort_func)
 	for i in range(constraints.size()):
