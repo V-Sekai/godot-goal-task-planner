@@ -34,12 +34,12 @@
  "post_run_script": "",
  "pre_run_script": "",
  "prefix": "test_",
- "selected": "test_game.gd",
+ "selected": "test_construction.gd",
  "should_exit": true,
  "should_exit_on_success": false,
  "should_maximize": false,
  "show_help": false,
  "suffix": ".gd",
  "tests": [],
- "unit_test_name": "test_vr_community_planning"
+ "unit_test_name": "test_construction_planning"
 }
