@@ -55,17 +55,17 @@
 
 ```gdscript
 var plan = planner.find_plan(apartment_state.duplicate(true), [
-    ["design_room", "bedroom1", "medium", "modern", "sleep"],
-    ["design_room", "bedroom2", "small", "vintage", "study"]
+	["design_room", "bedroom1", "medium", "modern", "sleep"],
+	["design_room", "bedroom2", "small", "vintage", "study"]
 ]);
 
 assert_eq(plan, [
-    ["create_room", "bedroom1", "medium", "modern", "sleep", {"pivot": [0, 0, 0], "footprint": [5, 5, 3]}, 10],
-    ["place_furniture", "bed", "bedroom1", "north-wall", "facing-south", {"pivot": [2, 2, 0], "footprint": [3, 2, 1]}, 15],
-    ["place_furniture", "wardrobe", "bedroom1", "east-wall", "facing-west", {"pivot": [4, 2, 0], "footprint": [1, 2, 2]}, 20],
-    ["create_room", "bedroom2", "small", "vintage", "study", {"pivot": [6, 0, 0], "footprint": [4, 4, 3]}, 30],
-    ["place_furniture", "desk", "bedroom2", "west-wall", "facing-east", {"pivot": [7, 2, 0], "footprint": [2, 1, 1]}, 35],
-    ["place_furniture", "bookshelf", "bedroom2", "south-wall", "facing-north", {"pivot": [8, 3, 0], "footprint": [1, 2, 2]}, 40]
+	["create_room", "bedroom1", "medium", "modern", "sleep", {"pivot": [0, 0, 0], "footprint": [5, 5, 3]}, 10],
+	["place_furniture", "bed", "bedroom1", "north-wall", "facing-south", {"pivot": [2, 2, 0], "footprint": [3, 2, 1]}, 15],
+	["place_furniture", "wardrobe", "bedroom1", "east-wall", "facing-west", {"pivot": [4, 2, 0], "footprint": [1, 2, 2]}, 20],
+	["create_room", "bedroom2", "small", "vintage", "study", {"pivot": [6, 0, 0], "footprint": [4, 4, 3]}, 30],
+	["place_furniture", "desk", "bedroom2", "west-wall", "facing-east", {"pivot": [7, 2, 0], "footprint": [2, 1, 1]}, 35],
+	["place_furniture", "bookshelf", "bedroom2", "south-wall", "facing-north", {"pivot": [8, 3, 0], "footprint": [1, 2, 2]}, 40]
 ]);
 ```
 
