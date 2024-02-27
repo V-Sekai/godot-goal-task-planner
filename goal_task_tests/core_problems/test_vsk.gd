@@ -53,26 +53,6 @@ var planner = preload("res://addons/task_goal/core/plan.gd").new()
 	"create_textures": ["write_scripts"],
 	"develop_shaders": ["write_scripts"],
 	"program_game_logic": ["write_scripts"],
-	"write_scripts": [],
-	"fix_menu_toolbar_bug": [],
-	"fix_ik_errors": [],
-	"fix_physical_lighting_problems": [],
-	"fix_player_movement_after_respawn": [],
-	"restore_hand_movement_on_controller_interaction": [],
-	"restore_voip": [],
-	"fix_ui_dropdown_text_visibility": [],
-	"fix_escape_button_freeze": [],
-	"restore_mirror_in_preview_server": [],
-	"fix_large_map_upload": [],
-	"fix_logout_issue": [],
-	"fix_finger_corruption": [],
-	"fix_player_speech_stop": [],
-	"load_avatars_after_loading_screen": [],
-	"allow_login_from_map_and_avatar_list": [],
-	"restore_grabbing_and_environmental_interactions": [],
-	"fix_pause_menu_flow_disorientation": [],
-	"fix_vr_menu": [],
-	"fix_jumping": []
 }
 
 
