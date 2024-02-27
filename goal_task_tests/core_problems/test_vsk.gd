@@ -107,13 +107,15 @@ func schedule_activity(state: Dictionary, activity: String) -> Variant:
 	if not activity in state["pending_activities"]:
 		return []
 
-	for predecessor in dependencies[activity]:
-		if not predecessor in state["completed_activities"]:
-			actions.push_back(["schedule_activity", predecessor])
+	if activity in dependencies:
+		for predecessor in dependencies[activity]:
+			if not predecessor in state["completed_activities"]:
+				actions.push_back(["schedule_activity", predecessor])
 
 	actions.append(["complete_activity", activity])
 	
 	return actions
+
 
 ## This function initializes the planner with the domain and declares the actions and task methods.
 func _ready() -> void:
