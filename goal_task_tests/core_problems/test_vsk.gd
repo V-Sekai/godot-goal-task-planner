@@ -13,29 +13,25 @@ var the_domain = preload("res://addons/task_goal/core/domain.gd").new(domain_nam
 
 var planner = preload("res://addons/task_goal/core/plan.gd").new()
 
+
 @export var types = {
 	"activity": [
 		"implement_mvp_features",
-		"fix_bugs",
-		"optimize_code",
-		"write_tests",
-		"update_documentation"
+		"develop_vr_interaction_system"
 	]
 }
 
+
 @export var dependencies: Dictionary = {
-	"implement_mvp_features": ["fix_bugs", "optimize_code"],
-	"fix_bugs": ["write_tests"],
-	"optimize_code": [],
-	"write_tests": ["update_documentation"],
-	"update_documentation": []
+	"implement_mvp_features": [],
+	"develop_vr_interaction_system": ["implement_mvp_features"]
 }
 
 
 ## Prototypical initial state, can include current progress, resources etc.
 var state0: Dictionary = {
 	"completed_activities": [],
-	"pending_activities": types["activity"]  # Initial list from 'types'
+	"pending_activities": types["activity"]
 }
 
 
