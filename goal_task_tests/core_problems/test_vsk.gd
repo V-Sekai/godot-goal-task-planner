@@ -20,42 +20,41 @@ var planner = preload("res://addons/task_goal/core/plan.gd").new()
 		"Hand Method (Fingers)",
 		"Pointer Ray Method (Shun)",
 		"Handler receives input when method is in proximity",
-		"Implement object snapping with SDF fields",
-		"Implement object snapping with Voronoi",
 		"Create a snap-to-object feature",
 		"Develop an object debug system (display position and parameters)",
-		"X axis has a spinner or a digit editor",
 		"For each input method, handle input by distance (Distance link)",
-		"Distance link is relative to the handler",
-		"Distance link provides the Handler with distance and input data",
-		"Input action is part of each handler",
-		"Input action has an 'is_handled' method over the distance and the link",
 		"Input action for pinch",
 		"Input action for gaze",
-		"Expression of input actions on the handler",
 		"Compound input action that starts when pinch and button press occur",
 		"Pull cord handler",
 		"Push button handler",
 		"Spinner volume knob handler",
-		"System control as diagetic for loading",
-		"Watch handler / Panel handler / Cockpit handler"
+		"System control as diagetic for loading"
 	]
 }
 
 
 @export var dependencies: Dictionary = {
-	"Develop an object debug system (display position and parameters)": ["Create a snap-to-object feature",  "Implement object snapping with Voronoi"],
-	"Create a snap-to-object feature": ["Implement object snapping with SDF fields", "Implement object snapping with Voronoi"],
-	"Implement object snapping with Voronoi": ["Tip Method (Controller, Pen)", "Hand Method (Fingers)", "Pointer Ray Method (Shun)"],
-	"Implement object snapping with SDF fields": ["Tip Method (Controller, Pen)", "Hand Method (Fingers)", "Pointer Ray Method (Shun)"],
+	"Develop an object debug system (display position and parameters)": ["Create a snap-to-object feature"],
+	"Create a snap-to-object feature": ["Tip Method (Controller, Pen)", "Hand Method (Fingers)", "Pointer Ray Method (Shun)"],
 	"For each input method, handle input by distance (Distance link)": ["Handler receives input when method is in proximity"],
 	"Input action for pinch": ["For each input method, handle input by distance (Distance link)"],
 	"Input action for gaze": ["For each input method, handle input by distance (Distance link)"],
-	"Compound input action that starts when pinch and button press occur": ["Input action for pinch", "Push button handler"],
 	"Pull cord handler": ["For each input method, handle input by distance (Distance link)"],
 	"Push button handler": ["For each input method, handle input by distance (Distance link)"],
-	"Spinner volume knob handler": ["X axis has a spinner or a digit editor"],
-	"System control as diagetic for loading": ["Watch handler / Panel handler / Cockpit handler"]
+	"Spinner volume knob handler": ["For each input method, handle input by distance (Distance link)"],
+	"Compound input action that starts when pinch and button press occur": ["Input action for pinch", "Push button handler"],
+	"System control as diagetic for loading": [
+		"Develop an object debug system (display position and parameters)",
+		"Create a snap-to-object feature",
+		"For each input method, handle input by distance (Distance link)",
+		"Input action for pinch",
+		"Input action for gaze",
+		"Compound input action that starts when pinch and button press occur",
+		"Pull cord handler",
+		"Push button handler",
+		"Spinner volume knob handler"
+	]
 }
 
 
