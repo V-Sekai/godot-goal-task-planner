@@ -16,6 +16,10 @@ var planner = preload("res://addons/task_goal/core/plan.gd").new()
 
 @export var types = {
 	"activity": [
+		"Tip (Controller, Pens)",
+		"Hand (Fingers)",
+		"Pointer Rays (Shun)",
+		"Implement object snapping with SDF fields",
 		"Implement object snapping with Voronoi",
 		"Create a snap-to-object feature",
 		"Develop an object debug system (display position and parameters)"
