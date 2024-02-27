@@ -15,47 +15,20 @@ var planner = preload("res://addons/task_goal/core/plan.gd").new()
 
 @export var types = {
 	"activity": [
-		"implement_social_vr_functionality",
-		"integrate_open_source_godot_engine",
-		"setup_vr_environment",
-		"design_3d_models",
-		"create_textures",
-		"develop_shaders",
-		"program_game_logic",
-		"write_scripts",
-		"fix_menu_toolbar_bug",
-		"fix_ik_errors",
-		"fix_physical_lighting_problems",
-		"fix_player_movement_after_respawn",
-		"restore_hand_movement_on_controller_interaction",
-		"restore_voip",
-		"fix_ui_dropdown_text_visibility",
-		"fix_escape_button_freeze",
-		"restore_mirror_in_preview_server",
-		"fix_large_map_upload",
-		"fix_logout_issue",
-		"fix_finger_corruption",
-		"fix_player_speech_stop",
-		"load_avatars_after_loading_screen",
-		"allow_login_from_map_and_avatar_list",
-		"restore_grabbing_and_environmental_interactions",
-		"fix_pause_menu_flow_disorientation",
-		"fix_vr_menu",
-		"fix_jumping",
-		"implement_mvp_features"  # New activity added here
+		"implement_mvp_features",
+		"fix_bugs",
+		"optimize_code",
+		"write_tests",
+		"update_documentation"
 	]
 }
 
-
 @export var dependencies: Dictionary = {
-	"implement_social_vr_functionality": ["integrate_open_source_godot_engine"],
-	"integrate_open_source_godot_engine": ["setup_vr_environment"],
-	"setup_vr_environment": ["design_3d_models", "create_textures", "develop_shaders"],
-	"design_3d_models": ["write_scripts"],
-	"create_textures": ["write_scripts"],
-	"develop_shaders": ["write_scripts"],
-	"program_game_logic": ["write_scripts"],
-	"implement_mvp_features": ["fix_menu_toolbar_bug", "fix_ik_errors", "fix_physical_lighting_problems"] 
+	"implement_mvp_features": ["fix_bugs", "optimize_code"],
+	"fix_bugs": ["write_tests"],
+	"optimize_code": [],
+	"write_tests": ["update_documentation"],
+	"update_documentation": []
 }
 
 
