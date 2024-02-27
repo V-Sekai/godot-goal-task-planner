@@ -41,9 +41,11 @@ var planner = preload("res://addons/task_goal/core/plan.gd").new()
 		"restore_grabbing_and_environmental_interactions",
 		"fix_pause_menu_flow_disorientation",
 		"fix_vr_menu",
-		"fix_jumping"
+		"fix_jumping",
+		"implement_mvp_features"  # New activity added here
 	]
 }
+
 
 @export var dependencies: Dictionary = {
 	"implement_social_vr_functionality": ["integrate_open_source_godot_engine"],
@@ -53,6 +55,7 @@ var planner = preload("res://addons/task_goal/core/plan.gd").new()
 	"create_textures": ["write_scripts"],
 	"develop_shaders": ["write_scripts"],
 	"program_game_logic": ["write_scripts"],
+	"implement_mvp_features": ["fix_menu_toolbar_bug", "fix_ik_errors", "fix_physical_lighting_problems"] 
 }
 
 
