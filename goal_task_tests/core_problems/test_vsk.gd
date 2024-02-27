@@ -16,15 +16,15 @@ var planner = preload("res://addons/task_goal/core/plan.gd").new()
 
 @export var types = {
 	"activity": [
-		"implement_mvp_features",
+		"shipped_mvp_features",
 		"develop_vr_interaction_system"
 	]
 }
 
 
 @export var dependencies: Dictionary = {
-	"implement_mvp_features": [],
-	"develop_vr_interaction_system": ["implement_mvp_features"]
+	"shipped_mvp_features": ["develop_vr_interaction_system"],
+	"develop_vr_interaction_system": []
 }
 
 
