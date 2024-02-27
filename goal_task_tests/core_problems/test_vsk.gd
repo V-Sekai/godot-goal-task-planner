@@ -130,3 +130,27 @@ func test_vsk_planning() -> void:
 	if typeof(plan) == TYPE_ARRAY:
 		for action in plan:
 			gut.p("- %s" % str(action))
+
+
+## This function tests if an activity can be completed when it is not in pending activities.
+func test_complete_activity_error_case() -> void:
+	var state = state0.duplicate(true)
+	state["pending_activities"] = []
+	var result = complete_activity(state, "Understand the project requirements")
+	assert_eq(result, false, "Activity should not be completed if it is not in pending activities.")
+
+
+## This function tests if an activity can be scheduled when it is not in pending activities.
+func test_schedule_activity_error_case() -> void:
+	var state = state0.duplicate(true)
+	state["pending_activities"] = []
+	var actions = schedule_activity(state, "Understand the project requirements")
+	assert_eq(actions.size(), 0, "No actions should be returned if the activity is not in pending activities.")
+
+
+## This function tests if an activity can be set as completed when it is not in pending activities.
+func test_set_as_completed_error_case() -> void:
+	var state = state0.duplicate(true)
+	state["pending_activities"] = []
+	var result = set_as_completed(state, "Understand the project requirements")
+	assert_eq(result, state, "State should remain unchanged if the activity is not in pending activities.")
