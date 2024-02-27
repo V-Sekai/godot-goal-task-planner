@@ -16,15 +16,41 @@ var planner = preload("res://addons/task_goal/core/plan.gd").new()
 
 @export var types = {
 	"activity": [
-		"shipped_mvp_features",
-		"develop_vr_interaction_system"
+		"Understand the project requirements",
+		"Research on latest VR interaction trends",
+		"Define the scope of the VR interaction system",
+		"Sketch initial designs for the VR interaction system",
+		"Review and refine initial sketches",
+		"Develop wireframes for the VR interaction system",
+		"Review and refine wireframes",
+		"Create detailed mockups for the VR interaction system",
+		"Review and refine mockups",
+		"Create user flow diagrams for the VR interaction system",
+		"Review and refine user flow diagrams",
+		"Develop a prototype of the VR interaction system",
+		"Test the prototype and make necessary adjustments",
+		"Conduct a final review of the design",
+		"Prepare design handoff for development team"
 	]
 }
 
 
 @export var dependencies: Dictionary = {
-	"shipped_mvp_features": ["develop_vr_interaction_system"],
-	"develop_vr_interaction_system": []
+	"Understand the project requirements": [],
+	"Research on latest VR interaction trends": ["Understand the project requirements"],
+	"Define the scope of the VR interaction system": ["Research on latest VR interaction trends"],
+	"Sketch initial designs for the VR interaction system": ["Define the scope of the VR interaction system"],
+	"Review and refine initial sketches": ["Sketch initial designs for the VR interaction system"],
+	"Develop wireframes for the VR interaction system": ["Review and refine initial sketches"],
+	"Review and refine wireframes": ["Develop wireframes for the VR interaction system"],
+	"Create detailed mockups for the VR interaction system": ["Review and refine wireframes"],
+	"Review and refine mockups": ["Create detailed mockups for the VR interaction system"],
+	"Create user flow diagrams for the VR interaction system": ["Review and refine mockups"],
+	"Review and refine user flow diagrams": ["Create user flow diagrams for the VR interaction system"],
+	"Develop a prototype of the VR interaction system": ["Review and refine user flow diagrams"],
+	"Test the prototype and make necessary adjustments": ["Develop a prototype of the VR interaction system"],
+	"Conduct a final review of the design": ["Test the prototype and make necessary adjustments"],
+	"Prepare design handoff for development team": ["Conduct a final review of the design"]
 }
 
 
