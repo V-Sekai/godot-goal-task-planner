@@ -16,16 +16,31 @@ var planner = preload("res://addons/task_goal/core/plan.gd").new()
 
 @export var types = {
 	"activity": [
-		"Tip (Controller, Pens)",
-		"Hand (Fingers)",
-		"Pointer Rays (Shun)",
+		"Tip Method (Controller, Pen)",
+		"Hand Method (Fingers)",
+		"Pointer Ray Method (Shun)",
+		"Handler receives input method is in proximity"
 		"Implement object snapping with SDF fields",
 		"Implement object snapping with Voronoi",
 		"Create a snap-to-object feature",
-		"Develop an object debug system (display position and parameters)"
+		"Develop an object debug system (display position and parameters)",
+		"X axis has a spinner or a digit editor",
+		"For each input method and input handles by distance (Distance link)",
+		"Distance link is relative to the handler",
+		"Distance link pesters the Handler with distance and input",
+		"Input action is part of each handler",
+		"Input action has an is_handled method over the distance and the link",
+		"Input action pinch",
+		"Input action gaze",
+		"Expression input actions on the handler",
+		"Compound input action that pinch and started pressing the button",
+		"Pull cord handler",
+		"Push button handler",
+		"Spinner volume know handler",
+		"System control as diagetic for loading",
+		"Watch / Panel / Cockpit",
 	]
 }
-
 
 @export var dependencies: Dictionary = {
 	"Develop an object debug system (display position and parameters)": ["Create a snap-to-object feature",  "Implement object snapping with Voronoi"],
