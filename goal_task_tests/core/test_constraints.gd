@@ -1,4 +1,3 @@
-@uid("uid://b8u2iahohddu1") # Generated automatically, do not modify.
 # Copyright (c) 2023-present. This file is part of V-Sekai https://v-sekai.org/.
 # K. S. Ernest (Fire) Lee & Contributors (see .all-contributorsrc).
 # test_constraints.gd

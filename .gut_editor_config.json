@@ -5,7 +5,7 @@
  "dirs": [
   "res://"
  ],
- "disable_colors": true,
+ "disable_colors": false,
  "double_strategy": 1,
  "errors_do_not_cause_failure": false,
  "font_color": "ccccccff",
@@ -34,7 +34,7 @@
  "post_run_script": "",
  "pre_run_script": "",
  "prefix": "test_",
- "selected": "test_vsk.gd",
+ "selected": null,
  "should_exit": true,
  "should_exit_on_success": false,
  "should_maximize": false,
