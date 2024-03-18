@@ -233,7 +233,10 @@ var city_item_data = [
 		"MeshName": "BUILDING_MESH_hall_entrance_01",
 		"AdjacentMeshes": [
 			"BUILDING_MESH_corridor_school_01",
-			"BUILDING_MESH_auditorium_main_01"
+			"BUILDING_MESH_auditorium_main_01",
+			"BUILDING_MESH_theatre_main_01",		
+			"BUILDING_MESH_room_gigachad_01",
+			"CITY_MESH_building_dormitory_01",
 		],
 		"Dimensions": "10x6x3",
 		"Description": "The primary entrance hall of the building, welcoming students and staff.",
@@ -249,7 +252,10 @@ var city_item_data = [
 			"BUILDING_MESH_classroom_standard_01",
 			"BUILDING_MESH_lab_science_01",
 			"BUILDING_MESH_office_teacher_01",
-			"BUILDING_MESH_staircase_main_01"
+			"BUILDING_MESH_staircase_main_01",
+			"BUILDING_MESH_theatre_main_01",
+			"BUILDING_MESH_kitchen_main_01",
+			"BUILDING_MESH_lab_alchemy_01",
 		],
 		"Dimensions": "20x15x5",
 		"Description": "Large space for assemblies and performances",
@@ -309,7 +315,7 @@ var city_item_data = [
 		"Type": "Building",
 		"MeshName": "BUILDING_MESH_hub_dormitory_01",
 		"AdjacentMeshes": [
-			"BUILDING_MESH_room_dorm_01"
+			"BUILDING_MESH_room_dorm_01",
 		],
 		"Dimensions": "6x4x3",
 		"Description": "Shared living quarters for students",
@@ -413,7 +419,8 @@ var city_item_data = [
 		"MeshName": "BUILDING_MESH_lab_alchemy_01",
 		"AdjacentMeshes": [
 			"BUILDING_MESH_corridor_school_01",
-			"BUILDING_MESH_classroom_specialized_01"
+			"BUILDING_MESH_classroom_specialized_01",
+			"BUILDING_MESH_corridor_school_01",
 		],
 		"Dimensions": "8x6x3",
 		"Description": "Mystical room dedicated to the study of alchemy",
@@ -425,7 +432,8 @@ var city_item_data = [
 		"Type": "Building",
 		"MeshName": "BUILDING_MESH_lab_computer_01",
 		"AdjacentMeshes": [
-			"BUILDING_MESH_corridor_school_01"
+			"BUILDING_MESH_corridor_school_01",			
+			"CITY_MESH_building_library_01",
 		],
 		"Dimensions": "6x6x3",
 		"Description": "High-tech room with computers for research and coding",
@@ -461,7 +469,8 @@ var city_item_data = [
 		"Type": "Building",
 		"MeshName": "BUILDING_MESH_theatre_main_01",
 		"AdjacentMeshes": [
-			"BUILDING_MESH_corridor_school_01"
+			"BUILDING_MESH_corridor_school_01",
+			"BUILDING_MESH_auditorium_main_01",
 		],
 		"Dimensions": "20x15x7",
 		"Description": "A stage for drama practices and performances",
@@ -473,7 +482,8 @@ var city_item_data = [
 		"Type": "Building",
 		"MeshName": "BUILDING_MESH_gymnasium_main_01",
 		"AdjacentMeshes": [
-			"BUILDING_MESH_room_changing_01"
+			"BUILDING_MESH_room_changing_01",
+			"CITY_MESH_building_dormitory_01",
 		],
 		"Dimensions": "8x8x4",
 		"Description": "Indoor sports facility",
@@ -511,6 +521,7 @@ var city_item_data = [
 		"AdjacentMeshes": [
 			"BUILDING_MESH_corridor_school_01",
 			"BUILDING_MESH_bedroom_individual_01",
+			"BUILDING_MESH_dorms_teacher_01",
 		],
 		"Dimensions": "4x4x2.5",
 		"Description": "Workspace for faculty staff",
@@ -522,7 +533,8 @@ var city_item_data = [
 		"Type": "Building",
 		"MeshName": "BUILDING_MESH_room_break_teacher_01",
 		"AdjacentMeshes": [
-			"BUILDING_MESH_office_teacher_01"
+			"BUILDING_MESH_office_teacher_01",
+			"BUILDING_MESH_office_faculty_01",
 		],
 		"Dimensions": "Variable",
 		"Description": "Relaxation area for staff during breaks",
