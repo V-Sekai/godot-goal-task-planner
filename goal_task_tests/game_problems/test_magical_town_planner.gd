@@ -872,13 +872,7 @@ func test_visit_all_locations_respecting_adjacency():
 	var result: Variant = planner.find_plan(state, goals)
 	assert_eq(not result is bool, true)
 	
-	for item_name in state["visited"].keys():
-		if not state["visited"].has(item_name):
-			gut.p("Location not visited: %s" % name)
-			continue
-		var item_value = state["visited"][item_name]
-		gut.p("Location visited: %s - %s" % [item_name, item_value])
-	
 	var planned_location: Array[String] = []
 	for r in result:
-		gut.p("Plan %s" % r[1])
+		planned_location.append(r[1])
+	gut.p("Plan %s" % [planned_location])
