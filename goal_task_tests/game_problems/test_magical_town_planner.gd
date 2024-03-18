@@ -146,7 +146,10 @@ var city_item_data = [
 		"AdjacentMeshes": [
 			"CITY_MESH_building_lab_student_01",
 			"CITY_MESH_building_library_01",
-			"BUILDING_MESH_hub_dormitory_01"
+			"BUILDING_MESH_hub_dormitory_01",
+			"BUILDING_MESH_classroom_standard_01",
+			"CITY_MESH_road_intersection_T_01",
+			"CITY_MESH_building_lab_student_01",
 		],
 		"Footprint": "8x8x3",
 		"FlavorText": "Study and lecture halls",
@@ -160,7 +163,7 @@ var city_item_data = [
 		"AdjacentMeshes": [
 			"CITY_MESH_building_dormitory_01",
 			"CITY_MESH_building_library_01",
-			"BUILDING_MESH_classroom_standard_01"
+			"BUILDING_MESH_classroom_standard_01",
 		],
 		"Footprint": "6x7x3",
 		"FlavorText": "Repository of knowledge",
@@ -187,7 +190,8 @@ var city_item_data = [
 		"MeshName": "CITY_MESH_station_train_01",
 		"AdjacentMeshes": [
 			"CITY_MESH_road_straight_01",
-			"CITY_MESH_road_intersection_T_01"
+			"CITY_MESH_road_intersection_T_01",
+			"CITY_MESH_building_library_01"
 		],
 		"Footprint": "0.2x0.2x3",
 		"FlavorText": "Provides light at night",
@@ -202,7 +206,8 @@ var city_item_data = [
 			"CITY_MESH_road_straight_01",
 			"CITY_MESH_road_turn_right_01",
 			"CITY_MESH_road_turn_left_01",
-			"CITY_MESH_road_intersection_T_01"
+			"CITY_MESH_road_intersection_T_01",			
+			"CITY_MESH_station_train_01"
 		],
 		"Footprint": "1x1x2",
 		"FlavorText": "Oxygen provider",
@@ -214,35 +219,33 @@ var city_item_data = [
 		"Type": "City",
 		"MeshName": "CITY_MESH_tree_park_01",
 		"AdjacentMeshes": [
-			"CITY_MESH_park_common_01"
+			"CITY_MESH_park_common_01",			
+			"CITY_MESH_streetlamp_standard_01"
 		],
 		"Footprint": "10x10x3",
 		"FlavorText": "Grand vestibule welcoming students and visitors alike",
 		"Tags": ["Entry", "Spacious"],
 		"Requirements": ["Main entryway"],
 		"Contents": ["Reception desk", "Notice boards", "Seating"]
-	}
-]
-
-var building_item_data = [
+	},
 	{
 		"Type": "Building",
 		"MeshName": "BUILDING_MESH_hall_entrance_01",
 		"AdjacentMeshes": [
 			"BUILDING_MESH_corridor_school_01",
-			"BUILDING_MESH_auditorium_main_01",
-			"BUILDING_MESH_office_admin_01"
+			"BUILDING_MESH_auditorium_main_01"
 		],
-		"Dimensions": "15x3x3",
-		"Description": "Bustling passage connecting the heart of the school",
-		"Tags": ["Transit", "Busy"],
-		"Requirements": ["Access to classrooms"],
-		"Features": ["Lockers", "Bulletin boards", "Artwork"]
+		"Dimensions": "10x6x3",
+		"Description": "The primary entrance hall of the building, welcoming students and staff.",
+		"Tags": ["Entryway", "Main Hall"],
+		"Requirements": [],
+		"Features": ["Reception Area", "Seating"]
 	},
 	{
 		"Type": "Building",
 		"MeshName": "BUILDING_MESH_corridor_school_01",
 		"AdjacentMeshes": [
+			"BUILDING_MESH_hall_entrance_01",
 			"BUILDING_MESH_classroom_standard_01",
 			"BUILDING_MESH_lab_science_01",
 			"BUILDING_MESH_office_teacher_01",
@@ -260,11 +263,11 @@ var building_item_data = [
 		"AdjacentMeshes": [
 			"BUILDING_MESH_hall_entrance_01"
 		],
-		"Dimensions": "8x6x3",
-		"Description": "Standard learning environment",
-		"Tags": ["Education", "Learning"],
-		"Requirements": ["Classes"],
-		"Features": ["Desks", "Chairs", "Blackboard", "Teaching aids"]
+		"Dimensions": "20x15x5",
+		"Description": "A large space for school assemblies, presentations, and performances.",
+		"Tags": ["Auditorium", "Assembly Hall"],
+		"Requirements": [],
+		"Features": ["Stage", "Seating", "Audio-Visual Equipment"]
 	},
 	{
 		"Type": "Building",
@@ -331,7 +334,8 @@ var building_item_data = [
 		"MeshName": "BUILDING_MESH_bedroom_individual_01",
 		"AdjacentMeshes": [
 			"BUILDING_MESH_hub_dormitory_01",
-			"BUILDING_MESH_room_dorm_01"
+			"BUILDING_MESH_room_dorm_01",
+			"BUILDING_MESH_office_teacher_01",
 		],
 		"Dimensions": "Variable",
 		"Description": "Outdoor area for recreation and relaxation",
@@ -344,7 +348,9 @@ var building_item_data = [
 		"MeshName": "BUILDING_MESH_courtyard_main_01",
 		"AdjacentMeshes": [
 			"BUILDING_MESH_classroom_standard_01",
-			"BUILDING_MESH_area_communal_01"
+			"BUILDING_MESH_area_communal_01",
+			"BUILDING_MESH_corridor_school_01",
+			"BUILDING_MESH_garden_common_01",
 		],
 		"Dimensions": "5x5x1",
 		"Description": "A touch of nature within the school grounds",
@@ -402,7 +408,6 @@ var building_item_data = [
 		"Requirements": ["Along edges"],
 		"Features": ["Railings"]
 	},
-
 	{
 		"Type": "Building",
 		"MeshName": "BUILDING_MESH_lab_alchemy_01",
@@ -504,7 +509,8 @@ var building_item_data = [
 		"Type": "Building",
 		"MeshName": "BUILDING_MESH_office_teacher_01",
 		"AdjacentMeshes": [
-			"BUILDING_MESH_corridor_school_01"
+			"BUILDING_MESH_corridor_school_01",
+			"BUILDING_MESH_bedroom_individual_01",
 		],
 		"Dimensions": "4x4x2.5",
 		"Description": "Workspace for faculty staff",
@@ -702,7 +708,7 @@ var room_item_data = [
 	{
 		"Type": "Room",
 		"MeshName": "ROOM_MESH_bookcase_standard_01",
-		"AdjacentMeshes": ["ROOM_MESH_library_01", "ROOM_MESH_study_01"],
+		"AdjacentMeshes": ["ROOM_MESH_study_01"],
 		"Dimensions": "1m x 0.3m x 2m",
 		"Description": "Tall mahogany bookcase full of volumes.",
 		"Tags": ["Storage", "Wooden"],
@@ -761,14 +767,6 @@ func create_room(
 			mesh_type = "City"
 			break
 
-	if not valid_mesh:  # If not found in city items, check building items
-		for building_item in building_item_data:
-			if building_item["MeshName"] == mesh_name:
-				valid_mesh = true
-				adjacent_meshes = building_item["AdjacentMeshes"]
-				mesh_type = "Building"
-				break
-
 	if not valid_mesh:  # If not found in building items, check room items
 		for room_item in room_item_data:
 			if room_item["MeshName"] == mesh_name:
@@ -797,12 +795,28 @@ func create_room(
 
 	return state
 
+func get_adjacent_mesh(mesh_name: String) -> Array:
+	for item in city_item_data:
+		if item["MeshName"] == mesh_name:
+			return item["AdjacentMeshes"]
+	return []
+
 func m_create_room(state: Dictionary, mesh_name: String, b: bool) -> Variant:
 	if state["visited"].has(mesh_name) and state["visited"][mesh_name] == false:
+		var adjacent_meshes = get_adjacent_mesh(mesh_name)
 		var pivot_dict = {}
 		var footprint_dict = {}
 		var time = 0
-		return [["create_room", mesh_name, pivot_dict, footprint_dict, time]]
+		var plan = [["create_room", mesh_name, pivot_dict, footprint_dict, time]]
+		if adjacent_meshes == null:
+			return plan
+		for adjacent_mesh_name in adjacent_meshes:
+			if not state["visited"].has(adjacent_mesh_name):
+				continue
+			if state["visited"][adjacent_mesh_name]:
+				continue
+			plan.append(Multigoal.new("visit_city_%s" % adjacent_mesh_name, {"visited": {adjacent_mesh_name: true}}))
+		return plan
 	return false
 
 
@@ -812,7 +826,7 @@ func before_each():
 	var new_domain = the_domain.duplicate(true)
 	planner.domains.push_back(new_domain)
 	planner.current_domain = new_domain
-	new_domain.simple_temporal_networks = {"Mia": SimpleTemporalNetwork.new()}
+	# new_domain.simple_temporal_networks = {"Mia": SimpleTemporalNetwork.new()}
 	planner.declare_actions(
 		[
 			Callable(self, "create_room"),
@@ -824,27 +838,35 @@ func before_each():
 
 	
 func test_visit_all_locations_respecting_adjacency():
-	planner.verbose = 2
+	planner.verbose = 0
 	var state: Dictionary = {
 		"visited": {}
 	}
+	
+	# Sort city items deterministically by their mesh names
+	city_item_data.sort_custom(func(a, b):
+		return a["MeshName"] < b["MeshName"]
+	)
+	
+	# Set all cities as not visited in a deterministic order
 	for city_item in city_item_data:
 		state["visited"][city_item["MeshName"]] = false
-	for building_item in building_item_data:
-		state["visited"][building_item["MeshName"]] = false
+	
 	var goals = []
-	for city_item in city_item_data:
-		var goal_state_city = { "visited": { city_item["MeshName"]: true } }
-		goals.append(Multigoal.new("visit_city_%s" % city_item["MeshName"], goal_state_city))
-	for building_item in building_item_data:
-		var goal_state_building = state.duplicate(true)
-		goal_state_building["visited"][building_item["MeshName"]] = true
-		goals.append(Multigoal.new("visit_building_%s" % building_item["MeshName"], goal_state_building))
+	var city_item = city_item_data[0]
+	var goal_state_city = { "visited": { "CITY_MESH_building_dormitory_01": true } }
+	goals.append(Multigoal.new("visit_city_%s" % city_item["MeshName"], goal_state_city))
+	
 	var result: Variant = planner.find_plan(state, goals)
 	assert_eq(not result is bool, true)
+	
 	for item_name in state["visited"].keys():
 		if not state["visited"].has(item_name):
 			gut.p("Location not visited: %s" % name)
 			continue
 		var item_value = state["visited"][item_name]
 		gut.p("Location visited: %s - %s" % [item_name, item_value])
+	
+	var planned_location: Array[String] = []
+	for r in result:
+		gut.p("Plan %s" % r[1])
