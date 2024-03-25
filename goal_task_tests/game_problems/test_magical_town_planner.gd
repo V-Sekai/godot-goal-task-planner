@@ -762,9 +762,9 @@ var room_item_data = [
 func create_room(
 	state: Dictionary,
 	mesh_name: String,
-	pivot_dict: Dictionary,
-	footprint_dict: Dictionary,
-	time: int
+	_pivot_dict: Dictionary,
+	_footprint_dict: Dictionary,
+	_time: int
 ) -> Variant:
 	# Verify that the mesh exists within the data and check for adjacency
 	var valid_mesh = false
@@ -827,7 +827,7 @@ func m_create_room(state: Dictionary, mesh_name: String, b: bool) -> Variant:
 				continue
 			if state["visited"][adjacent_mesh_name]:
 				continue
-			plan.append(Multigoal.new("visit_city_%s" % adjacent_mesh_name, {"visited": {adjacent_mesh_name: true}}))
+			plan.append(Multigoal.new("visit_city_%s" % adjacent_mesh_name, {"visited": {adjacent_mesh_name: b}}))
 		return plan
 	return false
 
@@ -850,27 +850,27 @@ func before_each():
 
 	
 func test_visit_all_locations_respecting_adjacency():
-	planner.verbose = 0
+	planner.verbose = 3
 	var state: Dictionary = {
 		"visited": {}
 	}
 	
+	for city_item in city_item_data:
+		state["visited"][city_item["MeshName"]] = false
+		
 	# Sort city items deterministically by their mesh names
 	city_item_data.sort_custom(func(a, b):
 		return a["MeshName"] < b["MeshName"]
 	)
-	
-	# Set all cities as not visited in a deterministic order
-	for city_item in city_item_data:
-		state["visited"][city_item["MeshName"]] = false
-	
 	var goals = []
-	var city_item = city_item_data[0]
-	var goal_state_city = { "visited": { "CITY_MESH_building_dormitory_01": true } }
-	goals.append(Multigoal.new("visit_city_%s" % city_item["MeshName"], goal_state_city))
+	for city_item in city_item_data:
+		var goal_state_city = { "visited": { city_item["MeshName"]: true } }
+		goals.append(Multigoal.new("visit_city_%s" % city_item["MeshName"], goal_state_city))
+		break
 	
 	var result: Variant = planner.find_plan(state, goals)
 	assert_eq(not result is bool, true)
+	gut.p(result)
 	
 	var planned_location: Array[String] = []
 	for r in result:

@@ -35,7 +35,7 @@
  "pre_run_script": "",
  "prefix": "test_",
  "selected": "test_magical_town_planner.gd",
- "should_exit": true,
+ "should_exit": false,
  "should_exit_on_success": false,
  "should_maximize": false,
  "show_help": false,
