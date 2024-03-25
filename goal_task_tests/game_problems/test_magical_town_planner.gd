@@ -102,7 +102,7 @@ func before_each():
 
 	
 func test_visit_all_locations_respecting_adjacency():
-	planner.verbose = 1
+	planner.verbose = 0
 	var state: Dictionary = {
 		"visited": {}
 	}
