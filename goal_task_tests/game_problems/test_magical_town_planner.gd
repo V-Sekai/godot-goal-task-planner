@@ -813,13 +813,12 @@ func get_adjacent_mesh(mesh_name: String) -> Array:
 			return item["AdjacentMeshes"]
 	return []
 
-func m_create_room(state: Dictionary, mesh_name: String, b: bool) -> Variant:
+func m_create_room(state: Dictionary, mesh_name: String, create: bool) -> Variant:
 	if state["visited"].has(mesh_name) and state["visited"][mesh_name] == false:
 		var adjacent_meshes = get_adjacent_mesh(mesh_name)
 		var pivot_dict = {}
 		var footprint_dict = {}
-		var time = 0
-		var plan = [["create_room", mesh_name, pivot_dict, footprint_dict, time]]
+		var plan = [["create_room", mesh_name, pivot_dict, footprint_dict, 0]]
 		if adjacent_meshes == null:
 			return plan
 		for adjacent_mesh_name in adjacent_meshes:
@@ -827,7 +826,7 @@ func m_create_room(state: Dictionary, mesh_name: String, b: bool) -> Variant:
 				continue
 			if state["visited"][adjacent_mesh_name]:
 				continue
-			plan.append(Multigoal.new("visit_city_%s" % adjacent_mesh_name, {"visited": {adjacent_mesh_name: b}}))
+			plan.append(Multigoal.new("visit_city_%s" % adjacent_mesh_name, {"visited": {adjacent_mesh_name: true}}))
 		return plan
 	return false
 
@@ -864,7 +863,7 @@ func test_visit_all_locations_respecting_adjacency():
 	)
 	var goals = []
 	for city_item in city_item_data:
-		var goal_state_city = { "visited": { city_item["MeshName"]: true } }
+		var goal_state_city = { "visited": { city_item["MeshName"]: true }}
 		goals.append(Multigoal.new("visit_city_%s" % city_item["MeshName"], goal_state_city))
 		break
 	
@@ -873,6 +872,4 @@ func test_visit_all_locations_respecting_adjacency():
 	gut.p(result)
 	
 	var planned_location: Array[String] = []
-	for r in result:
-		planned_location.append(r[1])
-	gut.p("Plan %s" % [planned_location])
+	gut.p("Plan %s" % [result])
