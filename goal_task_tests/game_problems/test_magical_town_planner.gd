@@ -125,3 +125,4 @@ func test_visit_all_locations_respecting_adjacency():
 	for plan in result:
 		gut.p("Plan %s" % [plan[1]])
 
+	assert_eq(data.city_item_data.size(), result.size())
