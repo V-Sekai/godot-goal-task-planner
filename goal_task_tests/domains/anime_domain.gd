@@ -130,7 +130,7 @@ func handle_temporal_constraint(state, person, current_time, goal_time, constrai
 }
 
 
-func apply_status_move(state, user, target, move) -> Variant:
+func apply_status_move(state, _user, target, move) -> Variant:
 	if move == "Growl":
 		state["stats"][target]["Attack"] -= 1
 	elif move == "Tail Whip":
