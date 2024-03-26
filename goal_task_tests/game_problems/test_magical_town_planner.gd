@@ -65,23 +65,21 @@ func get_adjacent_mesh(mesh_name: String) -> Array:
 			return item["AdjacentMeshes"]
 	return []
 
-func m_create_room(state: Dictionary, mesh_name: String, create: bool) -> Variant:
-	if state["visited"].has(mesh_name) and state["visited"][mesh_name] == false:
-		var adjacent_meshes = get_adjacent_mesh(mesh_name)
-		var pivot_dict = {}
-		var footprint_dict = {}
-		var plan = [["create_room", mesh_name, pivot_dict, footprint_dict, 0]]
-		if adjacent_meshes == null:
-			return plan
-		for adjacent_mesh_name in adjacent_meshes:
-			if not state["visited"].has(adjacent_mesh_name):
-				continue
-			if state["visited"][adjacent_mesh_name]:
-				continue
-			plan.append(Multigoal.new("visit_city_%s" % adjacent_mesh_name, {"visited": {adjacent_mesh_name: true}}))
+func m_create_room(state: Dictionary, mesh_name: String, _create: bool) -> Variant:
+	var adjacent_meshes = get_adjacent_mesh(mesh_name)
+	var pivot_dict = {}
+	var footprint_dict = {}
+	var plan = [["create_room", mesh_name, pivot_dict, footprint_dict, 0]]
+	
+	if adjacent_meshes.is_empty():
 		return plan
-	return false
-
+	
+	for adjacent_mesh_name in adjacent_meshes:
+		if not state["visited"].has(adjacent_mesh_name):
+			plan.append(Multigoal.new("visit_city_%s" % adjacent_mesh_name, {"visited": {adjacent_mesh_name: true}}))
+		elif not state["visited"][adjacent_mesh_name]:
+			plan.append(Multigoal.new("visit_city_%s" % adjacent_mesh_name, {"visited": {adjacent_mesh_name: true}}))
+	return plan
 
 func before_each():
 	planner = preload("res://addons/task_goal/core/plan.gd").new()
@@ -122,7 +120,27 @@ func test_visit_all_locations_respecting_adjacency():
 	
 	var result: Variant = planner.find_plan(state, goals)
 	assert_eq(not result is bool, true)
+
+	var printed_plans = {}
+
 	for plan in result:
-		gut.p("Plan %s" % [plan[1]])
+		if not printed_plans.has(plan[1]):
+			gut.p("Plan %s" % [plan[1]])
+			printed_plans[plan[1]] = true
 
 	assert_eq(data.city_item_data.size(), result.size())
+
+func test_bidirectional_adjacencies():
+	var adjacency_map = {}  # A dictionary to hold each mesh and its adjacencies for quick lookup
+	for item in data.city_item_data:
+		adjacency_map[item["MeshName"]] = item["AdjacentMeshes"]
+	
+	var errors = []  # A list to collect any discrepancies found
+	for mesh_name in adjacency_map.keys():
+		var adjacencies = adjacency_map[mesh_name]
+		for adj in adjacencies:
+			if adj in adjacency_map and mesh_name not in adjacency_map[adj]:
+				gut.p("%s is not listed as adjacent in %s" % [mesh_name, adj])
+				errors.append(mesh_name)
+
+	assert_eq(errors.size(), 0)	

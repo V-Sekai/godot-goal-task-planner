@@ -9,7 +9,9 @@ var city_item_data = [
 			"CITY_MESH_road_turn_right_01",
 			"CITY_MESH_road_turn_left_01",
 			"CITY_MESH_road_intersection_T_01",
-			"CITY_MESH_streetlamp_standard_01"
+			"CITY_MESH_streetlamp_standard_01",
+			"CITY_MESH_square_central_01",
+			"CITY_MESH_station_train_01",
 		],
 		"Footprint": "2x1x0.1",
 		"FlavorText": "A simple straight road",
@@ -52,7 +54,9 @@ var city_item_data = [
 			"CITY_MESH_road_straight_01",
 			"CITY_MESH_road_turn_right_01",
 			"CITY_MESH_road_turn_left_01",
-			"CITY_MESH_square_central_01"
+			"CITY_MESH_square_central_01",
+			"CITY_MESH_building_dormitory_01",
+			"CITY_MESH_station_train_01",
 		],
 		"Footprint": "3x3x0.1",
 		"FlavorText": "T-junction road",
@@ -68,7 +72,8 @@ var city_item_data = [
 			"CITY_MESH_park_common_01",
 			"CITY_MESH_kiosk_newspapers_01",
 			"CITY_MESH_kiosk_snacks_01",
-			"CITY_MESH_kiosk_flowers_01"
+			"CITY_MESH_kiosk_flowers_01",
+			"CITY_MESH_road_straight_01"
 		],
 		"Footprint": "5x5x0.2",
 		"FlavorText": "A bustling city square",
@@ -82,7 +87,8 @@ var city_item_data = [
 		"AdjacentMeshes": [
 			"CITY_MESH_square_central_01",
 			"CITY_MESH_tree_park_01",
-			"BUILDING_MESH_garden_common_01"
+			"BUILDING_MESH_garden_common_01",
+			"CITY_MESH_building_dormitory_01",
 		],
 		"Footprint": "1x1x1.5",
 		"FlavorText": "Newsstand selling papers",
@@ -136,11 +142,10 @@ var city_item_data = [
 		"Type": "City",
 		"MeshName": "CITY_MESH_building_dormitory_01",
 		"AdjacentMeshes": [
-			"CITY_MESH_building_lab_student_01",
 			"CITY_MESH_building_library_01",
 			"BUILDING_MESH_hub_dormitory_01",
-			"BUILDING_MESH_classroom_standard_01",
 			"CITY_MESH_road_intersection_T_01",
+			"CITY_MESH_park_common_01",
 			"CITY_MESH_building_lab_student_01",
 		],
 		"Footprint": "8x8x3",
@@ -169,7 +174,8 @@ var city_item_data = [
 		"AdjacentMeshes": [
 			"CITY_MESH_building_dormitory_01",
 			"CITY_MESH_building_lab_student_01",
-			"BUILDING_MESH_lab_computer_01"
+			"BUILDING_MESH_lab_computer_01",
+			"CITY_MESH_station_train_01",
 		],
 		"Footprint": "15x6x5",
 		"FlavorText": "Transit hub for city travel",
@@ -183,7 +189,7 @@ var city_item_data = [
 		"AdjacentMeshes": [
 			"CITY_MESH_road_straight_01",
 			"CITY_MESH_road_intersection_T_01",
-			"CITY_MESH_building_library_01"
+			"CITY_MESH_building_library_01",
 		],
 		"Footprint": "0.2x0.2x3",
 		"FlavorText": "Provides light at night",
@@ -198,8 +204,10 @@ var city_item_data = [
 			"CITY_MESH_road_straight_01",
 			"CITY_MESH_road_turn_right_01",
 			"CITY_MESH_road_turn_left_01",
-			"CITY_MESH_road_intersection_T_01",			
-			"CITY_MESH_station_train_01"
+			"CITY_MESH_road_intersection_T_01",
+			"CITY_MESH_station_train_01",
+			"CITY_MESH_square_central_01",
+			"CITY_MESH_park_common_01"
 		],
 		"Footprint": "1x1x2",
 		"FlavorText": "Oxygen provider",
@@ -248,6 +256,7 @@ var city_item_data = [
 			"BUILDING_MESH_theatre_main_01",
 			"BUILDING_MESH_kitchen_main_01",
 			"BUILDING_MESH_lab_alchemy_01",
+			"CITY_MESH_building_library_01",
 		],
 		"Dimensions": "20x15x5",
 		"Description": "Large space for assemblies and performances",
@@ -271,7 +280,9 @@ var city_item_data = [
 		"Type": "Building",
 		"MeshName": "BUILDING_MESH_classroom_standard_01",
 		"AdjacentMeshes": [
-			"BUILDING_MESH_corridor_school_01"
+			"BUILDING_MESH_corridor_school_01",
+			"CITY_MESH_building_dormitory_01",
+			"CITY_MESH_building_lab_student_01",
 		],
 		"Dimensions": "12x8x3",
 		"Description": "Where students dine together",
@@ -306,8 +317,9 @@ var city_item_data = [
 	{
 		"Type": "Building",
 		"MeshName": "BUILDING_MESH_hub_dormitory_01",
-		"AdjacentMeshes": [
+		"AdjacentMeshes": [ 
 			"BUILDING_MESH_room_dorm_01",
+			"CITY_MESH_building_dormitory_01",
 		],
 		"Dimensions": "6x4x3",
 		"Description": "Shared living quarters for students",
@@ -603,7 +615,7 @@ var room_item_data = [
 	{
 		"Type": "Room",
 		"MeshName": "ROOM_MESH_door_standard_01",
-		"AdjacentMeshes": ["ROOM_MESH_room_to_room_01", "ROOM_MESH_corridor_01"],
+		"AdjacentMeshes": ["ROOM_MESH_room_to_room_01", "ROOM_MESH_corridor_01", "CITY_MESH_square_central_01"],
 		"Dimensions": "1.5m x 0.2m x 2m",
 		"Description": "Standard door providing room access and privacy",
 		"Tags": ["Access", "Privacy"],
