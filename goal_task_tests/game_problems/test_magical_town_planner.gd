@@ -122,4 +122,6 @@ func test_visit_all_locations_respecting_adjacency():
 	
 	var result: Variant = planner.find_plan(state, goals)
 	assert_eq(not result is bool, true)
-	print(result)
+	for plan in result:
+		gut.p("Plan %s" % [plan[1]])
+
