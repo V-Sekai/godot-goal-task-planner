@@ -16,26 +16,11 @@ func create_room(
 	state: Dictionary,
 	mesh_name: String,
 	pivot_offset: Vector3,
+	dimensions: Vector3,
+	mesh_type: String,
+	adjacent_meshes: Array,
 	_time: int
 ) -> Variant:
-	# Verify that the mesh exists within the data and check for adjacency
-	var valid_mesh = false
-	var adjacent_meshes = []
-	var mesh_type = ""
-	var dimensions = Vector3()
-	
-	# Determine the type of mesh and collect valid adjacent meshes
-	for city_item in building_city_data:
-		if city_item["MeshName"] == mesh_name:
-			valid_mesh = true
-			adjacent_meshes = city_item["AdjacentMeshes"]
-			mesh_type = city_item["Type"]
-			dimensions = city_item["Dimensions"]
-			break
-
-	if not valid_mesh:
-		return false
-
 	# Create the room data structure
 	var room = {
 		"mesh": mesh_name,
@@ -48,6 +33,8 @@ func create_room(
 	# Add the room to the state dictionary
 	state[mesh_name] = room
 
+	print("Room added to state: ", state[mesh_name])
+	
 	# Mark the room as visited when it's created
 	state["visited"][mesh_name] = true
 
@@ -60,18 +47,46 @@ func get_adjacent_mesh(mesh_name: String) -> Array:
 			return item["AdjacentMeshes"]
 	return []
 
+
+func is_pivot_in_room(pivot: Vector3, room: Dictionary) -> bool:
+	if not room.has("pivot") or not room.has("dimensions"):
+		printerr("Error: Room dictionary does not have expected structure.")
+		return false
+	var room_position = room["pivot"]
+	var dimensions = room["dimensions"]
+	
+	# Calculate the AABB of the room
+	var min_point = room_position - dimensions / 2
+	var max_point = room_position + dimensions / 2
+	
+	# Check if the pivot is inside the AABB
+	return min_point.x <= pivot.x and pivot.x <= max_point.x and min_point.y <= pivot.y and pivot.y <= max_point.y and min_point.z <= pivot.z and pivot.z <= max_point.z
+
+
+func adjust_pivot_if_needed(room: Dictionary, pivot: Vector3) -> Vector3:
+	if is_pivot_in_room(pivot, room):
+		pivot += room["dimensions"]
+	return pivot
+
+
 func m_create_room(state: Dictionary, mesh_name: String, _create: bool) -> Variant:
 	var adjacent_meshes = get_adjacent_mesh(mesh_name)
-	
+
 	# Calculate the pivot based on the dimensions of the room
 	var dimensions = Vector3()
+	var mesh_type = ""
 	for city_item in building_city_data:
 		if city_item["MeshName"] == mesh_name:
 			dimensions = city_item["Dimensions"]
+			mesh_type = city_item["Type"]
 			break
 	var pivot = dimensions / 2.0
-	
-	var plan = [["create_room", mesh_name, pivot, 0]]
+	var plan = []
+	if state.has(mesh_name):
+		pivot = adjust_pivot_if_needed(state[mesh_name], pivot)
+		plan.append(["create_room", mesh_name, pivot, dimensions, mesh_type, adjacent_meshes, 0])
+	else:
+		plan.append(["create_room", mesh_name, dimensions / 2.0, dimensions, mesh_type, adjacent_meshes, 0])
 	
 	if adjacent_meshes.is_empty():
 		return plan
