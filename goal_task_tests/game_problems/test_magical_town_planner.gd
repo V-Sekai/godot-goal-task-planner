@@ -111,7 +111,7 @@ func before_each():
 	)
 	planner.declare_unigoal_methods("visited", [Callable(self, "m_create_room")])
 	planner.declare_multigoal_methods([planner.m_split_multigoal])
-	var data: Resource = load("res://goal_task_tests/game_problems/city_item.gd").new()
+	var data: RefCounted = load("res://goal_task_tests/game_problems/city_item.gd").new()
 	building_city_data = data.building_item_data + data.city_item_data  + data.room_item_data
 
 func test_visit_all_locations_respecting_adjacency():
@@ -125,7 +125,7 @@ func test_visit_all_locations_respecting_adjacency():
 		
 	# Sort city items deterministically by their mesh names
 	building_city_data.sort_custom(func(a, b):
-		return a["MeshName"] < b["MeswellhName"]
+		return a["MeshName"] < b["MeshName"]
 	)
 	var goals = []
 	for city_item in building_city_data:

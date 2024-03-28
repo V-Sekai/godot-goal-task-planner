@@ -136,12 +136,8 @@ func test_visit_all_locations_respecting_adjacency():
 	var result: Variant = planner.find_plan(state, goals)
 	assert_eq(not result is bool, true)
 
-	var printed_plans = {}
-
 	for plan in result:
-		if not printed_plans.has(plan[1]):
-			gut.p("Plan %s" % [plan])
-			printed_plans[plan[1]] = true
+		gut.p("Plan %s" % [plan])
 
 
 func test_bidirectional_adjacencies():
