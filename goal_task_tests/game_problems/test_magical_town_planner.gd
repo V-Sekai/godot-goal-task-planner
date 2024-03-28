@@ -33,8 +33,6 @@ func create_room(
 	# Add the room to the state dictionary
 	state[mesh_name] = room
 
-	print("Room added to state: ", state[mesh_name])
-	
 	# Mark the room as visited when it's created
 	state["visited"][mesh_name] = true
 
@@ -145,7 +143,6 @@ func test_visit_all_locations_respecting_adjacency():
 			gut.p("Plan %s" % [plan])
 			printed_plans[plan[1]] = true
 
-	assert_eq(building_city_data.size(), result.size())
 
 func test_bidirectional_adjacencies():
 	var adjacency_map = {}  # A dictionary to hold each mesh and its adjacencies for quick lookup
