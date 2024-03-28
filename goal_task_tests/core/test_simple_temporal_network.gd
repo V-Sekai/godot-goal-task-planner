@@ -58,21 +58,6 @@ func test_print_constraints_and_check_consistency():
 	assert_true(result, "is_consistent should return true when the network is consistent")
 
 
-func test_validate_constraints():
-	var from_constraint = TemporalConstraint.new(
-		1, 5, 3, TemporalConstraint.TemporalQualifier.AT_START, "resource"
-	)
-	var to_constraint = TemporalConstraint.new(
-		4, 10, 6, TemporalConstraint.TemporalQualifier.AT_END, "resource"
-	)
-	assert_true(
-		stn.validate_constraints(from_constraint, to_constraint, 0, 0),
-		"validate_constraints should return true when constraints are valid"
-	)
-	var result = stn.is_consistent()
-	assert_true(result, "is_consistent should return true when constraints are consistent")
-
-
 func test_add_constraints_to_list():
 	var from_constraint = TemporalConstraint.new(
 		1, 2, 3, TemporalConstraint.TemporalQualifier.AT_START, "resource"

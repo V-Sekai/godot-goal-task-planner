@@ -26,10 +26,10 @@ func test_is_consistent_with_one_constraint() -> void:
 
 func test_is_consistent_with_inconsistent_constraints_should_fail() -> void:
 	var constraint1 = TemporalConstraint.new(
-		0, 10, -5, TemporalConstraint.TemporalQualifier.AT_START, "resource1"
+		0, 10, -5, TemporalConstraint.TemporalQualifier.AT_START, "resource"
 	)
 	var constraint2 = TemporalConstraint.new(
-		5, 15, -20, TemporalConstraint.TemporalQualifier.AT_START, "resource2"
+		5, 15, -20, TemporalConstraint.TemporalQualifier.AT_START, "resource"
 	)
 	stn.add_temporal_constraint(constraint1)
 	stn.add_temporal_constraint(constraint2)

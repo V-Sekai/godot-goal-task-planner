@@ -29,6 +29,7 @@ var _unigoal_method_dict: Dictionary = {}
 
 var _multigoal_method_list: Array = []
 
+var stn: SimpleTemporalNetwork = SimpleTemporalNetwork.new()
 
 func _m_verify_g(
 	state: Dictionary,
@@ -48,17 +49,15 @@ func _m_verify_g(
 			)
 		return false
 
-	if state.has("stn"):
-		for p in state["stn"].keys():
-			if not state["stn"][p].is_consistent():
-				if verbose >= 3:
-					print(
-						(
-							"Depth %s: method %s resulted in inconsistent STN for %s"
-							% [depth, method, p]
-						)
-					)
-				return false
+	if not stn.is_consistent():
+		if verbose >= 3:
+			print(
+				(
+					"Depth %s: method %s resulted in inconsistent STN for %s"
+					% [depth, method]
+				)
+			)
+		return false
 
 	if verbose >= 3:
 		print(
@@ -89,17 +88,15 @@ func _m_verify_mg(state: Dictionary, method: String, multigoal: Multigoal, depth
 			print("Depth %s: method %s didn't achieve %s" % [depth, method, multigoal])
 		return false
 
-	if state.has("stn"):
-		for p in state["stn"].keys():
-			if not state["stn"][p].is_consistent():
-				if verbose >= 3:
-					print(
-						(
-							"Depth %s: method %s resulted in inconsistent STN for %s"
-							% [depth, method, p]
-						)
-					)
-				return false
+	if not stn.is_consistent():
+		if verbose >= 3:
+			print(
+				(
+					"Depth %s: method %s resulted in inconsistent STN for %s"
+					% [depth, method]
+				)
+			)
+		return false
 
 	if verbose >= 3:
 		print("Depth %s: method %s achieved %s" % [depth, method, multigoal])
