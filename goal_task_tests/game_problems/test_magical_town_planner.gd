@@ -11,18 +11,18 @@ var the_domain = preload("res://goal_task_tests/domains/college_town_domain.gd")
 
 var planner = null
 
+
 func create_room(
 	state: Dictionary,
 	mesh_name: String,
-	_pivot_dict: Dictionary,
-	_footprint_dict: Dictionary,
+	pivot_offset: Vector3,
 	_time: int
 ) -> Variant:
 	# Verify that the mesh exists within the data and check for adjacency
 	var valid_mesh = false
 	var adjacent_meshes = []
 	var mesh_type = ""
-	var dimensions: Vector3
+	var dimensions = Vector3()
 	
 	# Determine the type of mesh and collect valid adjacent meshes
 	for city_item in building_city_data:
@@ -41,7 +41,7 @@ func create_room(
 		"mesh": mesh_name,
 		"adjacent_meshes": adjacent_meshes,
 		"dimensions": dimensions,
-		#"pivot": Vector3i(footprint_dict["Pivot"]),
+		"pivot": pivot_offset,
 		"type": mesh_type
 	}
 
@@ -53,6 +53,7 @@ func create_room(
 
 	return state
 
+
 func get_adjacent_mesh(mesh_name: String) -> Array:	
 	for item in building_city_data:
 		if item["MeshName"] == mesh_name:
@@ -61,9 +62,16 @@ func get_adjacent_mesh(mesh_name: String) -> Array:
 
 func m_create_room(state: Dictionary, mesh_name: String, _create: bool) -> Variant:
 	var adjacent_meshes = get_adjacent_mesh(mesh_name)
-	var pivot_dict = {}
-	var footprint_dict = {}
-	var plan = [["create_room", mesh_name, pivot_dict, footprint_dict, 0]]
+	
+	# Calculate the pivot based on the dimensions of the room
+	var dimensions = Vector3()
+	for city_item in building_city_data:
+		if city_item["MeshName"] == mesh_name:
+			dimensions = city_item["Dimensions"]
+			break
+	var pivot = dimensions / 2.0
+	
+	var plan = [["create_room", mesh_name, pivot, 0]]
 	
 	if adjacent_meshes.is_empty():
 		return plan
@@ -119,7 +127,7 @@ func test_visit_all_locations_respecting_adjacency():
 
 	for plan in result:
 		if not printed_plans.has(plan[1]):
-			gut.p("Plan %s" % [plan[1]])
+			gut.p("Plan %s" % [plan])
 			printed_plans[plan[1]] = true
 
 	assert_eq(building_city_data.size(), result.size())
@@ -129,13 +137,11 @@ func test_bidirectional_adjacencies():
 	for item in building_city_data:
 		adjacency_map[item["MeshName"]] = item["AdjacentMeshes"]
 	
-	var errors = []  # A list to collect any discrepancies found
 	for mesh_name in adjacency_map.keys():
 		var adjacencies = adjacency_map[mesh_name]
 		for adj in adjacencies:
 			if adj in adjacency_map and mesh_name not in adjacency_map[adj]:
 				gut.p("%s is not listed as adjacent in %s" % [mesh_name, adj])
-				errors.append(mesh_name)
 
 func test_dimensions_is_vector3():
 	for item in building_city_data:
