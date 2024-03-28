@@ -1,4 +1,76 @@
-extends Resource
+@export
+var game_blocks = [
+	{
+		"Type": "Game",
+		"MeshName": "GAME_MESH_block_straight_01",
+		"AdjacentMeshes": ["GAME_MESH_block_square_01", "GAME_MESH_block_T_01", "GAME_MESH_block_S_01", "GAME_MESH_block_Z_01", "GAME_MESH_block_J_01", "GAME_MESH_block_L_01"],
+		"Dimensions": Vector3(2, 1, 0.1),
+		"FlavorText": "A simple straight game block",
+		"Tags": ["Block", "Transport"],
+		"Requirements": ["Straight", "Cross"],
+		"Contents": []
+	},
+	{
+		"Type": "Game",
+		"MeshName": "GAME_MESH_block_square_01",
+		"AdjacentMeshes": ["GAME_MESH_block_straight_01", "GAME_MESH_block_T_01", "GAME_MESH_block_S_01", "GAME_MESH_block_Z_01", "GAME_MESH_block_J_01", "GAME_MESH_block_L_01"],
+		"Dimensions": Vector3(2, 2, 0.1),
+		"FlavorText": "A simple square game block",
+		"Tags": ["Block", "Transport"],
+		"Requirements": ["Square"],
+		"Contents": []
+	},
+	{
+		"Type": "Game",
+		"MeshName": "GAME_MESH_block_T_01",
+		"AdjacentMeshes": ["GAME_MESH_block_straight_01", "GAME_MESH_block_square_01", "GAME_MESH_block_S_01", "GAME_MESH_block_Z_01", "GAME_MESH_block_J_01", "GAME_MESH_block_L_01"],
+		"Dimensions": Vector3(3, 2, 0.1),
+		"FlavorText": "A T-shaped game block",
+		"Tags": ["Block", "Transport"],
+		"Requirements": ["T"],
+		"Contents": []
+	},
+	{
+		"Type": "Game",
+		"MeshName": "GAME_MESH_block_S_01",
+		"AdjacentMeshes": ["GAME_MESH_block_straight_01", "GAME_MESH_block_square_01", "GAME_MESH_block_T_01", "GAME_MESH_block_Z_01", "GAME_MESH_block_J_01", "GAME_MESH_block_L_01"],
+		"Dimensions": Vector3(3, 2, 0.1),
+		"FlavorText": "An S-shaped game block",
+		"Tags": ["Block", "Transport"],
+		"Requirements": ["S"],
+		"Contents": []
+	},
+	{
+		"Type": "Game",
+		"MeshName": "GAME_MESH_block_Z_01",
+		"AdjacentMeshes": ["GAME_MESH_block_straight_01", "GAME_MESH_block_square_01", "GAME_MESH_block_T_01", "GAME_MESH_block_S_01", "GAME_MESH_block_J_01", "GAME_MESH_block_L_01"],
+		"Dimensions": Vector3(3, 2, 0.1),
+		"FlavorText": "A Z-shaped game block",
+		"Tags": ["Block", "Transport"],
+		"Requirements": ["Z"],
+		"Contents": []
+	},
+	{
+		"Type": "Game",
+		"MeshName": "GAME_MESH_block_J_01",
+		"AdjacentMeshes": ["GAME_MESH_block_straight_01", "GAME_MESH_block_square_01", "GAME_MESH_block_T_01", "GAME_MESH_block_S_01", "GAME_MESH_block_Z_01", "GAME_MESH_block_L_01"],
+		"Dimensions": Vector3(3, 2, 0.1),
+		"FlavorText": "A J-shaped game block",
+		"Tags": ["Block", "Transport"],
+		"Requirements": ["J"],
+		"Contents": []
+	},
+	{
+		"Type": "Game",
+		"MeshName": "GAME_MESH_block_L_01",
+		"AdjacentMeshes": ["GAME_MESH_block_straight_01", "GAME_MESH_block_square_01", "GAME_MESH_block_T_01", "GAME_MESH_block_S_01", "GAME_MESH_block_Z_01", "GAME_MESH_block_J_01"],
+		"Dimensions": Vector3(3, 2, 0.1),
+		"FlavorText": "An L-shaped game block",
+		"Tags": ["Block", "Transport"],
+		"Requirements": ["L"],
+		"Contents": []
+	}
+]
 
 @export
 var city_item_data = [

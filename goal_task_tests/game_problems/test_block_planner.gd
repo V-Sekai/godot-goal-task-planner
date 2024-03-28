@@ -5,7 +5,7 @@
 
 extends GutTest
 
-var building_city_data = []
+var block_data = []
 
 var the_domain = preload("res://goal_task_tests/domains/college_town_domain.gd").new()
 
@@ -40,7 +40,7 @@ func create_room(
 
 
 func get_adjacent_mesh(mesh_name: String) -> Array:	
-	for item in building_city_data:
+	for item in block_data:
 		if item["MeshName"] == mesh_name:
 			return item["AdjacentMeshes"]
 	return []
@@ -73,7 +73,7 @@ func m_create_room(state: Dictionary, mesh_name: String, _create: bool) -> Varia
 	# Calculate the pivot based on the dimensions of the room
 	var dimensions = Vector3()
 	var mesh_type = ""
-	for city_item in building_city_data:
+	for city_item in block_data:
 		if city_item["MeshName"] == mesh_name:
 			dimensions = city_item["Dimensions"]
 			mesh_type = city_item["Type"]
@@ -111,8 +111,8 @@ func before_each():
 	)
 	planner.declare_unigoal_methods("visited", [Callable(self, "m_create_room")])
 	planner.declare_multigoal_methods([planner.m_split_multigoal])
-	var data: Resource = load("res://goal_task_tests/game_problems/city_item.gd").new()
-	building_city_data = data.building_item_data + data.city_item_data  + data.room_item_data
+	var data: RefCounted = load("res://goal_task_tests/game_problems/city_item.gd").new()
+	block_data = data.game_blocks
 
 func test_visit_all_locations_respecting_adjacency():
 	planner.verbose = 0
@@ -120,15 +120,15 @@ func test_visit_all_locations_respecting_adjacency():
 		"visited": {}
 	}
 
-	for city_item in building_city_data:
+	for city_item in block_data:
 		state["visited"][city_item["MeshName"]] = false
 		
 	# Sort city items deterministically by their mesh names
-	building_city_data.sort_custom(func(a, b):
-		return a["MeshName"] < b["MeswellhName"]
+	block_data.sort_custom(func(a, b):
+		return a["MeshName"] < b["MeshName"]
 	)
 	var goals = []
-	for city_item in building_city_data:
+	for city_item in block_data:
 		var goal_state_city = { "visited": { city_item["MeshName"]: true }}
 		goals.append(Multigoal.new("visit_city_%s" % city_item["MeshName"], goal_state_city))
 		break
@@ -146,7 +146,7 @@ func test_visit_all_locations_respecting_adjacency():
 
 func test_bidirectional_adjacencies():
 	var adjacency_map = {}  # A dictionary to hold each mesh and its adjacencies for quick lookup
-	for item in building_city_data:
+	for item in block_data:
 		adjacency_map[item["MeshName"]] = item["AdjacentMeshes"]
 	
 	for mesh_name in adjacency_map.keys():
@@ -156,5 +156,5 @@ func test_bidirectional_adjacencies():
 				gut.p("%s is not listed as adjacent in %s" % [mesh_name, adj])
 
 func test_dimensions_is_vector3():
-	for item in building_city_data:
+	for item in block_data:
 		assert_eq(true, item.has("Dimensions") and item["Dimensions"] is Vector3)
