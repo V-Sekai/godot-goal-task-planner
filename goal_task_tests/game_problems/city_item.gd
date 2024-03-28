@@ -13,7 +13,7 @@ var city_item_data = [
 			"CITY_MESH_square_central_01",
 			"CITY_MESH_station_train_01",
 		],
-		"Footprint": Vector3(2, 1, 0.1),
+		"Dimensions": Vector3(2, 1, 0.1),
 		"FlavorText": "A simple straight road",
 		"Tags": ["Road", "Transport"],
 		"Requirements": ["Straight", "Cross"],
@@ -27,7 +27,7 @@ var city_item_data = [
 			"CITY_MESH_road_intersection_T_01",
 			"CITY_MESH_streetlamp_standard_01"
 		],
-		"Footprint": Vector3(2, 2, 0.1),
+		"Dimensions": Vector3(2, 2, 0.1),
 		"FlavorText": "A right-angled corner road",
 		"Tags": ["Road", "Transport"],
 		"Requirements": ["Turn Right"],
@@ -41,7 +41,7 @@ var city_item_data = [
 			"CITY_MESH_road_intersection_T_01",
 			"CITY_MESH_streetlamp_standard_01"
 		],
-		"Footprint": Vector3(2, 2, 0.1),
+		"Dimensions": Vector3(2, 2, 0.1),
 		"FlavorText": "A left-angled corner road",
 		"Tags": ["Road", "Transport"],
 		"Requirements": ["Turn Left"],
@@ -59,7 +59,7 @@ var city_item_data = [
 			"CITY_MESH_station_train_01",
 			"CITY_MESH_streetlamp_standard_01",
 		],
-		"Footprint": Vector3(3, 3, 0.1),
+		"Dimensions": Vector3(3, 3, 0.1),
 		"FlavorText": "T-junction road",
 		"Tags": ["Road", "Transport"],
 		"Requirements": ["3-way junction"],
@@ -76,7 +76,7 @@ var city_item_data = [
 			"CITY_MESH_kiosk_flowers_01",
 			"CITY_MESH_road_straight_01"
 		],
-		"Footprint": Vector3(5, 5, 0.2),
+		"Dimensions": Vector3(5, 5, 0.2),
 		"FlavorText": "A bustling city square",
 		"Tags": ["Social", "Area"],
 		"Requirements": ["Adjacent to roads"],
@@ -91,7 +91,7 @@ var city_item_data = [
 			"BUILDING_MESH_garden_common_01",
 			"CITY_MESH_building_dormitory_01",
 		],
-		"Footprint": Vector3(1, 1, 1.5),
+		"Dimensions": Vector3(1, 1, 1.5),
 		"FlavorText": "Newsstand selling papers",
 		"Tags": ["Commerce"],
 		"Requirements": ["Near pedestrian area"],
@@ -105,7 +105,7 @@ var city_item_data = [
 			"CITY_MESH_kiosk_snacks_01",
 			"CITY_MESH_kiosk_flowers_01"
 		],
-		"Footprint": Vector3(1, 1, 1.5),
+		"Dimensions": Vector3(1, 1, 1.5),
 		"FlavorText": "Quick snacks on the go",
 		"Tags": ["Commerce", "Food"],
 		"Requirements": ["Near pedestrian area"],
@@ -119,7 +119,7 @@ var city_item_data = [
 			"CITY_MESH_kiosk_newspapers_01",
 			"CITY_MESH_kiosk_flowers_01"
 		],
-		"Footprint": Vector3(1, 1, 1.5),
+		"Dimensions": Vector3(1, 1, 1.5),
 		"FlavorText": "Fresh flowers for sale",
 		"Tags": ["Commerce"],
 		"Requirements": ["Near pedestrian area"],
@@ -133,7 +133,7 @@ var city_item_data = [
 			"CITY_MESH_kiosk_newspapers_01",
 			"CITY_MESH_kiosk_snacks_01"
 		],
-		"Footprint": Vector3(10, 6, 3),
+		"Dimensions": Vector3(10, 6, 3),
 		"FlavorText": "Student housing facility",
 		"Tags": ["Housing"],
 		"Requirements": ["Near educational building"],
@@ -149,7 +149,7 @@ var city_item_data = [
 			"CITY_MESH_park_common_01",
 			"CITY_MESH_building_lab_student_01",
 		],
-		"Footprint": Vector3(8, 8, 3),
+		"Dimensions": Vector3(8, 8, 3),
 		"FlavorText": "Study and lecture halls",
 		"Tags": ["Education"],
 		"Requirements": ["On campus"],
@@ -163,7 +163,7 @@ var city_item_data = [
 			"CITY_MESH_building_library_01",
 			"BUILDING_MESH_classroom_standard_01",
 		],
-		"Footprint": Vector3(6, 7, 3),
+		"Dimensions": Vector3(6, 7, 3),
 		"FlavorText": "Repository of knowledge",
 		"Tags": ["Education"],
 		"Requirements": ["Quiet area"],
@@ -178,7 +178,7 @@ var city_item_data = [
 			"BUILDING_MESH_lab_computer_01",
 			"CITY_MESH_station_train_01",
 		],
-		"Footprint": Vector3(15, 6, 5),
+		"Dimensions": Vector3(15, 6, 5),
 		"FlavorText": "Transit hub for city travel",
 		"Tags": ["Transport"],
 		"Requirements": ["Near roads"],
@@ -193,7 +193,7 @@ var city_item_data = [
 			"CITY_MESH_building_library_01",
 			"CITY_MESH_streetlamp_standard_01",
 		],
-		"Footprint": Vector3(0.2, 0.2, 3),
+		"Dimensions": Vector3(0.2, 0.2, 3),
 		"FlavorText": "Provides light at night",
 		"Tags": ["Infrastructure"],
 		"Requirements": ["Alongside roads"],
@@ -211,7 +211,7 @@ var city_item_data = [
 			"CITY_MESH_square_central_01",
 			"CITY_MESH_park_common_01"
 		],
-		"Footprint": Vector3(1, 1, 2),
+		"Dimensions": Vector3(1, 1, 2),
 		"FlavorText": "Oxygen provider",
 		"Tags": ["Nature"],
 		"Requirements": ["Soil patch"],
@@ -224,7 +224,7 @@ var city_item_data = [
 			"CITY_MESH_park_common_01",			
 			"CITY_MESH_streetlamp_standard_01"
 		],
-		"Footprint": Vector3(10, 10, 3),
+		"Dimensions": Vector3(10, 10, 3),
 		"FlavorText": "Grand vestibule welcoming students and visitors alike",
 		"Tags": ["Entry", "Spacious"],
 		"Requirements": ["Main entryway"],
@@ -405,7 +405,7 @@ var building_item_data = [
 		"AdjacentMeshes": [
 			"BUILDING_MESH_wing_administrative_01"
 		],
-		"Dimensions": "Variable",
+		"Dimensions": Vector3(7, 7, 3),
 		"Description": "The principal's personal decision-making space",
 		"Tags": ["Administrative"],
 		"Requirements": ["Principal"],
@@ -432,7 +432,7 @@ var building_item_data = [
 			"BUILDING_MESH_classroom_specialized_01",
 			"BUILDING_MESH_corridor_school_01",
 		],
-		"Dimensions": "8x6x3",
+		"Dimensions": Vector3(8, 6, 3),
 		"Description": "Mystical room dedicated to the study of alchemy",
 		"Tags": ["Specialty", "Magic"],
 		"Requirements": ["Trained alchemist"],
@@ -445,7 +445,7 @@ var building_item_data = [
 			"BUILDING_MESH_corridor_school_01",			
 			"CITY_MESH_building_library_01",
 		],
-		"Dimensions": "6x6x3",
+		"Dimensions": Vector3(6, 6, 3),
 		"Description": "High-tech room with computers for research and coding",
 		"Tags": ["Technology", "Education"],
 		"Requirements": ["Technical classes"],
@@ -457,7 +457,7 @@ var building_item_data = [
 		"AdjacentMeshes": [
 			"BUILDING_MESH_corridor_school_01"
 		],
-		"Dimensions": "7x7x2.5",
+		"Dimensions": Vector3(7, 7, 2.5),
 		"Description": "Space for learning life skills and domestic crafts",
 		"Tags": ["Practical", "Skill building"],
 		"Requirements": ["Supervised classes"],
@@ -469,7 +469,7 @@ var building_item_data = [
 		"AdjacentMeshes": [
 			"BUILDING_MESH_corridor_school_01"
 		],
-		"Dimensions": "15x10x5",
+		"Dimensions": Vector3(15, 10, 5),
 		"Description": "Soundproof room for practicing and learning music",
 		"Tags": ["Artistic", "Soundproof"],
 		"Requirements": ["Musical activities"],
@@ -482,7 +482,7 @@ var building_item_data = [
 			"BUILDING_MESH_corridor_school_01",
 			"BUILDING_MESH_auditorium_main_01",
 		],
-		"Dimensions": "20x15x7",
+		"Dimensions": Vector3(20, 15, 7),
 		"Description": "A stage for drama practices and performances",
 		"Tags": ["Drama", "Performance"],
 		"Requirements": ["Rehearsals and shows"],
@@ -495,7 +495,7 @@ var building_item_data = [
 			"BUILDING_MESH_room_changing_01",
 			"CITY_MESH_building_dormitory_01",
 		],
-		"Dimensions": "8x8x4",
+		"Dimensions": Vector3(8, 8, 4),
 		"Description": "Indoor sports facility",
 		"Tags": ["Sports", "Large"],
 		"Requirements": ["Physical education"],
@@ -507,7 +507,7 @@ var building_item_data = [
 		"AdjacentMeshes": [
 			"BUILDING_MESH_gymnasium_main_01"
 		],
-		"Dimensions": "3x3x2",
+		"Dimensions": Vector3(3, 3, 2),
 		"Description": "Exclusive gym for top-tier athletes",
 		"Tags": ["Elite", "Fitness"],
 		"Requirements": ["Athletic excellence"],
@@ -519,7 +519,7 @@ var building_item_data = [
 		"AdjacentMeshes": [
 			"BUILDING_MESH_corridor_school_01"
 		],
-		"Dimensions": "4x4x2.5",
+		"Dimensions": Vector3(4, 4, 2.5),
 		"Description": "Storage and workspace for cleaning staff",
 		"Tags": ["Storage", "Staff"],
 		"Requirements": ["Staff"],
@@ -533,7 +533,7 @@ var building_item_data = [
 			"BUILDING_MESH_bedroom_individual_01",
 			"BUILDING_MESH_dorms_teacher_01",
 		],
-		"Dimensions": "4x4x2.5",
+		"Dimensions": Vector3(4, 4,2.5),
 		"Description": "Workspace for faculty staff",
 		"Tags": ["Work", "Faculty"],
 		"Requirements": ["Faculty staff"],
@@ -546,7 +546,7 @@ var building_item_data = [
 			"BUILDING_MESH_office_teacher_01",
 			"BUILDING_MESH_office_faculty_01",
 		],
-		"Dimensions": "Variable",
+		"Dimensions": Vector3(4, 4, 2.5),
 		"Description": "Relaxation area for staff during breaks",
 		"Tags": ["Rest", "Staff only"],
 		"Requirements": ["Staff"],
@@ -559,7 +559,7 @@ var building_item_data = [
 			"BUILDING_MESH_corridor_school_01",
 			"BUILDING_MESH_floor_all_01"
 		],
-		"Dimensions": "6x6x3",
+		"Dimensions": Vector3(6, 6, 3),
 		"Description": "Connects different floors in the school",
 		"Tags": ["Vertical", "Accessible"],
 		"Requirements": ["Multiple Floors"],
@@ -571,7 +571,7 @@ var building_item_data = [
 		"AdjacentMeshes": [
 			"BUILDING_MESH_facility_school_01"
 		],
-		"Dimensions": "5x5x2.5",
+		"Dimensions": Vector3(5, 5, 2.5),
 		"Description": "On-site living accommodations for teachers",
 		"Tags": ["Housing", "Faculty"],
 		"Requirements": ["Faculty staff"],
@@ -583,36 +583,11 @@ var building_item_data = [
 		"AdjacentMeshes": [
 			"BUILDING_MESH_wing_administrative_01"
 		],
-		"Dimensions": "5x5x2.5",
+		"Dimensions": Vector3(5, 5, 2.5),
 		"Description": "Administrative nexus and leader's workspace",
 		"Tags": ["Leadership", "Private"],
 		"Requirements": ["Headmaster"],
 		"Features": ["Executive chair", "Safe", "Credentials"]
-	},
-	{
-		"Type": "Building",
-		"MeshName": "BUILDING_MESH_office_principal_01",
-		"AdjacentMeshes": [
-			"BUILDING_MESH_wing_administrative_01"
-		],
-		"Dimensions": "Variable",
-		"Description": "The principal's personal decision-making space",
-		"Tags": ["Administrative"],
-		"Requirements": ["Principal"],
-		"Features": ["Desk", "Files", "Communication devices"]
-	},
-	{
-		"Type": "Building",
-		"MeshName": "BUILDING_MESH_railing_standard_01",
-		"AdjacentMeshes": [
-			"BUILDING_MESH_balcony_01",
-			"BUILDING_MESH_staircase_main_01"
-		],
-		"Dimensions": "2m x 1m x 3m",
-		"Description": "Provides safety and division between open spaces",
-		"Tags": ["Safety", "Infrastructure"],
-		"Requirements": ["Along edges"],
-		"Features": ["Railings"]
 	},
 ]
 
