@@ -139,9 +139,7 @@ func test_visit_all_locations_respecting_adjacency():
 	var printed_plans = {}
 
 	for plan in result:
-		if not printed_plans.has(plan[1]):
-			gut.p("Plan %s" % [plan])
-			printed_plans[plan[1]] = true
+		gut.p("Plan %s" % [plan])
 
 
 func test_bidirectional_adjacencies():
