@@ -13,7 +13,7 @@ var city_item_data = [
 			"CITY_MESH_square_central_01",
 			"CITY_MESH_station_train_01",
 		],
-		"Dimensions": Vector3(2, 1, 0.1),
+        "Dimensions": Vector3(2, 0.1, 1),
 		"FlavorText": "A simple straight road",
 		"Tags": ["Road", "Transport"],
 		"Requirements": ["Straight", "Cross"],
@@ -224,7 +224,7 @@ var city_item_data = [
 			"CITY_MESH_park_common_01",			
 			"CITY_MESH_streetlamp_standard_01"
 		],
-		"Dimensions": Vector3(10, 10, 3),
+		"Dimensions": Vector3(3, 10, 3),
 		"FlavorText": "Grand vestibule welcoming students and visitors alike",
 		"Tags": ["Entry", "Spacious"],
 		"Requirements": ["Main entryway"],
@@ -596,22 +596,38 @@ var room_item_data = [
 	{
 		"Type": "Room",
 		"MeshName": "ROOM_MESH_door_standard_01",
-		"AdjacentMeshes": ["ROOM_MESH_room_to_room_01", "ROOM_MESH_corridor_01", "CITY_MESH_square_central_01"],
-		"Dimensions": Vector3(1.5, 0.2, 2),
-		"Description": "Standard door providing room access and privacy",
-		"Tags": ["Access", "Privacy"],
-		"Requirements": ["Doorway"],
-		"Features": ["Handle", "Lock"]
+		"AdjacentMeshes": [
+			"BUILDING_MESH_office_principal_01",
+			"BUILDING_MESH_railing_standard_01",
+			"BUILDING_MESH_room_home_economics_01",
+			"BUILDING_MESH_room_music_01",
+			"BUILDING_MESH_room_janitor_01",
+			"BUILDING_MESH_room_break_teacher_01",
+			"BUILDING_MESH_office_headmaster_01"
+		],
+		"Dimensions": Vector3(1, 2, 0.05),
+		"Description": "Standard door for rooms",
+		"Tags": ["Door"],
+		"Requirements": [],
+		"Features": []
 	},
 	{
 		"Type": "Room",
 		"MeshName": "ROOM_MESH_window_standard_01",
-		"AdjacentMeshes": ["ROOM_MESH_view_outside_01"],
-		"Dimensions": Vector3(1.2, 0.8, 0.07),
-		"Description": "Large double-paneled window letting in light",
-		"Tags": ["Transparent", "Lite"],
-		"Requirements": ["Exterior Wall"],
-		"Features": ["Glass Panes", "Openable"]
+		"AdjacentMeshes": [
+			"BUILDING_MESH_office_principal_01",
+			"BUILDING_MESH_railing_standard_01",
+			"BUILDING_MESH_room_home_economics_01",
+			"BUILDING_MESH_room_music_01",
+			"BUILDING_MESH_room_janitor_01",
+			"BUILDING_MESH_room_break_teacher_01",
+			"BUILDING_MESH_office_headmaster_01"
+		],
+		"Dimensions": Vector3(1, 1, 0.05),
+		"Description": "Standard window for rooms",
+		"Tags": ["Window"],
+		"Requirements": [],
+		"Features": []
 	},
 	{
 		"Type": "Room",
