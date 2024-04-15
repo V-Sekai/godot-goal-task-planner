@@ -388,3 +388,4 @@ func test_use_move():
 
 	planner.find_plan(state, [["use_move", user, target, move, time]])
 	assert_eq(state["stats"][target]["Attack"], 4)
+
