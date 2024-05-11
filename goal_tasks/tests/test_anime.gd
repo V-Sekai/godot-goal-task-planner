@@ -5,7 +5,7 @@
 
 extends GutTest
 
-var the_domain = preload("res://goal_task_tests/domains/anime_domain.gd").new()
+var the_domain = preload("res://goal_tasks/tests/domains/anime_domain.gd").new()
 
 var planner = null
 

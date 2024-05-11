@@ -13,7 +13,7 @@ var city_item_data = [
 			"CITY_MESH_square_central_01",
 			"CITY_MESH_station_train_01",
 		],
-        "Dimensions": Vector3(2, 0.1, 1),
+		"Dimensions": Vector3(2, 0.1, 1),
 		"FlavorText": "A simple straight road",
 		"Tags": ["Road", "Transport"],
 		"Requirements": ["Straight", "Cross"],

@@ -25,13 +25,13 @@ gdscript/warnings/native_method_override=1
 gdscript/warnings/get_node_default_without_onready=1
 gdscript/warnings/onready_with_export=1
 
-[editor_plugins]
-
-enabled=PackedStringArray("res://addons/gut/plugin.cfg", "res://addons/vsk_version/plugin.cfg")
-
 [display]
 
 window/size/viewport_width=1280
 window/size/viewport_height=800
 window/size/extend_to_title=true
 window/energy_saving/keep_screen_on=false
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/gut/plugin.cfg", "res://addons/vsk_version/plugin.cfg")

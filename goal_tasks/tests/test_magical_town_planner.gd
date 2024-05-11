@@ -7,7 +7,7 @@ extends GutTest
 
 var building_city_data = []
 
-var the_domain = preload ("res://goal_task_tests/domains/college_town_domain.gd").new()
+var the_domain = preload ("res://goal_tasks/tests/domains/college_town_domain.gd").new()
 
 var planner = null
 

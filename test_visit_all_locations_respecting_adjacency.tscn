@@ -1,6 +1,6 @@
-[gd_scene format=4]
+[gd_scene format=3 uid="uid://lnm33tdoorrc"]
 
-[node name="" type="Node3D"]
+[node name="Node3D" type="Node3D"]
 
 [node name="BUILDING_MESH_hall_entrance_01" type="CSGBox3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.0208, 10.5, 10.0208)
