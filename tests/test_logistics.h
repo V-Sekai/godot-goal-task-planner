@@ -533,7 +533,7 @@ TEST_CASE("[Modules][GoalTaskPlanner] Move Goal 4") {
 	Ref<Plan> planner;
 	planner.instantiate();
 	Ref<Domain> the_domain;
-	the_domain.instantiate("Move Goal 4");
+	the_domain.instantiate();
 	Dictionary state1;
 	before_each(state1, planner, the_domain);
 	Array task;
