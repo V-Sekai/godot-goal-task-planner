@@ -419,7 +419,7 @@ TEST_CASE("[Modules][GoalTaskPlanner] m_drive_truck") {
 	Ref<Plan> planner;
 	planner.instantiate();
 	Ref<Domain> the_domain;
-	the_domain.instantiate("m_drive_truck");
+	the_domain.instantiate();
 	Dictionary state1;
 	before_each(state1, planner, the_domain);
 	TypedArray<Array> task;
