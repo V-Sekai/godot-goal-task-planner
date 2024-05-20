@@ -35,9 +35,9 @@ void Multigoal::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_state", "value"), &Multigoal::set_state);
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "state"), "set_state", "get_state");
 	ClassDB::bind_method(D_METHOD("state_variables"), &Multigoal::state_variables);
-	ClassDB::bind_static_method("Domain", D_METHOD("method_goals_not_achieved", "state", "multigoal"), &Multigoal::method_goals_not_achieved);
-	ClassDB::bind_static_method("Domain", D_METHOD("method_verify_multigoal", "state", "method", "multigoal", "depth", "verbose"), &Multigoal::method_verify_multigoal);
-	ClassDB::bind_static_method("Domain", D_METHOD("method_split_multigoal", "state", "multigoal"), &Multigoal::method_split_multigoal);
+	ClassDB::bind_static_method("Multigoal", D_METHOD("method_goals_not_achieved", "state", "multigoal"), &Multigoal::method_goals_not_achieved);
+	ClassDB::bind_static_method("Multigoal", D_METHOD("method_verify_multigoal", "state", "method", "multigoal", "depth", "verbose"), &Multigoal::method_verify_multigoal);
+	ClassDB::bind_static_method("Multigoal", D_METHOD("method_split_multigoal", "state", "multigoal"), &Multigoal::method_split_multigoal);
 }
 
 Dictionary Multigoal::get_state() const {
