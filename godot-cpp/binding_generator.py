@@ -423,7 +423,7 @@ def generate_bindings(api_filepath, use_template_get_node, bits="64", precision=
     generate_engine_classes_bindings(api, target_dir, use_template_get_node)
     generate_utility_functions(api, target_dir)
     if godot_repo != "":
-        generate_compat_includes(godot_repo, target_dir)
+        generate_compat_includes(godot_repo, output_dir)
 
 
 CLASS_ALIASES = {
@@ -1567,39 +1567,37 @@ def generate_engine_classes_bindings(api, output_dir, use_template_get_node):
             header_file.write("\n".join(result))
 
 
-def generate_compat_includes(godot_repo: Path, target_dir: Path):
-    file_types_mapping_godot_cpp_gen = map_header_files(target_dir / "include")
+def generate_compat_includes(godot_repo: Path, output_dir: Path):
+    file_types_mapping_godot_cpp_gen = map_header_files(output_dir)
     file_types_mapping_godot = map_header_files(godot_repo)
-    
+    # Match the headers
     file_types_mapping = match_headers(file_types_mapping_godot_cpp_gen, file_types_mapping_godot)
 
-    include_gen_folder = (Path(target_dir) / "include").as_posix()
     for file_godot_cpp_name, file_godot_names in file_types_mapping.items():
-        header_filename = file_godot_cpp_name.replace("godot_cpp", "godot_compat")
-        header_filepath = Path(include_gen_folder) / header_filename
-        
-        Path(os.path.dirname(header_filepath.as_posix())).mkdir(parents=True, exist_ok=True)
-        
+        header_filepath = file_godot_cpp_name.replace("godot_cpp", "godot_compat")
+        if "gen/include" not in header_filepath:
+            header_filepath = header_filepath.replace("include/", "gen/include/")
+        Path(os.path.dirname(Path(output_dir) / Path(header_filepath))).mkdir(parents=True, exist_ok=True)
         result = []
-        snake_header_name = camel_to_snake(header_filename)
+        snake_header_name = camel_to_snake(header_filepath)
         add_header(f"{snake_header_name}.hpp", result)
 
-        header_guard = f"GODOT_COMPAT_{os.path.splitext(os.path.basename(header_filepath.as_posix()).upper())[0]}_HPP"
+        header_guard = f"GODOT_COMPAT_{os.path.splitext(os.path.basename(header_filepath).upper())[0]}_HPP"
         result.append(f"#ifndef {header_guard}")
         result.append(f"#define {header_guard}")
         result.append("")
         result.append(f"#ifdef GODOT_MODULE_COMPAT")
-        
         for file_godot_name in file_godot_names:
             result.append(f"#include <{Path(file_godot_name).as_posix()}>")
         
         result.append(f"#else")
+        file_godot_cpp_name = file_godot_cpp_name.replace("gen/include/", "")
         result.append(f"#include <{Path(file_godot_cpp_name).as_posix()}>")
+        result.append(f"using namespace godot;")
         result.append(f"#endif")
         result.append("")
         result.append(f"#endif // ! {header_guard}")
-        
-        with open(header_filepath.as_posix(), "w+", encoding="utf-8") as header_file:
+        with (Path(output_dir) / Path(header_filepath)).open("w+", encoding="utf-8") as header_file:
             header_file.write("\n".join(result))
 
 

@@ -45,6 +45,8 @@ def map_header_files(directory):
             dirs.remove("test")
         if "misc" in dirs:
             dirs.remove("misc")
+        if "gdextension" in dirs:
+            dirs.remove("gdextension")
         for file in files:
             if file.endswith(".h") or file.endswith(".hpp"):
                 relative_path = os.path.relpath(root, directory)
