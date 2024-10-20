@@ -35,10 +35,10 @@
 // SPDX-License-Identifier: BSD-3-Clause-Clear
 // Author: Dana Nau <nau@umd.edu>, July 7, 2021
 
-#include "core/io/resource.h"
-#include "core/variant/typed_array.h"
+#include <godot_compat/variant/array.hpp>
+#include <godot_compat/classes/resource.hpp>
 
-#include "modules/goal_task_planner/multigoal.h"
+#include "multigoal.h"
 
 class Domain;
 class Plan : public Resource {

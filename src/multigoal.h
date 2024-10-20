@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  domain.h                                                              */
+/*  multigoal.h                                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,50 +28,35 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DOMAIN_H
-#define DOMAIN_H
+#ifndef MULTIGOAL_H
+#define MULTIGOAL_H
 
 // SPDX-FileCopyrightText: 2021 University of Maryland
 // SPDX-License-Identifier: BSD-3-Clause-Clear
 // Author: Dana Nau <nau@umd.edu>, July 7, 2021
 
-#include "multigoal.h"
+#include <godot_compat/variant/dictionary.hpp>
+#include <godot_compat/classes/resource.hpp>
 
-#include "core/variant/typed_array.h"
-
-class Plan;
-class Domain : public Resource {
-	GDCLASS(Domain, Resource);
+class Domain;
+class Multigoal : public Resource {
+	GDCLASS(Multigoal, Resource);
 
 private:
-	Dictionary action_dictionary;
-	Dictionary task_method_dictionary;
-	Dictionary unigoal_method_dictionary;
-	TypedArray<Callable> multigoal_method_list;
+	Dictionary state;
 
 public:
-	Domain();
-	void set_actions(Dictionary p_value) { action_dictionary = p_value; }
-	void set_task_methods(Dictionary p_value) { task_method_dictionary = p_value; }
-	void set_unigoal_methods(Dictionary p_value) { unigoal_method_dictionary = p_value; }
-	void set_multigoal_methods(TypedArray<Callable> p_value) { multigoal_method_list = p_value; }
+	Multigoal(String p_multigoal_name = "", Dictionary p_state_variables = Dictionary());
+	Dictionary get_state() const;
+	void set_state(Dictionary p_value);
+	Array state_variables();
 
-	Dictionary get_actions() const { return action_dictionary; }
-	Dictionary get_task_methods() const { return task_method_dictionary; }
-	Dictionary get_unigoal_methods() const { return unigoal_method_dictionary; }
-	TypedArray<Callable> get_multigoal_methods() const { return multigoal_method_list; }
-
-public:
-	void add_actions(TypedArray<Callable> p_actions);
-	void add_task_methods(String p_task_name, TypedArray<Callable> p_methods);
-	void add_unigoal_methods(String p_task_name, TypedArray<Callable> p_methods);
-	void add_multigoal_methods(TypedArray<Callable> p_methods);
-
-public:
-	static Variant method_verify_goal(Dictionary p_state, String p_method, String p_state_var, String p_arguments, Variant p_desired_values, int p_depth, int verbose);
+	static Array method_split_multigoal(Dictionary p_state, Ref<Multigoal> p_multigoal);
+	static Variant method_verify_multigoal(Dictionary p_state, String p_method, Ref<Multigoal> p_multigoal, int p_depth, int p_verbose);
+	static Dictionary method_goals_not_achieved(Dictionary p_state, Ref<Multigoal> p_multigoal);
 
 protected:
 	static void _bind_methods();
 };
 
-#endif // DOMAIN_H
+#endif // MULTIGOAL_H

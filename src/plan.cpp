@@ -36,6 +36,8 @@
 #include "modules/goal_task_planner/domain.h"
 #include "modules/goal_task_planner/multigoal.h"
 
+using namespace godot;
+
 int Plan::get_verbose() const { return verbose; }
 
 TypedArray<Domain> Plan::get_domains() const { return domains; }

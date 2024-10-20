@@ -30,8 +30,8 @@
 
 #include "domain.h"
 
-#include "modules/goal_task_planner/multigoal.h"
-#include "modules/goal_task_planner/plan.h"
+#include "multigoal.h"
+#include "plan.h"
 
 void Domain::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_multigoal_methods", "methods"), &Domain::add_multigoal_methods);
