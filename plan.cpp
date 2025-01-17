@@ -36,15 +36,25 @@
 #include "modules/goal_task_planner/domain.h"
 #include "modules/goal_task_planner/multigoal.h"
 
-int Plan::get_verbose() const { return verbose; }
+int Plan::get_verbose() const {
+	return verbose;
+}
 
-TypedArray<Domain> Plan::get_domains() const { return domains; }
+TypedArray<Domain> Plan::get_domains() const {
+	return domains;
+}
 
-Ref<Domain> Plan::get_current_domain() const { return current_domain; }
+Ref<Domain> Plan::get_current_domain() const {
+	return current_domain;
+}
 
-void Plan::set_verbose(int p_verbose) { verbose = p_verbose; }
+void Plan::set_verbose(int p_verbose) {
+	verbose = p_verbose;
+}
 
-void Plan::set_domains(TypedArray<Domain> p_domain) { domains = p_domain; }
+void Plan::set_domains(TypedArray<Domain> p_domain) {
+	domains = p_domain;
+}
 
 Variant Plan::_apply_action_and_continue(Dictionary p_state, Array p_first_task, Array p_todo_list, Array p_plan, int p_depth) {
 	Callable action = current_domain->get_actions()[p_first_task[0]];
