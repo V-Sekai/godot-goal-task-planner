@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DOMAIN_H
-#define DOMAIN_H
+#pragma once
 
 // SPDX-FileCopyrightText: 2021 University of Maryland
 // SPDX-License-Identifier: BSD-3-Clause-Clear
@@ -39,9 +38,9 @@
 
 #include "core/variant/typed_array.h"
 
-class Plan;
-class Domain : public Resource {
-	GDCLASS(Domain, Resource);
+class PlannerPlan;
+class PlannerDomain : public Resource {
+	GDCLASS(PlannerDomain, Resource);
 
 private:
 	Dictionary action_dictionary;
@@ -50,7 +49,7 @@ private:
 	TypedArray<Callable> multigoal_method_list;
 
 public:
-	Domain();
+	PlannerDomain();
 	void set_actions(Dictionary p_value) { action_dictionary = p_value; }
 	void set_task_methods(Dictionary p_value) { task_method_dictionary = p_value; }
 	void set_unigoal_methods(Dictionary p_value) { unigoal_method_dictionary = p_value; }
@@ -73,5 +72,3 @@ public:
 protected:
 	static void _bind_methods();
 };
-
-#endif // DOMAIN_H
