@@ -24,7 +24,7 @@
 			<return type="void" />
 			<param index="0" name="methods" type="Callable[]" />
 			<description>
-				Adds a list of [Callable]s representing methods for achieving multigoals. Each [Callable] should refer to a function whose arguments are treated as read-only (e.g., current state [Dictionary], the [PlannerMultigoal] [Ref]) and which returns a [Variant]. The [Variant] should be false if the method is not applicable, or an [Array] of sub-tasks/goals if it is.
+				Adds a list of [Callable]s representing methods for achieving multigoals. Each [Callable] should refer to a function whose arguments are treated as read-only (e.g., current state [Dictionary], the [PlannerMultigoal]) and which returns a [Variant]. The [Variant] should be false if the method is not applicable, or an [Array] of sub-tasks/goals if it is.
 			</description>
 		</method>
 		<method name="add_task_methods">
