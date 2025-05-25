@@ -9,12 +9,41 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_goal_conditions_for_variable" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="variable" type="String" />
+			<description>
+				Returns a [Dictionary] of all goal conditions (arguments and their desired values) for the specified [code]variable[/code] name within this multigoal.
+			</description>
+		</method>
+		<method name="get_goal_value" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="variable" type="String" />
+			<param index="1" name="argument" type="String" />
+			<description>
+				Returns the desired value for a specific [code]argument[/code] of a given [code]variable[/code] in this multigoal. Returns [code]null[/code] if the variable or argument is not found.
+			</description>
+		</method>
+		<method name="get_goal_variables" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Returns an [Array] of all state variable names that are part of this multigoal.
+			</description>
+		</method>
+		<method name="has_goal_condition" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="variable" type="String" />
+			<param index="1" name="argument" type="String" />
+			<description>
+				Returns [code]true[/code] if this multigoal has a specific goal condition defined for the given [code]variable[/code] and [code]argument[/code], [code]false[/code] otherwise.
+			</description>
+		</method>
 		<method name="method_goals_not_achieved" qualifiers="static">
 			<return type="Dictionary" />
 			<param index="0" name="state" type="Dictionary" />
 			<param index="1" name="multigoal" type="PlannerMultigoal" />
 			<description>
-				Verifies if the goals that have not been achieved given the current state and [PlannerMultigoal].
+				Compares the current [code]state[/code] with the desired states in the [code]multigoal[/code] and returns a [Dictionary] containing only the conditions from the [code]multigoal[/code] that are not yet met in the current [code]state[/code].
 			</description>
 		</method>
 		<method name="method_split_multigoal" qualifiers="static">
@@ -22,7 +51,7 @@
 			<param index="0" name="state" type="Dictionary" />
 			<param index="1" name="multigoal" type="PlannerMultigoal" />
 			<description>
-				Verifies if a specific goal has been achieved given the current state, method, state variable, arguments, desired values, depth, and verbosity level.
+				Splits a [PlannerMultigoal] into a list of individual unigoal tasks. It first identifies goals not yet achieved and then adds all goals from the current state, ensuring no duplicates based on variable and argument. If the resulting list is not empty, the original multigoal is added to the end of the list.
 			</description>
 		</method>
 		<method name="method_verify_multigoal" qualifiers="static">
@@ -33,19 +62,8 @@
 			<param index="3" name="depth" type="int" />
 			<param index="4" name="verbose" type="int" />
 			<description>
-				Verifies if a [PlannerMultigoal] has been achieved given the current state, method, multi-goal, depth, and verbosity level.
-			</description>
-		</method>
-		<method name="state_variables">
-			<return type="Array" />
-			<description>
-				Returns an array of state variables associated with the [PlannerMultigoal].
+				Verifies if all conditions in the [code]multigoal[/code] are met by the current [code]state[/code]. Returns an empty [Array] if all goals are achieved, or [code]false[/code] if any goal is not achieved or if the [code]multigoal[/code] is null. This is typically used for debugging and plan verification, potentially logging information if [code]verbose[/code] is high enough.
 			</description>
 		</method>
 	</methods>
-	<members>
-		<member name="state" type="Dictionary" setter="set_state" getter="get_state" default="{}">
-			The current state of the [PlannerMultigoal], represented as a [Dictionary] of state variables.
-		</member>
-	</members>
 </class>

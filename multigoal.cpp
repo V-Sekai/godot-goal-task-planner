@@ -31,21 +31,14 @@
 #include "multigoal.h"
 
 void PlannerMultigoal::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_state"), &PlannerMultigoal::get_state);
-	ClassDB::bind_method(D_METHOD("set_state", "value"), &PlannerMultigoal::set_state);
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "state"), "set_state", "get_state");
-	ClassDB::bind_method(D_METHOD("state_variables"), &PlannerMultigoal::state_variables);
+	ClassDB::bind_method(D_METHOD("get_goal_variables"), &PlannerMultigoal::get_goal_variables);
+	ClassDB::bind_method(D_METHOD("get_goal_conditions_for_variable", "variable"), &PlannerMultigoal::get_goal_conditions_for_variable);
+	ClassDB::bind_method(D_METHOD("get_goal_value", "variable", "argument"), &PlannerMultigoal::get_goal_value);
+	ClassDB::bind_method(D_METHOD("has_goal_condition", "variable", "argument"), &PlannerMultigoal::has_goal_condition);
+
 	ClassDB::bind_static_method("PlannerMultigoal", D_METHOD("method_goals_not_achieved", "state", "multigoal"), &PlannerMultigoal::method_goals_not_achieved);
 	ClassDB::bind_static_method("PlannerMultigoal", D_METHOD("method_verify_multigoal", "state", "method", "multigoal", "depth", "verbose"), &PlannerMultigoal::method_verify_multigoal);
 	ClassDB::bind_static_method("PlannerMultigoal", D_METHOD("method_split_multigoal", "state", "multigoal"), &PlannerMultigoal::method_split_multigoal);
-}
-
-Dictionary PlannerMultigoal::get_state() const {
-	return state;
-}
-
-void PlannerMultigoal::set_state(Dictionary p_value) {
-	state = p_value;
 }
 
 PlannerMultigoal::PlannerMultigoal(String p_multigoal_name, Dictionary p_state_variables) {
@@ -53,11 +46,36 @@ PlannerMultigoal::PlannerMultigoal(String p_multigoal_name, Dictionary p_state_v
 	state = p_state_variables;
 }
 
-Array PlannerMultigoal::state_variables() {
+Array PlannerMultigoal::get_goal_variables() const {
 	return state.keys();
 }
 
-Array PlannerMultigoal::method_split_multigoal(Dictionary p_state, Ref<PlannerMultigoal> p_multigoal) {
+Dictionary PlannerMultigoal::get_goal_conditions_for_variable(const String &p_variable) const {
+	if (state.has(p_variable) && state[p_variable].get_type() == Variant::DICTIONARY) {
+		return state[p_variable];
+	}
+	return Dictionary();
+}
+
+Variant PlannerMultigoal::get_goal_value(const String &p_variable, const String &p_argument) const {
+	if (state.has(p_variable) && state[p_variable].get_type() == Variant::DICTIONARY) {
+		Dictionary conditions = state[p_variable];
+		if (conditions.has(p_argument)) {
+			return conditions[p_argument];
+		}
+	}
+	return Variant();
+}
+
+bool PlannerMultigoal::has_goal_condition(const String &p_variable, const String &p_argument) const {
+	if (state.has(p_variable) && state[p_variable].get_type() == Variant::DICTIONARY) {
+		Dictionary conditions = state[p_variable];
+		return conditions.has(p_argument);
+	}
+	return false;
+}
+
+Array PlannerMultigoal::method_split_multigoal(const Dictionary &p_state, const Ref<PlannerMultigoal> &p_multigoal) {
 	Dictionary goal_state = method_goals_not_achieved(p_state, p_multigoal);
 	Array goal_list;
 	for (Variant state_variable_name : goal_state.keys()) {
@@ -110,12 +128,12 @@ Array PlannerMultigoal::method_split_multigoal(Dictionary p_state, Ref<PlannerMu
 		}
 	}
 	if (!goal_list.is_empty()) {
-		// Achieve goals, then check whether they're all simultaneously true.
 		goal_list.push_back(p_multigoal);
 	}
 	return goal_list;
 }
-Variant PlannerMultigoal::method_verify_multigoal(Dictionary p_state, String p_method, Ref<PlannerMultigoal> p_multigoal, int p_depth, int p_verbose) {
+
+Variant PlannerMultigoal::method_verify_multigoal(const Dictionary &p_state, const String &p_method, const Ref<PlannerMultigoal> &p_multigoal, int p_depth, int p_verbose) {
 	if (p_multigoal.is_null()) {
 		return false;
 	}
@@ -132,27 +150,48 @@ Variant PlannerMultigoal::method_verify_multigoal(Dictionary p_state, String p_m
 	}
 	return Array();
 }
-Dictionary PlannerMultigoal::method_goals_not_achieved(Dictionary p_state, Ref<PlannerMultigoal> p_multigoal) {
-	bool is_multigoal_null = p_multigoal.is_null();
-	if (is_multigoal_null) {
+
+Dictionary PlannerMultigoal::method_goals_not_achieved(const Dictionary &p_state, const Ref<PlannerMultigoal> &p_multigoal) {
+	if (p_multigoal.is_null()) {
 		return p_state;
 	}
+
 	Dictionary unmatched_states;
-	for (Variant element : p_multigoal->get_state().keys()) {
-		Dictionary sub_dictionary = p_multigoal->get_state()[element];
-		for (Variant argument : sub_dictionary.keys()) {
-			Variant value = sub_dictionary[argument];
-			bool is_state_element_dictionary = p_state[element].get_type() == Variant::DICTIONARY;
-			bool does_state_element_have_arguments = Dictionary(p_state[element]).has(argument);
-			bool are_values_different = value != Dictionary(p_state[element])[argument];
-			if (is_state_element_dictionary && does_state_element_have_arguments && are_values_different) {
-				bool is_missing_element = !unmatched_states.has(element);
-				if (is_missing_element) {
-					unmatched_states[element] = Dictionary();
+	Array goal_variables = p_multigoal->get_goal_variables();
+
+	for (int i = 0; i < goal_variables.size(); ++i) {
+		String variable_name = goal_variables[i];
+		Dictionary goal_conditions = p_multigoal->get_goal_conditions_for_variable(variable_name);
+
+		for (const Variant *key = goal_conditions.next(nullptr); key; key = goal_conditions.next(key)) {
+			String argument = *key;
+			Variant desired_value = goal_conditions[*key];
+
+			bool current_state_has_variable = p_state.has(variable_name);
+			bool current_state_variable_is_dict = false;
+			Dictionary current_variable_conditions;
+			bool current_state_has_argument = false;
+			Variant current_value;
+
+			if (current_state_has_variable) {
+				Variant current_var_val = p_state[variable_name];
+				if (current_var_val.get_type() == Variant::DICTIONARY) {
+					current_state_variable_is_dict = true;
+					current_variable_conditions = current_var_val;
+					if (current_variable_conditions.has(argument)) {
+						current_state_has_argument = true;
+						current_value = current_variable_conditions[argument];
+					}
 				}
-				Dictionary temp = unmatched_states[element];
-				temp[argument] = value;
-				unmatched_states[element] = temp;
+			}
+
+			if (!current_state_has_variable || !current_state_variable_is_dict || !current_state_has_argument || desired_value != current_value) {
+				if (!unmatched_states.has(variable_name)) {
+					unmatched_states[variable_name] = Dictionary();
+				}
+				Dictionary temp = unmatched_states[variable_name];
+				temp[argument] = desired_value;
+				unmatched_states[variable_name] = temp;
 			}
 		}
 	}

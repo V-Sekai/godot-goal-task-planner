@@ -37,8 +37,6 @@
 #include "core/io/resource.h"
 #include "core/variant/dictionary.h"
 
-#include "domain.h"
-
 class PlannerMultigoal : public Resource {
 	GDCLASS(PlannerMultigoal, Resource);
 
@@ -47,13 +45,15 @@ private:
 
 public:
 	PlannerMultigoal(String p_multigoal_name = "", Dictionary p_state_variables = Dictionary());
-	Dictionary get_state() const;
-	void set_state(Dictionary p_value);
-	Array state_variables();
+	Array get_goal_variables() const;
 
-	static Array method_split_multigoal(Dictionary p_state, Ref<PlannerMultigoal> p_multigoal);
-	static Variant method_verify_multigoal(Dictionary p_state, String p_method, Ref<PlannerMultigoal> p_multigoal, int p_depth, int p_verbose);
-	static Dictionary method_goals_not_achieved(Dictionary p_state, Ref<PlannerMultigoal> p_multigoal);
+	Dictionary get_goal_conditions_for_variable(const String &p_variable) const;
+	Variant get_goal_value(const String &p_variable, const String &p_argument) const;
+	bool has_goal_condition(const String &p_variable, const String &p_argument) const;
+
+	static Array method_split_multigoal(const Dictionary &p_state, const Ref<PlannerMultigoal> &p_multigoal);
+	static Variant method_verify_multigoal(const Dictionary &p_state, const String &p_method, const Ref<PlannerMultigoal> &p_multigoal, int p_depth, int p_verbose);
+	static Dictionary method_goals_not_achieved(const Dictionary &p_state, const Ref<PlannerMultigoal> &p_multigoal);
 
 protected:
 	static void _bind_methods();
