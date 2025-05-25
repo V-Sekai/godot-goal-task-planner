@@ -83,7 +83,10 @@ PlannerDomain::PlannerDomain() {
 
 void PlannerDomain::add_multigoal_methods(TypedArray<Callable> p_methods) {
 	for (int i = 0; i < p_methods.size(); ++i) {
-		Variant m = p_methods[i];
+		Callable m = p_methods[i];
+		if (m.is_null()) {
+			continue;
+		}
 		if (!multigoal_method_list.has(m)) {
 			multigoal_method_list.push_back(m);
 		}
@@ -96,7 +99,10 @@ void PlannerDomain::add_unigoal_methods(String p_task_name, TypedArray<Callable>
 	} else {
 		Array existing_methods = unigoal_method_dictionary[p_task_name];
 		for (int i = 0; i < p_methods.size(); ++i) {
-			Variant m = p_methods[i];
+			Callable m = p_methods[i];
+			if (m.is_null()) {
+				continue;
+			}
 			if (!existing_methods.has(m)) {
 				existing_methods.push_back(m);
 			}
@@ -109,7 +115,10 @@ void PlannerDomain::add_task_methods(String p_task_name, TypedArray<Callable> p_
 	if (task_method_dictionary.has(p_task_name)) {
 		Array existing_methods = task_method_dictionary[p_task_name];
 		for (int i = 0; i < p_methods.size(); ++i) {
-			Variant m = p_methods[i];
+			Callable m = p_methods[i];
+			if (m.is_null()) {
+				continue;
+			}
 			if (existing_methods.find(m) == -1) {
 				existing_methods.push_back(m);
 			}
