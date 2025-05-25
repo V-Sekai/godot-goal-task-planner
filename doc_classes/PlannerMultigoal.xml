@@ -13,7 +13,7 @@
 			<return type="Dictionary" />
 			<param index="0" name="variable" type="String" />
 			<description>
-				Returns a [Dictionary] of all goal conditions (arguments and their desired values) for the specified [code]variable[/code] name within this multigoal.
+				Returns a [Dictionary] of all goal conditions (arguments and their desired values) for the specified variable name within this multigoal.
 			</description>
 		</method>
 		<method name="get_goal_value" qualifiers="const">
@@ -21,7 +21,7 @@
 			<param index="0" name="variable" type="String" />
 			<param index="1" name="argument" type="String" />
 			<description>
-				Returns the desired value for a specific [code]argument[/code] of a given [code]variable[/code] in this multigoal. Returns [code]null[/code] if the variable or argument is not found.
+				Returns the desired value for a specific argument of a given variable in this multigoal. Returns null if the variable or argument is not found.
 			</description>
 		</method>
 		<method name="get_goal_variables" qualifiers="const">
@@ -35,7 +35,7 @@
 			<param index="0" name="variable" type="String" />
 			<param index="1" name="argument" type="String" />
 			<description>
-				Returns [code]true[/code] if this multigoal has a specific goal condition defined for the given [code]variable[/code] and [code]argument[/code], [code]false[/code] otherwise.
+				Returns true if this multigoal has a specific goal condition defined for the given variable and argument, false otherwise.
 			</description>
 		</method>
 		<method name="method_goals_not_achieved" qualifiers="static">
@@ -43,7 +43,7 @@
 			<param index="0" name="state" type="Dictionary" />
 			<param index="1" name="multigoal" type="PlannerMultigoal" />
 			<description>
-				Compares the current [code]state[/code] with the desired states in the [code]multigoal[/code] and returns a [Dictionary] containing only the conditions from the [code]multigoal[/code] that are not yet met in the current [code]state[/code].
+				Compares the current state with the desired states in the multigoal and returns a [Dictionary] containing only the conditions from the multigoal that are not yet met in the current state.
 			</description>
 		</method>
 		<method name="method_split_multigoal" qualifiers="static">
@@ -62,7 +62,7 @@
 			<param index="3" name="depth" type="int" />
 			<param index="4" name="verbose" type="int" />
 			<description>
-				Verifies if all conditions in the [code]multigoal[/code] are met by the current [code]state[/code]. Returns an empty [Array] if all goals are achieved, or [code]false[/code] if any goal is not achieved or if the [code]multigoal[/code] is null. This is typically used for debugging and plan verification, potentially logging information if [code]verbose[/code] is high enough.
+				Verifies if all conditions in the multigoal are met by the current state. Returns an empty [Array] if all goals are achieved, or false if any goal is not achieved or if the multigoal is null. This is typically used for debugging and plan verification, potentially logging information if verbose is high enough.
 			</description>
 		</method>
 	</methods>
