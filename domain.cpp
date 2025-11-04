@@ -30,8 +30,10 @@
 
 #include "domain.h"
 
-#include "modules/goal_task_planner/multigoal.h"
-#include "modules/goal_task_planner/plan.h"
+#include "core/crypto/crypto_core.h"
+
+#include "multigoal.h"
+#include "plan.h"
 
 void PlannerDomain::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_multigoal_methods", "methods"), &PlannerDomain::add_multigoal_methods);
@@ -40,23 +42,6 @@ void PlannerDomain::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_actions", "actions"), &PlannerDomain::add_actions);
 
 	ClassDB::bind_static_method("PlannerDomain", D_METHOD("method_verify_goal", "state", "method", "state_var", "arguments", "desired_values", "depth", "verbose"), &PlannerDomain::method_verify_goal);
-
-	ClassDB::bind_method(D_METHOD("set_actions", "value"), &PlannerDomain::set_actions);
-	ClassDB::bind_method(D_METHOD("get_actions"), &PlannerDomain::get_actions);
-
-	ClassDB::bind_method(D_METHOD("set_task_methods", "value"), &PlannerDomain::set_task_methods);
-	ClassDB::bind_method(D_METHOD("get_task_methods"), &PlannerDomain::get_task_methods);
-
-	ClassDB::bind_method(D_METHOD("set_unigoal_methods", "value"), &PlannerDomain::set_unigoal_methods);
-	ClassDB::bind_method(D_METHOD("get_unigoal_methods"), &PlannerDomain::get_unigoal_methods);
-
-	ClassDB::bind_method(D_METHOD("set_multigoal_methods", "value"), &PlannerDomain::set_multigoal_methods);
-	ClassDB::bind_method(D_METHOD("get_multigoal_methods"), &PlannerDomain::get_multigoal_methods);
-
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "actions"), "set_actions", "get_actions");
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "tasks"), "set_task_methods", "get_task_methods");
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "unigoal_methods"), "set_unigoal_methods", "get_unigoal_methods");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "multigoal_methods"), "set_multigoal_methods", "get_multigoal_methods");
 }
 
 Variant PlannerDomain::method_verify_goal(Dictionary p_state, String p_method, String p_state_variable, String p_arguments, Variant p_desired_value, int p_depth, int p_verbose) {
@@ -138,4 +123,21 @@ void PlannerDomain::add_actions(TypedArray<Callable> p_actions) {
 		String method_name = action.get_method();
 		action_dictionary[method_name] = action;
 	}
+}
+
+PlannerTaskMetadata::PlannerTaskMetadata() {
+    // Generate initial ID
+    Error err = CryptoCore::generate_uuidv7(task_id);
+    if (err != OK || task_id.is_empty()) {
+        task_id = "00000000-0000-0000-0000-000000000000";  // Null UUID fallback
+    }
+}
+
+// p_physical_time is in absolute microseconds since Unix epoch
+void PlannerTaskMetadata::update_metadata(int64_t p_physical_time) {
+    hlc.set_start_time(p_physical_time); // Store absolute microseconds
+}
+
+PlannerTask::PlannerTask() {
+    metadata.instantiate();
 }

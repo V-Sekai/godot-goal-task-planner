@@ -39,16 +39,23 @@ class PlannerState : public Resource {
 	GDCLASS(PlannerState, Resource);
 
 	Dictionary data;
+	Dictionary entity_capabilities; // entity_id -> Dictionary of capabilities
 
 protected:
 	static void _bind_methods();
 
 public:
-	Variant get_object(const String &p_predicate, const String &p_subject) const;
-	void set_object(const String &p_predicate, const String &p_subject, Variant p_object);
-	Array get_subject_property_list() const;
+	Variant get_predicate(const String &p_subject, const String &p_predicate) const;
+	void set_predicate(const String &p_subject, const String &p_predicate, Variant p_value);
+	Array get_subject_predicate_list() const;
 	bool has_subject_variable(const String &p_variable) const;
-	bool has_subject(const String &p_predicate, const String &p_subject) const;
+	bool has_predicate(const String &p_subject, const String &p_predicate) const;
+
+	// Entity capabilities methods
+	Variant get_entity_capability(const String &p_entity_id, const String &p_capability) const;
+	void set_entity_capability(const String &p_entity_id, const String &p_capability, Variant p_value);
+	bool has_entity(const String &p_entity_id) const;
+	Array get_all_entities() const;
 
 	PlannerState() {}
 	~PlannerState() {}
