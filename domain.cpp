@@ -45,7 +45,29 @@ void PlannerDomain::_bind_methods() {
 }
 
 Variant PlannerDomain::method_verify_goal(Dictionary p_state, String p_method, String p_state_variable, String p_arguments, Variant p_desired_value, int p_depth, int p_verbose) {
-	Dictionary state_dict = p_state[p_state_variable];
+	// Check if state variable exists - if not, goal wasn't achieved
+	if (!p_state.has(p_state_variable)) {
+		if (p_verbose >= 3) {
+			print_line(vformat("Depth %d: method %s didn't achieve - state variable %s doesn't exist\nGoal %s[%s] = %s", p_depth, p_method, p_state_variable, p_state_variable, p_arguments, p_desired_value));
+		}
+		return false;
+	}
+
+	Variant state_var_val = p_state[p_state_variable];
+	if (state_var_val.get_type() != Variant::DICTIONARY) {
+		if (p_verbose >= 3) {
+			print_line(vformat("Depth %d: method %s didn't achieve - state variable %s is not a dictionary\nGoal %s[%s] = %s", p_depth, p_method, p_state_variable, p_state_variable, p_arguments, p_desired_value));
+		}
+		return false;
+	}
+
+	Dictionary state_dict = state_var_val;
+	if (!state_dict.has(p_arguments)) {
+		if (p_verbose >= 3) {
+			print_line(vformat("Depth %d: method %s didn't achieve - argument %s doesn't exist in state variable\nGoal %s[%s] = %s", p_depth, p_method, p_arguments, p_state_variable, p_arguments, p_desired_value));
+		}
+		return false;
+	}
 
 	if (state_dict[p_arguments] != p_desired_value) {
 		if (p_verbose >= 3) {
@@ -82,7 +104,7 @@ void PlannerDomain::add_unigoal_methods(String p_task_name, TypedArray<Callable>
 	if (!unigoal_method_dictionary.has(p_task_name)) {
 		unigoal_method_dictionary[p_task_name] = p_methods;
 	} else {
-		Array existing_methods = unigoal_method_dictionary[p_task_name];
+		TypedArray<Callable> existing_methods = unigoal_method_dictionary[p_task_name];
 		for (int i = 0; i < p_methods.size(); ++i) {
 			Callable m = p_methods[i];
 			if (m.is_null()) {
@@ -98,7 +120,7 @@ void PlannerDomain::add_unigoal_methods(String p_task_name, TypedArray<Callable>
 
 void PlannerDomain::add_task_methods(String p_task_name, TypedArray<Callable> p_methods) {
 	if (task_method_dictionary.has(p_task_name)) {
-		Array existing_methods = task_method_dictionary[p_task_name];
+		TypedArray<Callable> existing_methods = task_method_dictionary[p_task_name];
 		for (int i = 0; i < p_methods.size(); ++i) {
 			Callable m = p_methods[i];
 			if (m.is_null()) {
@@ -126,18 +148,18 @@ void PlannerDomain::add_actions(TypedArray<Callable> p_actions) {
 }
 
 PlannerTaskMetadata::PlannerTaskMetadata() {
-    // Generate initial ID
-    Error err = CryptoCore::generate_uuidv7(task_id);
-    if (err != OK || task_id.is_empty()) {
-        task_id = "00000000-0000-0000-0000-000000000000";  // Null UUID fallback
-    }
+	// Generate initial ID
+	Error err = CryptoCore::generate_uuidv7(task_id);
+	if (err != OK || task_id.is_empty()) {
+		task_id = "00000000-0000-0000-0000-000000000000"; // Null UUID fallback
+	}
 }
 
 // p_physical_time is in absolute microseconds since Unix epoch
 void PlannerTaskMetadata::update_metadata(int64_t p_physical_time) {
-    hlc.set_start_time(p_physical_time); // Store absolute microseconds
+	time_range.set_start_time(p_physical_time); // Store absolute microseconds
 }
 
 PlannerTask::PlannerTask() {
-    metadata.instantiate();
+	metadata.instantiate();
 }

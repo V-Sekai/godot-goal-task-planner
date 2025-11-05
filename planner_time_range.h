@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  multigoal.h                                                           */
+/*  planner_time_range.h                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,35 +28,62 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+// Absolute time tracking for planning (microseconds since Unix epoch)
+
 #pragma once
 
-// SPDX-FileCopyrightText: 2021 University of Maryland
-// SPDX-License-Identifier: BSD-3-Clause-Clear
-// Author: Dana Nau <nau@umd.edu>, July 7, 2021
+#include "core/os/os.h"
+#include "core/typedefs.h"
 
-#include "core/object/object.h"
-#include "core/variant/dictionary.h"
+struct PlannerTimeRange {
+	// All times in absolute microseconds since Unix epoch (1970-01-01 00:00:00 UTC)
+	int64_t start_time = 0; // Absolute microseconds
+	int64_t end_time = 0; // Absolute microseconds
+	int64_t duration = 0; // Duration in microseconds
 
-// PlannerMultigoal is a utility class for working with Dictionary-based multigoals
-// Multigoals are represented as Dictionary: {variable_name: {argument: value, ...}, ...}
-class PlannerMultigoal : public Object {
-	GDCLASS(PlannerMultigoal, Object);
+	PlannerTimeRange() {}
 
-public:
-	// Check if a Variant is a Dictionary multigoal (all values are dictionaries)
-	static bool is_multigoal_dict(const Variant &p_variant);
+	void set_start_time(int64_t p_time) { start_time = p_time; }
+	int64_t get_start_time() const { return start_time; }
 
-	// Accessor functions for Dictionary multigoals
-	static Array get_goal_variables(const Dictionary &p_multigoal_dict);
-	static Dictionary get_goal_conditions_for_variable(const Dictionary &p_multigoal_dict, const String &p_variable);
-	static Variant get_goal_value(const Dictionary &p_multigoal_dict, const String &p_variable, const String &p_argument);
-	static bool has_goal_condition(const Dictionary &p_multigoal_dict, const String &p_variable, const String &p_argument);
+	void set_end_time(int64_t p_time) { end_time = p_time; }
+	int64_t get_end_time() const { return end_time; }
 
-	// Static methods for multigoal operations
-	static Dictionary method_goals_not_achieved(const Dictionary &p_state, const Dictionary &p_multigoal_dict);
-	static Variant method_verify_multigoal(const Dictionary &p_state, const String &p_method, const Dictionary &p_multigoal_dict, int p_depth, int p_verbose);
-	static Array method_split_multigoal(const Dictionary &p_state, const Dictionary &p_multigoal_dict);
+	void set_duration(int64_t p_duration) { duration = p_duration; }
+	int64_t get_duration() const { return duration; }
 
-protected:
-	static void _bind_methods();
+	// Helper methods for absolute time conversion
+	// Convert from Godot's unix time (seconds) to microseconds
+	static int64_t unix_time_to_microseconds(double p_unix_time) {
+		return static_cast<int64_t>(p_unix_time * 1000000.0);
+	}
+
+	// Get current absolute time in microseconds
+	static int64_t now_microseconds() {
+		return unix_time_to_microseconds(OS::get_singleton()->get_unix_time());
+	}
+
+	// Set start time to current absolute time
+	void set_start_now() {
+		start_time = now_microseconds();
+	}
+
+	// Set end time to current absolute time
+	void set_end_now() {
+		end_time = now_microseconds();
+	}
+
+	// Calculate duration from start_time to end_time
+	void calculate_duration() {
+		if (end_time > start_time) {
+			duration = end_time - start_time;
+		} else {
+			duration = 0;
+		}
+	}
+
+	// Calculate end_time from start_time and duration
+	void calculate_end_from_duration() {
+		end_time = start_time + duration;
+	}
 };
