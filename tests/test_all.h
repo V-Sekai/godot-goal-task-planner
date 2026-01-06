@@ -45,6 +45,7 @@
 
 // Domain tests
 #include "domains/fox_geese_corn_test.h"
+#include "domains/magical_girls_college_test.h"
 #include "domains/minimal_backtracking_test.h"
 #include "domains/minimal_task_test.h"
 #include "domains/rescue_test.h"

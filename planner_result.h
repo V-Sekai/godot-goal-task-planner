@@ -56,7 +56,7 @@ public:
 	void set_success(bool p_success) { success = p_success; }
 
 	// Extract array of actions from the solution graph
-	Array extract_plan() const;
+	Array extract_plan(int p_verbose = 0) const;
 
 	// Helper methods for working with the solution graph
 	Array find_failed_nodes() const;

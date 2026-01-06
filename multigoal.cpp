@@ -118,11 +118,13 @@ Array PlannerMultigoal::method_goals_not_achieved(const Dictionary &p_state, con
 			continue; // Invalid unigoal format
 		}
 
-		String predicate = unigoal[0]; // e.g., "affection"
-		String subject = unigoal[1]; // e.g., "protagonist_class_president"
+		String predicate = unigoal[0]; // e.g., "affection", "study_points"
+		String subject = unigoal[1]; // e.g., "protagonist_class_president", "yuki"
 		Variant desired_value = unigoal[2]; // e.g., 50
 
-		// Check if state[predicate][subject] == desired_value
+		// Check if state[predicate][subject] == desired_value (exact equality)
+		// Note: "At least" semantics (>=) should be handled at the domain level
+		// by task methods and multigoal methods, not in the planner core
 		bool achieved = false;
 		if (p_state.has(predicate)) {
 			Variant predicate_val = p_state[predicate];

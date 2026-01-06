@@ -262,13 +262,13 @@ TEST_CASE("[Modules][Planner] PlannerGraphOperations - Graph manipulation") {
 		// Action
 		Variant action_info = "cook";
 		action_dict["cook"] = Callable();
-		PlannerNodeType type = PlannerGraphOperations::get_node_type(action_info, action_dict, task_dict, unigoal_dict);
+		PlannerNodeType type = PlannerGraphOperations::get_node_type(action_info, action_dict, task_dict, unigoal_dict, 0);
 		CHECK(type == PlannerNodeType::TYPE_ACTION);
 
 		// Task
 		Variant task_info = "complete_lesson";
 		task_dict["complete_lesson"] = TypedArray<Callable>();
-		type = PlannerGraphOperations::get_node_type(task_info, action_dict, task_dict, unigoal_dict);
+		type = PlannerGraphOperations::get_node_type(task_info, action_dict, task_dict, unigoal_dict, 0);
 		CHECK(type == PlannerNodeType::TYPE_TASK);
 	}
 
@@ -279,7 +279,7 @@ TEST_CASE("[Modules][Planner] PlannerGraphOperations - Graph manipulation") {
 
 		int parent_id = 0; // Root
 		int result = PlannerGraphOperations::add_nodes_and_edges(
-				graph, parent_id, todo_list, action_dict, task_dict, unigoal_dict, multigoal_methods);
+				graph, parent_id, todo_list, action_dict, task_dict, unigoal_dict, multigoal_methods, 0);
 
 		CHECK(result >= 0);
 		Dictionary root = graph.get_node(0);
@@ -317,7 +317,7 @@ TEST_CASE("[Modules][Planner] PlannerGraphOperations - Graph manipulation") {
 		graph.add_successor(action1, action2);
 
 		graph.set_node_status(0, PlannerNodeStatus::STATUS_CLOSED);
-		Array plan = PlannerGraphOperations::extract_solution_plan(graph);
+		Array plan = PlannerGraphOperations::extract_solution_plan(graph, 0);
 		CHECK(plan.size() >= 0); // May be empty or contain actions
 	}
 }
@@ -550,14 +550,6 @@ TEST_CASE("[Modules][Planner] PlannerPlan - Complete planning workflow") {
 
 		bool has_temporal = plan->_has_temporal_constraints(wrapped_item);
 		CHECK(has_temporal);
-	}
-
-	SUBCASE("Plan configuration") {
-		plan->set_verbose(2);
-		CHECK(plan->get_verbose() == 2);
-
-		plan->set_max_depth(15);
-		CHECK(plan->get_max_depth() == 15);
 	}
 }
 

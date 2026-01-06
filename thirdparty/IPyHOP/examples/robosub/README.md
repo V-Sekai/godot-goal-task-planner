@@ -1,3 +1,0 @@
-## Robosub Planning
-
-TBD

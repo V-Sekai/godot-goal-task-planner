@@ -99,6 +99,17 @@ class PlannerPlan : public Resource {
 	MethodCandidate _select_best_method(TypedArray<Callable> p_methods, Dictionary p_state, Variant p_node_info, Variant p_args, int p_node_type);
 	// Graph-based planning methods
 	Dictionary _planning_loop_recursive(int p_parent_node_id, Dictionary p_state, int p_iter);
+	Dictionary _planning_loop_iterative(int p_parent_node_id, Dictionary p_state, int p_iter);
+	// Helper for iterative planning: processes a single node and pushes frames to stack or sets final_state
+	// Returns true to continue loop, false if final_state is set
+	// PlanningFrame is defined inside _planning_loop_iterative, so we use a forward declaration approach
+	struct PlanningFrame {
+		int parent_node_id;
+		Dictionary state;
+		int iter;
+	};
+	// Note: p_curr_node is passed by value (copy) to avoid stale reference issues after graph modifications
+	bool _process_node_iterative(int p_parent_node_id, int p_curr_node_id, Dictionary p_curr_node, int p_node_type, Dictionary &p_state, int p_iter, LocalVector<PlanningFrame> &p_stack, Dictionary &p_final_state);
 	bool _is_command_blacklisted(Variant p_command) const;
 	void _blacklist_command(Variant p_command);
 	void _restore_stn_from_node(int p_node_id);

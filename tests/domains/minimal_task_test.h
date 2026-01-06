@@ -46,7 +46,7 @@ TEST_CASE("[Modules][Planner][MinimalTask] Simple task with single action") {
 	plan->reset();
 	plan->set_current_domain(domain);
 	plan->set_max_depth(10);
-	plan->set_verbose(1);
+	plan->set_verbose(0);
 
 	// Create initial state with value = 0
 	Dictionary init_state;

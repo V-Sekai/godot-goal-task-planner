@@ -238,7 +238,7 @@ TEST_CASE("[Modules][Planner][Rescue] Basic move task") {
 	Ref<PlannerDomain> domain = create_rescue_domain();
 	Ref<PlannerPlan> plan = memnew(PlannerPlan);
 	plan->set_current_domain(domain);
-	plan->set_verbose(1);
+	plan->set_verbose(0);
 
 	Dictionary state = create_rescue_init_state();
 
@@ -264,7 +264,7 @@ TEST_CASE("[Modules][Planner][Rescue] Survey task") {
 	Ref<PlannerDomain> domain = create_rescue_domain();
 	Ref<PlannerPlan> plan = memnew(PlannerPlan);
 	plan->set_current_domain(domain);
-	plan->set_verbose(1);
+	plan->set_verbose(0);
 
 	Dictionary state = create_rescue_init_state();
 
@@ -288,7 +288,7 @@ TEST_CASE("[Modules][Planner][Rescue] Solve rescue objective and show plan") {
 	Ref<PlannerDomain> domain = create_rescue_domain();
 	Ref<PlannerPlan> plan = memnew(PlannerPlan);
 	plan->set_current_domain(domain);
-	plan->set_verbose(2); // Show planning details
+	plan->set_verbose(0); // Show planning details
 
 	Dictionary state = create_rescue_init_state();
 
@@ -303,64 +303,75 @@ TEST_CASE("[Modules][Planner][Rescue] Solve rescue objective and show plan") {
 	task.push_back(target_loc);
 	todo_list.push_back(task);
 
-	print_line("=== RESCUE DOMAIN - SOLVING OBJECTIVE ===");
-	print_line("Objective: Move robot r1 from (1,1) to (5,5)");
-	print_line("Initial state:");
-	Dictionary loc_dict = state["loc"];
-	Dictionary robot_type_dict = state["robot_type"];
-	Dictionary status_dict = state["status"];
-	Array r1_loc = loc_dict["r1"];
-	print_line(vformat("  Robot r1 location: [%d, %d]", r1_loc[0], r1_loc[1]));
-	print_line(vformat("  Robot r1 type: %s", String(robot_type_dict["r1"])));
-	print_line(vformat("  Robot r1 status: %s", String(status_dict["r1"])));
-	print_line("");
+	int verbose = plan->get_verbose();
+	if (verbose >= 1) {
+		print_line("=== RESCUE DOMAIN - SOLVING OBJECTIVE ===");
+		print_line("Objective: Move robot r1 from (1,1) to (5,5)");
+		print_line("Initial state:");
+		Dictionary loc_dict = state["loc"];
+		Dictionary robot_type_dict = state["robot_type"];
+		Dictionary status_dict = state["status"];
+		Array r1_loc = loc_dict["r1"];
+		print_line(vformat("  Robot r1 location: [%d, %d]", r1_loc[0], r1_loc[1]));
+		print_line(vformat("  Robot r1 type: %s", String(robot_type_dict["r1"])));
+		print_line(vformat("  Robot r1 status: %s", String(status_dict["r1"])));
+		print_line("");
+	}
 
 	Ref<PlannerResult> result = plan->find_plan(state, todo_list);
 
 	CHECK(result.is_valid());
 
 	if (result->get_success()) {
-		print_line("=== PLANNING SUCCEEDED ===");
-		Array plan_actions = result->extract_plan();
-		print_line(vformat("Plan has %d actions:", plan_actions.size()));
-
-		for (int i = 0; i < plan_actions.size(); i++) {
-			Array action = plan_actions[i];
-			String action_str = "[";
-			for (int j = 0; j < action.size(); j++) {
-				if (j > 0) {
-					action_str += ", ";
-				}
-				Variant arg = action[j];
-				if (arg.get_type() == Variant::ARRAY) {
-					Array loc = arg;
-					action_str += vformat("[%d, %d]", loc[0], loc[1]);
-				} else {
-					action_str += String(arg);
-				}
-			}
-			action_str += "]";
-			print_line(vformat("  %d. %s", i + 1, action_str));
+		if (verbose >= 1) {
+			print_line("=== PLANNING SUCCEEDED ===");
 		}
+		Array plan_actions = result->extract_plan(verbose);
+		if (verbose >= 1) {
+			print_line(vformat("Plan has %d actions:", plan_actions.size()));
 
-		Dictionary final_state = result->get_final_state();
-		Dictionary final_loc = final_state["loc"];
-		Array final_r1_loc = final_loc["r1"];
-		int final_x = final_r1_loc[0];
-		int final_y = final_r1_loc[1];
-		print_line("");
-		print_line("Final state:");
-		print_line(vformat("  Robot r1 location: [%d, %d]", final_x, final_y));
+			for (int i = 0; i < plan_actions.size(); i++) {
+				Array action = plan_actions[i];
+				String action_str = "[";
+				for (int j = 0; j < action.size(); j++) {
+					if (j > 0) {
+						action_str += ", ";
+					}
+					Variant arg = action[j];
+					if (arg.get_type() == Variant::ARRAY) {
+						Array loc = arg;
+						action_str += vformat("[%d, %d]", loc[0], loc[1]);
+					} else {
+						action_str += String(arg);
+					}
+				}
+				action_str += "]";
+				print_line(vformat("  %d. %s", i + 1, action_str));
+			}
+
+			Dictionary final_state = result->get_final_state();
+			Dictionary final_loc = final_state["loc"];
+			Array final_r1_loc = final_loc["r1"];
+			int final_x = final_r1_loc[0];
+			int final_y = final_r1_loc[1];
+			print_line("");
+			print_line("Final state:");
+			print_line(vformat("  Robot r1 location: [%d, %d]", final_x, final_y));
+		}
 
 		CHECK(plan_actions.size() > 0);
 	} else {
-		print_line("=== PLANNING FAILED ===");
-		Array failed_nodes = result->find_failed_nodes();
-		print_line(vformat("Failed nodes: %d", failed_nodes.size()));
+		if (verbose >= 1) {
+			print_line("=== PLANNING FAILED ===");
+			Array failed_nodes = result->find_failed_nodes();
+			print_line(vformat("Failed nodes: %d", failed_nodes.size()));
+		}
 	}
 
-	print_line("=== END RESCUE PLAN ===");
-	print_line("");
+	if (verbose >= 1) {
+		print_line("=== END RESCUE PLAN ===");
+		print_line("");
+	}
 }
 
 // Helper: Create complex rescue initial state with multiple robots, people, and obstacles
@@ -511,7 +522,7 @@ TEST_CASE("[Modules][Planner][Rescue] Most complex rescue plan - multi-robot mul
 	Ref<PlannerDomain> domain = create_rescue_domain();
 	Ref<PlannerPlan> plan = memnew(PlannerPlan);
 	plan->set_current_domain(domain);
-	plan->set_verbose(2); // Show planning details
+	plan->set_verbose(0); // Show planning details
 	plan->set_max_depth(1000); // Very high depth limit for complex multi-goal plan
 
 	Dictionary state = create_complex_rescue_state();
@@ -563,138 +574,149 @@ TEST_CASE("[Modules][Planner][Rescue] Most complex rescue plan - multi-robot mul
 	move_task.push_back(target_loc);
 	todo_list.push_back(move_task);
 
-	print_line("=== COMPLEX RESCUE DOMAIN - MULTI-ROBOT MULTI-PERSON COORDINATION ===");
-	print_line("Initial State:");
-	Dictionary loc_dict = state["loc"];
-	Dictionary robot_type_dict = state["robot_type"];
-	Dictionary status_dict = state["status"];
-	Dictionary real_status_dict = state["real_status"];
+	int verbose = plan->get_verbose();
+	if (verbose >= 1) {
+		print_line("=== COMPLEX RESCUE DOMAIN - MULTI-ROBOT MULTI-PERSON COORDINATION ===");
+		print_line("Initial State:");
+		Dictionary loc_dict = state["loc"];
+		Dictionary robot_type_dict = state["robot_type"];
+		Dictionary status_dict = state["status"];
+		Dictionary real_status_dict = state["real_status"];
 
-	Array r1_loc = loc_dict["r1"];
-	Array w1_loc = loc_dict["w1"];
-	Array a1_loc = loc_dict["a1"];
-	Array p1_loc = loc_dict["p1"];
-	Array p2_loc = loc_dict["p2"];
-	Array p3_loc = loc_dict["p3"];
+		Array r1_loc = loc_dict["r1"];
+		Array w1_loc = loc_dict["w1"];
+		Array a1_loc = loc_dict["a1"];
+		Array p1_loc = loc_dict["p1"];
+		Array p2_loc = loc_dict["p2"];
+		Array p3_loc = loc_dict["p3"];
 
-	print_line(vformat("  Robot r1 (wheeled): [%d, %d], status: %s", r1_loc[0], r1_loc[1], String(status_dict["r1"])));
-	print_line(vformat("  Robot w1 (wheeled): [%d, %d], status: %s", w1_loc[0], w1_loc[1], String(status_dict["w1"])));
-	print_line(vformat("  Robot a1 (drone): [%d, %d], status: %s", a1_loc[0], a1_loc[1], String(status_dict["a1"])));
-	print_line(vformat("  Person p1: [%d, %d], real_status: %s", p1_loc[0], p1_loc[1], String(real_status_dict["p1"])));
-	print_line(vformat("  Person p2: [%d, %d], real_status: %s", p2_loc[0], p2_loc[1], String(real_status_dict["p2"])));
-	print_line(vformat("  Person p3: [%d, %d], real_status: %s", p3_loc[0], p3_loc[1], String(real_status_dict["p3"])));
-	print_line("  Obstacles: [3,3], [7,7]");
-	print_line("");
-	print_line("Objectives:");
-	print_line("  1. Rescue person p1 with robot r1");
-	print_line("     -> Requires: get supplies, move to (4,4), inspect location, support person");
-	print_line("  2. Rescue person p2 with robot w1");
-	print_line("     -> Requires: get robot w1 (engaged), get supplies, move to (6,6), inspect, clear blocked location, support");
-	print_line("  3. Survey location (4,4) with drone a1");
-	print_line("     -> Requires: adjust altitude, capture image, check real status");
-	print_line("  4. Move robot r1 to (5,5)");
-	print_line("");
+		print_line(vformat("  Robot r1 (wheeled): [%d, %d], status: %s", r1_loc[0], r1_loc[1], String(status_dict["r1"])));
+		print_line(vformat("  Robot w1 (wheeled): [%d, %d], status: %s", w1_loc[0], w1_loc[1], String(status_dict["w1"])));
+		print_line(vformat("  Robot a1 (drone): [%d, %d], status: %s", a1_loc[0], a1_loc[1], String(status_dict["a1"])));
+		print_line(vformat("  Person p1: [%d, %d], real_status: %s", p1_loc[0], p1_loc[1], String(real_status_dict["p1"])));
+		print_line(vformat("  Person p2: [%d, %d], real_status: %s", p2_loc[0], p2_loc[1], String(real_status_dict["p2"])));
+		print_line(vformat("  Person p3: [%d, %d], real_status: %s", p3_loc[0], p3_loc[1], String(real_status_dict["p3"])));
+		print_line("  Obstacles: [3,3], [7,7]");
+		print_line("");
+		print_line("Objectives:");
+		print_line("  1. Rescue person p1 with robot r1");
+		print_line("     -> Requires: get supplies, move to (4,4), inspect location, support person");
+		print_line("  2. Rescue person p2 with robot w1");
+		print_line("     -> Requires: get robot w1 (engaged), get supplies, move to (6,6), inspect, clear blocked location, support");
+		print_line("  3. Survey location (4,4) with drone a1");
+		print_line("     -> Requires: adjust altitude, capture image, check real status");
+		print_line("  4. Move robot r1 to (5,5)");
+		print_line("");
+	}
 
 	Ref<PlannerResult> result = plan->find_plan(state, todo_list);
 
 	CHECK(result.is_valid());
 
 	if (result->get_success()) {
-		print_line("=== PLANNING SUCCEEDED ===");
-		Array plan_actions = result->extract_plan();
-		print_line(vformat("Plan has %d actions:", plan_actions.size()));
-
-		// Group actions by type for better readability
-		int move_count = 0;
-		int survey_count = 0;
-		int rescue_count = 0;
-		int support_count = 0;
-		int supply_count = 0;
-		int other_count = 0;
-
-		for (int i = 0; i < plan_actions.size(); i++) {
-			Array action = plan_actions[i];
-			if (action.size() == 0) {
-				continue;
-			}
-			String action_name = action[0];
-			String action_str = "[";
-			for (int j = 0; j < action.size(); j++) {
-				if (j > 0) {
-					action_str += ", ";
-				}
-				Variant arg = action[j];
-				if (arg.get_type() == Variant::ARRAY) {
-					Array arr = arg;
-					if (arr.size() == 2) {
-						action_str += vformat("[%d, %d]", arr[0], arr[1]);
-					} else {
-						action_str += "[...]";
-					}
-				} else if (arg.get_type() == Variant::NIL) {
-					action_str += "<null>";
-				} else {
-					action_str += String(arg);
-				}
-			}
-			action_str += "]";
-			print_line(vformat("  %d. %s", i + 1, action_str));
-
-			// Count action types
-			if (action_name.begins_with("action_move")) {
-				move_count++;
-			} else if (action_name.begins_with("action_capture") || action_name.begins_with("action_change_altitude") || action_name.begins_with("action_check_real")) {
-				survey_count++;
-			} else if (action_name.begins_with("action_support")) {
-				support_count++;
-			} else if (action_name.begins_with("action_replenish") || action_name.begins_with("action_transfer")) {
-				supply_count++;
-			} else if (action_name.begins_with("action_clear") || action_name.begins_with("action_inspect") || action_name.begins_with("action_engage") || action_name.begins_with("action_free")) {
-				rescue_count++;
-			} else {
-				other_count++;
-			}
+		if (verbose >= 1) {
+			print_line("=== PLANNING SUCCEEDED ===");
 		}
+		Array plan_actions = result->extract_plan(verbose);
+		if (verbose >= 1) {
+			print_line(vformat("Plan has %d actions:", plan_actions.size()));
 
-		print_line("");
-		print_line("Plan Statistics:");
-		print_line(vformat("  Total actions: %d", plan_actions.size()));
-		print_line(vformat("  Movement actions: %d", move_count));
-		print_line(vformat("  Survey actions: %d", survey_count));
-		print_line(vformat("  Rescue/support actions: %d", rescue_count + support_count));
-		print_line(vformat("  Supply management actions: %d", supply_count));
-		print_line(vformat("  Other actions: %d", other_count));
+			// Group actions by type for better readability
+			int move_count = 0;
+			int survey_count = 0;
+			int rescue_count = 0;
+			int support_count = 0;
+			int supply_count = 0;
+			int other_count = 0;
 
-		Dictionary final_state = result->get_final_state();
-		Dictionary final_loc = final_state["loc"];
-		Dictionary final_status = final_state["status"];
-		Dictionary final_medicine = final_state["has_medicine"];
+			for (int i = 0; i < plan_actions.size(); i++) {
+				Array action = plan_actions[i];
+				if (action.size() == 0) {
+					continue;
+				}
+				String action_name = action[0];
+				String action_str = "[";
+				for (int j = 0; j < action.size(); j++) {
+					if (j > 0) {
+						action_str += ", ";
+					}
+					Variant arg = action[j];
+					if (arg.get_type() == Variant::ARRAY) {
+						Array arr = arg;
+						if (arr.size() == 2) {
+							action_str += vformat("[%d, %d]", arr[0], arr[1]);
+						} else {
+							action_str += "[...]";
+						}
+					} else if (arg.get_type() == Variant::NIL) {
+						action_str += "<null>";
+					} else {
+						action_str += String(arg);
+					}
+				}
+				action_str += "]";
+				print_line(vformat("  %d. %s", i + 1, action_str));
 
-		print_line("");
-		print_line("Final State:");
-		Array final_r1_loc = final_loc["r1"];
-		Array final_w1_loc = final_loc["w1"];
-		Array final_a1_loc = final_loc["a1"];
-		print_line(vformat("  Robot r1 location: [%d, %d], status: %s", final_r1_loc[0], final_r1_loc[1], String(final_status["r1"])));
-		print_line(vformat("  Robot w1 location: [%d, %d], status: %s", final_w1_loc[0], final_w1_loc[1], String(final_status["w1"])));
-		print_line(vformat("  Robot a1 location: [%d, %d], status: %s", final_a1_loc[0], final_a1_loc[1], String(final_status["a1"])));
-		print_line(vformat("  Person p1 status: %s", String(final_status["p1"])));
-		print_line(vformat("  Person p2 status: %s", String(final_status["p2"])));
-		print_line(vformat("  Robot r1 medicine: %d", int(final_medicine["r1"])));
-		print_line(vformat("  Robot w1 medicine: %d", int(final_medicine["w1"])));
+				// Count action types
+				if (action_name.begins_with("action_move")) {
+					move_count++;
+				} else if (action_name.begins_with("action_capture") || action_name.begins_with("action_change_altitude") || action_name.begins_with("action_check_real")) {
+					survey_count++;
+				} else if (action_name.begins_with("action_support")) {
+					support_count++;
+				} else if (action_name.begins_with("action_replenish") || action_name.begins_with("action_transfer")) {
+					supply_count++;
+				} else if (action_name.begins_with("action_clear") || action_name.begins_with("action_inspect") || action_name.begins_with("action_engage") || action_name.begins_with("action_free")) {
+					rescue_count++;
+				} else {
+					other_count++;
+				}
+			}
+
+			print_line("");
+			print_line("Plan Statistics:");
+			print_line(vformat("  Total actions: %d", plan_actions.size()));
+			print_line(vformat("  Movement actions: %d", move_count));
+			print_line(vformat("  Survey actions: %d", survey_count));
+			print_line(vformat("  Rescue/support actions: %d", rescue_count + support_count));
+			print_line(vformat("  Supply management actions: %d", supply_count));
+			print_line(vformat("  Other actions: %d", other_count));
+
+			Dictionary final_state = result->get_final_state();
+			Dictionary final_loc = final_state["loc"];
+			Dictionary final_status = final_state["status"];
+			Dictionary final_medicine = final_state["has_medicine"];
+
+			print_line("");
+			print_line("Final State:");
+			Array final_r1_loc = final_loc["r1"];
+			Array final_w1_loc = final_loc["w1"];
+			Array final_a1_loc = final_loc["a1"];
+			print_line(vformat("  Robot r1 location: [%d, %d], status: %s", final_r1_loc[0], final_r1_loc[1], String(final_status["r1"])));
+			print_line(vformat("  Robot w1 location: [%d, %d], status: %s", final_w1_loc[0], final_w1_loc[1], String(final_status["w1"])));
+			print_line(vformat("  Robot a1 location: [%d, %d], status: %s", final_a1_loc[0], final_a1_loc[1], String(final_status["a1"])));
+			print_line(vformat("  Person p1 status: %s", String(final_status["p1"])));
+			print_line(vformat("  Person p2 status: %s", String(final_status["p2"])));
+			print_line(vformat("  Robot r1 medicine: %d", int(final_medicine["r1"])));
+			print_line(vformat("  Robot w1 medicine: %d", int(final_medicine["w1"])));
+		}
 
 		CHECK(plan_actions.size() > 5); // Complex plan should have many actions
 	} else {
-		print_line("=== PLANNING FAILED ===");
-		Array failed_nodes = result->find_failed_nodes();
-		print_line(vformat("Failed nodes: %d", failed_nodes.size()));
-		for (int i = 0; i < failed_nodes.size(); i++) {
-			print_line(vformat("  Failed node: %s", String(failed_nodes[i])));
+		if (verbose >= 1) {
+			print_line("=== PLANNING FAILED ===");
+			Array failed_nodes = result->find_failed_nodes();
+			print_line(vformat("Failed nodes: %d", failed_nodes.size()));
+			for (int i = 0; i < failed_nodes.size(); i++) {
+				print_line(vformat("  Failed node: %s", String(failed_nodes[i])));
+			}
 		}
 	}
 
-	print_line("=== END COMPLEX RESCUE PLAN ===");
-	print_line("");
+	if (verbose >= 1) {
+		print_line("=== END COMPLEX RESCUE PLAN ===");
+		print_line("");
+	}
 }
 
 } // namespace TestRescue

@@ -43,9 +43,9 @@ enum class PlannerNodeType {
 	TYPE_ROOT = 0, // :D - Root node
 	TYPE_ACTION = 1, // :A - Action node
 	TYPE_TASK = 2, // :T - Task node
-	TYPE_UNIGOAL = 3, // :G - Unigoal node
+	TYPE_UNIGOAL = 3, // :G - Unigoal node (internal use only, not for todo list input)
 	TYPE_MULTIGOAL = 4, // :M - MultiGoal node
-	TYPE_VERIFY_GOAL = 5, // :VG - Verify Unigoal node
+	TYPE_VERIFY_GOAL = 5, // :VG - Verify Unigoal node (internal use only)
 	TYPE_VERIFY_MULTIGOAL = 6 // :VM - Verify MultiGoal node
 };
 

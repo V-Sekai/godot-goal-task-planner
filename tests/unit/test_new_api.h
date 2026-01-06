@@ -260,8 +260,8 @@ TEST_CASE("[Modules][Planner] Simulate Method") {
 	if (state_list.size() > 1) {
 		Dictionary last_state = state_list[state_list.size() - 1];
 		CHECK(last_state.has("flag"));
-		Dictionary flag_dict = last_state["flag"];
-		CHECK(flag_dict.has(1)); // Flag 1 should be set after transfer
+		Dictionary final_flag_dict = last_state["flag"];
+		CHECK(final_flag_dict.has(1)); // Flag 1 should be set after transfer
 	}
 }
 

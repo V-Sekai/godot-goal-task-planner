@@ -132,7 +132,7 @@ TEST_CASE("[Modules][Planner][TemporalTravel] Alice travels to park") {
 	Ref<PlannerDomain> domain = create_temporal_travel_domain();
 	Ref<PlannerPlan> plan = memnew(PlannerPlan);
 	plan->set_current_domain(domain);
-	plan->set_verbose(1);
+	plan->set_verbose(0);
 
 	Dictionary state = create_temporal_travel_init_state();
 
@@ -221,7 +221,7 @@ TEST_CASE("[Modules][Planner][TemporalTravel] Alice and Bob both travel to park"
 	Ref<PlannerDomain> domain = create_temporal_travel_domain();
 	Ref<PlannerPlan> plan = memnew(PlannerPlan);
 	plan->set_current_domain(domain);
-	plan->set_verbose(1);
+	plan->set_verbose(0);
 
 	Dictionary state = create_temporal_travel_init_state();
 

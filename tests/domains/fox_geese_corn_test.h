@@ -238,7 +238,7 @@ TEST_CASE("[Modules][Planner][FoxGeeseCorn] PlannerPlan - find_plan with transpo
 	plan->reset(); // Ensure complete isolation
 	plan->set_current_domain(domain);
 	plan->set_max_depth(100);
-	plan->set_verbose(1);
+	plan->set_verbose(0);
 
 	Dictionary init_state = FoxGeeseCornDomain::initialize_state(1, 1, 1, 2, 4, 4, 3);
 	// CRITICAL: Deep copy the state to ensure test isolation
@@ -271,7 +271,7 @@ TEST_CASE("[Modules][Planner][FoxGeeseCorn] PlannerPlan - simulate method verifi
 	plan->reset(); // Ensure complete isolation
 	plan->set_current_domain(domain);
 	plan->set_max_depth(100);
-	plan->set_verbose(1);
+	plan->set_verbose(0);
 
 	Dictionary init_state = FoxGeeseCornDomain::initialize_state(1, 1, 1, 2, 4, 4, 3);
 	// CRITICAL: Deep copy the state to ensure test isolation
@@ -343,7 +343,7 @@ TEST_CASE("[Modules][Planner][FoxGeeseCorn] PlannerPlan - complete planning work
 	plan->reset(); // Ensure complete isolation
 	plan->set_current_domain(domain);
 	plan->set_max_depth(100);
-	plan->set_verbose(1);
+	plan->set_verbose(0);
 
 	// Test fixture from aria-planner: params = %{f: 1, g: 1, c: 1, k: 2, pf: 4, pg: 4, pc: 3}
 	Dictionary init_state = FoxGeeseCornDomain::initialize_state(1, 1, 1, 2, 4, 4, 3);

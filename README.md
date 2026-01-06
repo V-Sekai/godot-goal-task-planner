@@ -203,192 +203,112 @@ var result = plan.run_lazy_refineahead(state, todo_list)
 
 ## Temporal Constraints
 
-The planner supports temporal planning with action durations and timing constraints. **Time is represented in absolute microseconds** (since Unix epoch), not civil time or ISO 8601 durations.
+The planner supports temporal planning with action durations and timing constraints. **Time is represented in absolute microseconds** (since Unix epoch).
 
 ### Setting Initial Time
 
 ```gdscript
-# Set initial time for temporal planning (2025-01-01 10:00:00 UTC)
-var time_range = PlannerTimeRange.new()
-time_range.set_start_time(1735732800000000)  # microseconds
+# Set initial time for temporal planning
+# Get current time range, modify it, and set it back
+var time_range = plan.get_time_range()
+time_range.set_start_time(1735732800000000)  # microseconds since Unix epoch
 plan.set_time_range(time_range)
 ```
 
-### Action Durations
+### Action Durations and Constraints
 
-Attach temporal metadata to actions to specify their duration:
+Attach temporal metadata to actions:
 
 ```gdscript
-# Action takes 5 minutes (300000000 microseconds)
-var temporal_metadata = {
+# Action with duration
+var temporal_constraints = {
     "duration": 300000000  # 5 minutes in microseconds
 }
 var action = ["walk", "person", "from", "to"]
-plan.attach_metadata(action, temporal_metadata)
-```
+plan.attach_metadata(action, temporal_constraints)
 
-### Temporal Constraints
-
-You can specify when actions must occur using temporal constraints:
-
-```gdscript
 # Action with timing requirements
 var temporal_constraints = {
-    "start_time": 1735732800000000,  # Must start at this time (microseconds)
+    "start_time": 1735732800000000,  # Must start at this time
     "end_time": 1735732805000000,    # Must finish by this time
     "duration": 5000000              # Takes 5 seconds
 }
-
-var action = ["deliver", "package", "customer"]
 plan.attach_metadata(action, temporal_constraints)
 ```
 
-The planner uses a Simple Temporal Network (STN) to ensure all timing constraints are consistent. If constraints conflict, planning fails.
+The planner uses a Simple Temporal Network (STN) to validate timing constraints.
 
 ### Converting Time Formats
 
 ```gdscript
 # Convert Unix time (seconds) to microseconds
-var unix_time = 1735732800.0  # 2025-01-01 10:00:00 UTC
-var microseconds = PlannerTimeRange.unix_time_to_microseconds(unix_time)
-# Result: 1735732800000000
-
+var microseconds = PlannerTimeRange.unix_time_to_microseconds(1735732800.0)
 # Get current time in microseconds
 var now = PlannerTimeRange.now_microseconds()
 ```
 
 ## Entity Requirements
 
-You can require specific entities (with capabilities) to perform actions:
+Require specific entities with capabilities to perform actions:
 
 ```gdscript
 # Require a robot with "grasp" capability
-var entity_req = {
+var entity_constraints = {
     "type": "robot",
     "capabilities": ["move", "grasp"]
 }
-
-var metadata = {
-    "requires_entities": [entity_req]
-}
-
-# Attach to a task
-plan.attach_metadata(["pickup", "item"], Dictionary(), metadata)
+var action = ["pickup", "item"]
+plan.attach_metadata(action, Dictionary(), entity_constraints)
 ```
 
-## Complete Example: NPC Quest System
+## Additional Methods
+
+### `blacklist_command()`
+
+Prevent certain actions or methods from being used:
 
 ```gdscript
-extends NPC
+plan.blacklist_command(["move", "dangerous_area", "safe_area"])
+```
 
-var domain: PlannerDomain
-var plan: PlannerPlan
+### `reset()`
 
-func _ready():
-    domain = PlannerDomain.new()
-    plan = PlannerPlan.new()
-    plan.set_current_domain(domain)
+Reset all planner state for test isolation:
 
-    # Register actions
-    var actions = []
-    actions.append(callable(self, "action_move"))
-    actions.append(callable(self, "action_talk"))
-    actions.append(callable(self, "action_pickup"))
-    domain.add_actions(actions)
-
-    # Register methods
-    var go_to_methods = []
-    go_to_methods.append(callable(self, "method_go_to"))
-    domain.add_task_methods("go_to", go_to_methods)
-
-    var get_item_methods = []
-    get_item_methods.append(callable(self, "method_get_item"))
-    domain.add_task_methods("get_item", get_item_methods)
-
-func start_quest(quest_goal):
-    var state = {
-        "location": global_position,
-        "holding": null,
-        "talked_to": []
-    }
-
-    var todo_list = [quest_goal]
-    var result = plan.find_plan(state, todo_list)
-
-    if result.get_success():
-        execute_plan(result.extract_plan())
-    else:
-        print("Cannot complete quest")
-
-func action_move(state: Dictionary, from: Vector3, to: Vector3):
-    if state.get("location").distance_to(from) > 1.0:
-        return false
-    var new_state = state.duplicate()
-    new_state["location"] = to
-    return new_state
-
-func method_go_to(state: Dictionary, destination: Vector3):
-    var current = state.get("location")
-    if current.distance_to(destination) < 1.0:
-        return []
-    return [["move", current, destination]]
+```gdscript
+plan.reset()
 ```
 
 ## Advanced Features
 
 ### Plan Simulation
 
-Preview what will happen without actually doing it:
+Preview state changes without executing:
 
 ```gdscript
 var result = plan.find_plan(state, todo_list)
 var state_sequence = plan.simulate(result, state, 0)
-# state_sequence[0] = initial state
-# state_sequence[1] = state after first action
-# state_sequence[2] = state after second action
-# etc.
+# Returns array of states: [initial_state, after_action_1, after_action_2, ...]
 ```
 
 ### Replanning
 
-If something goes wrong, replan from the failure point:
+Replan from a failure point:
 
 ```gdscript
-var result = plan.find_plan(state, todo_list)
-# ... execute some actions ...
-# Something fails!
-
 var failed_nodes = result.find_failed_nodes()
 if failed_nodes.size() > 0:
     var fail_node_id = failed_nodes[0]["node_id"]
     var new_result = plan.replan(result, current_state, fail_node_id)
 ```
 
-### Blacklisting Commands
+## Tips
 
-Prevent certain actions or methods from being used:
-
-```gdscript
-plan.blacklist_command(["move", "dangerous_area", "safe_area"])
-# This action will never be used in plans
-```
-
-## Error Handling
-
-The planner handles edge cases gracefully:
-
--   Empty todo lists return a failed result
--   Invalid states are validated
--   Malformed graphs are detected
--   All errors are logged (set verbosity with `plan.set_verbose(level)`)
-
-## Tips for Godot Users
-
-1. **Use [Callable]**: Wrap your functions in `Callable` objects when registering with the domain
-2. **State as Dictionary**: The state is just a `Dictionary` - use it like any Godot dictionary
-3. **Plan Results**: Always check `result.get_success()` before using `extract_plan()`
-4. **Performance**: For complex domains, consider using `run_lazy_lookahead()` with a low `max_tries` to avoid long planning times
-5. **Debugging**: Use `plan.set_verbose(3)` to see detailed planning information
+1. **State Management**: Always use `state.duplicate()` when modifying state in actions
+2. **Callables**: Wrap functions in `Callable` objects when registering with the domain
+3. **Error Checking**: Always check `result.get_success()` before using `extract_plan()`
+4. **Performance**: Use `run_lazy_lookahead()` with a low `max_tries` for complex domains
+5. **Debugging**: Use `plan.set_verbose(level)` to see detailed planning information
 
 ## Documentation
 

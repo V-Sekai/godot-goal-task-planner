@@ -37,6 +37,7 @@
 #include "core/string/ustring.h"
 #include "core/variant/dictionary.h"
 #include "core/variant/variant.h"
+#include "planner_time_range.h"
 
 // Capability constants
 const String PlannerPersona::CAPABILITY_MOVABLE = "movable";
@@ -79,8 +80,9 @@ void PlannerPersona::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("enable_ai_capabilities"), &PlannerPersona::enable_ai_capabilities);
 
 	ClassDB::bind_method(D_METHOD("get_beliefs_about", "target_persona_id"), &PlannerPersona::get_beliefs_about);
-	ClassDB::bind_method(D_METHOD("set_belief_about", "target_persona_id", "belief_key", "belief_value", "confidence"), &PlannerPersona::set_belief_about, DEFVAL(1.0));
+	ClassDB::bind_method(D_METHOD("set_belief_about", "target_persona_id", "belief_key", "belief_value", "confidence", "timestamp"), &PlannerPersona::set_belief_about, DEFVAL(1.0), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_belief_confidence_for", "target_persona_id", "belief_key"), &PlannerPersona::get_belief_confidence_for);
+	ClassDB::bind_method(D_METHOD("get_belief_timestamp_for", "target_persona_id", "belief_key"), &PlannerPersona::get_belief_timestamp_for);
 	ClassDB::bind_method(D_METHOD("update_belief_confidence", "target_persona_id", "belief_key", "confidence"), &PlannerPersona::update_belief_confidence);
 
 	ClassDB::bind_static_method("PlannerPersona", D_METHOD("get_planner_state", "target_persona_id", "requesting_persona_id"), &PlannerPersona::get_planner_state);
@@ -104,6 +106,7 @@ PlannerPersona::PlannerPersona() {
 	metadata = Dictionary();
 	beliefs_about_others = Dictionary();
 	belief_confidence = Dictionary();
+	belief_timestamps = Dictionary();
 	capabilities = TypedArray<String>();
 }
 
@@ -213,10 +216,11 @@ Dictionary PlannerPersona::get_beliefs_about(const String &p_target_persona_id) 
 	return Dictionary();
 }
 
-void PlannerPersona::set_belief_about(const String &p_target_persona_id, const String &p_belief_key, const Variant &p_belief_value, double p_confidence) {
+void PlannerPersona::set_belief_about(const String &p_target_persona_id, const String &p_belief_key, const Variant &p_belief_value, double p_confidence, int64_t p_timestamp) {
 	if (!beliefs_about_others.has(p_target_persona_id)) {
 		beliefs_about_others[p_target_persona_id] = Dictionary();
 		belief_confidence[p_target_persona_id] = Dictionary();
+		belief_timestamps[p_target_persona_id] = Dictionary();
 	}
 
 	Dictionary target_beliefs = beliefs_about_others[p_target_persona_id];
@@ -226,6 +230,15 @@ void PlannerPersona::set_belief_about(const String &p_target_persona_id, const S
 	Dictionary target_confidence = belief_confidence[p_target_persona_id];
 	target_confidence[p_belief_key] = p_confidence;
 	belief_confidence[p_target_persona_id] = target_confidence;
+
+	// Store timestamp (use provided timestamp or current time if 0)
+	int64_t timestamp = p_timestamp;
+	if (timestamp == 0) {
+		timestamp = PlannerTimeRange::now_microseconds();
+	}
+	Dictionary target_timestamps = belief_timestamps[p_target_persona_id];
+	target_timestamps[p_belief_key] = timestamp;
+	belief_timestamps[p_target_persona_id] = target_timestamps;
 }
 
 double PlannerPersona::get_belief_confidence_for(const String &p_target_persona_id, const String &p_belief_key) const {
@@ -236,6 +249,16 @@ double PlannerPersona::get_belief_confidence_for(const String &p_target_persona_
 		}
 	}
 	return 0.0;
+}
+
+int64_t PlannerPersona::get_belief_timestamp_for(const String &p_target_persona_id, const String &p_belief_key) const {
+	if (belief_timestamps.has(p_target_persona_id)) {
+		Dictionary target_timestamps = belief_timestamps[p_target_persona_id];
+		if (target_timestamps.has(p_belief_key)) {
+			return target_timestamps[p_belief_key];
+		}
+	}
+	return 0;
 }
 
 void PlannerPersona::update_belief_confidence(const String &p_target_persona_id, const String &p_belief_key, double p_confidence) {
@@ -256,7 +279,7 @@ Dictionary PlannerPersona::get_planner_state(const String &p_target_persona_id, 
 
 void PlannerPersona::process_observation(const Dictionary &p_observation) {
 	// Process an observation to update beliefs
-	// Expected format: {"entity": String, "action": String, "confidence": float, ...}
+	// Expected format: {"entity": String, "action": String, "confidence": float, "time": int64_t, ...}
 	if (!p_observation.has("entity")) {
 		return;
 	}
@@ -269,32 +292,99 @@ void PlannerPersona::process_observation(const Dictionary &p_observation) {
 		return;
 	}
 
-	// Update belief about observed entity
+	// Extract timestamp from observation or use current time
+	int64_t timestamp = 0;
+	if (p_observation.has("time")) {
+		Variant time_var = p_observation["time"];
+		if (time_var.get_type() == Variant::INT || time_var.get_type() == Variant::FLOAT) {
+			// If time is provided as seconds (float) or microseconds (int), convert appropriately
+			if (time_var.get_type() == Variant::FLOAT) {
+				timestamp = PlannerTimeRange::unix_time_to_microseconds(time_var);
+			} else {
+				timestamp = time_var;
+			}
+		}
+	}
+	if (timestamp == 0) {
+		timestamp = PlannerTimeRange::now_microseconds();
+	}
+
+	// Update belief about observed entity with temporal metadata
 	String belief_key = vformat("observed_%s", action);
-	set_belief_about(entity_id, belief_key, p_observation, confidence);
+	set_belief_about(entity_id, belief_key, p_observation, confidence, timestamp);
 
 	// Increase confidence with consistent observations
 	double current_confidence = get_belief_confidence_for(entity_id, belief_key);
 	double new_confidence = MIN(1.0, current_confidence + (confidence * 0.1));
 	update_belief_confidence(entity_id, belief_key, new_confidence);
+
+	// Only form location preference beliefs if we observe them at a location AND we're at that same location
+	// This requires both "location" (where entity was observed) and "observer_location" (where we are) fields
+	if (p_observation.has("location") && p_observation.has("observer_location")) {
+		String entity_location = p_observation.get("location", "");
+		String observer_location = p_observation.get("observer_location", "");
+
+		// Only form belief if we're at the same location as the observed entity
+		if (entity_location == observer_location && !entity_location.is_empty()) {
+			String likes_key = vformat("likes_%s", entity_location);
+			set_belief_about(entity_id, likes_key, true, confidence, timestamp);
+			update_belief_confidence(entity_id, likes_key, confidence);
+		}
+	}
 }
 
 void PlannerPersona::process_communication(const Dictionary &p_communication) {
 	// Process communication to update beliefs
-	// Expected format: {"sender": String, "content": String, "type": String, ...}
-	if (!p_communication.has("sender")) {
+	// Expected format: {"sender"/"from": String, "content"/"message": String, "type"/"topic": String, "time": int64_t, ...}
+	String sender_id;
+	if (p_communication.has("sender")) {
+		sender_id = p_communication.get("sender", "");
+	} else if (p_communication.has("from")) {
+		sender_id = p_communication.get("from", "");
+	} else {
 		return;
 	}
 
-	String sender_id = p_communication.get("sender", "");
-	String content = p_communication.get("content", "");
-	String comm_type = p_communication.get("type", "general");
+	String content;
+	if (p_communication.has("content")) {
+		content = p_communication.get("content", "");
+	} else if (p_communication.has("message")) {
+		content = p_communication.get("message", "");
+	}
+
+	String comm_type = "general";
+	if (p_communication.has("type")) {
+		comm_type = p_communication.get("type", "general");
+	} else if (p_communication.has("topic")) {
+		comm_type = p_communication.get("topic", "general");
+	}
 
 	if (sender_id.is_empty()) {
 		return;
 	}
 
-	// Update belief about sender based on communication
+	// Extract timestamp from communication or use current time
+	int64_t timestamp = 0;
+	if (p_communication.has("time")) {
+		Variant time_var = p_communication["time"];
+		if (time_var.get_type() == Variant::INT || time_var.get_type() == Variant::FLOAT) {
+			// If time is provided as seconds (float) or microseconds (int), convert appropriately
+			if (time_var.get_type() == Variant::FLOAT) {
+				timestamp = PlannerTimeRange::unix_time_to_microseconds(time_var);
+			} else {
+				timestamp = time_var;
+			}
+		}
+	}
+	if (timestamp == 0) {
+		timestamp = PlannerTimeRange::now_microseconds();
+	}
+
+	// Update belief about sender based on communication with temporal metadata
 	String belief_key = vformat("communication_%s", comm_type);
-	set_belief_about(sender_id, belief_key, p_communication, 0.8); // Communication has moderate confidence
+	double confidence = p_communication.get("confidence", 0.8);
+	set_belief_about(sender_id, belief_key, p_communication, confidence, timestamp);
+
+	// Communication alone does not form location preference beliefs
+	// Location preferences are only formed through direct observation at that location
 }

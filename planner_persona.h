@@ -58,6 +58,7 @@ private:
 	Dictionary metadata; // Stores character, position, capabilities data
 	Dictionary beliefs_about_others; // Ego-centric beliefs about other personas
 	Dictionary belief_confidence; // Confidence levels for beliefs (0.0 to 1.0)
+	Dictionary belief_timestamps; // Timestamps for beliefs (absolute microseconds since Unix epoch)
 	TypedArray<String> capabilities; // Capabilities that determine persona type
 
 	// Human persona capabilities
@@ -117,8 +118,9 @@ public:
 
 	// Belief management
 	Dictionary get_beliefs_about(const String &p_target_persona_id) const;
-	void set_belief_about(const String &p_target_persona_id, const String &p_belief_key, const Variant &p_belief_value, double p_confidence = 1.0);
+	void set_belief_about(const String &p_target_persona_id, const String &p_belief_key, const Variant &p_belief_value, double p_confidence = 1.0, int64_t p_timestamp = 0);
 	double get_belief_confidence_for(const String &p_target_persona_id, const String &p_belief_key) const;
+	int64_t get_belief_timestamp_for(const String &p_target_persona_id, const String &p_belief_key) const;
 	void update_belief_confidence(const String &p_target_persona_id, const String &p_belief_key, double p_confidence);
 
 	// Information asymmetry: Personas cannot directly access each other's internal states

@@ -41,10 +41,10 @@
 class PlannerGraphOperations {
 public:
 	// Determine node type from node_info
-	static PlannerNodeType get_node_type(Variant p_node_info, Dictionary p_action_dict, Dictionary p_task_dict, Dictionary p_unigoal_dict);
+	static PlannerNodeType get_node_type(Variant p_node_info, Dictionary p_action_dict, Dictionary p_task_dict, Dictionary p_unigoal_dict, int p_verbose = 0);
 
 	// Add nodes and edges to solution graph
-	static int add_nodes_and_edges(PlannerSolutionGraph &p_graph, int p_parent_node_id, Array p_children_node_info_list, Dictionary p_action_dict, Dictionary p_task_dict, Dictionary p_unigoal_dict, TypedArray<Callable> p_multigoal_methods);
+	static int add_nodes_and_edges(PlannerSolutionGraph &p_graph, int p_parent_node_id, Array p_children_node_info_list, Dictionary p_action_dict, Dictionary p_task_dict, Dictionary p_unigoal_dict, TypedArray<Callable> p_multigoal_methods, int p_verbose = 0);
 
 	// Find first open node in successors of parent
 	static Variant find_open_node(PlannerSolutionGraph &p_graph, int p_parent_node_id);
@@ -57,7 +57,7 @@ public:
 	static void remove_descendants(PlannerSolutionGraph &p_graph, int p_node_id, bool p_also_remove_from_parent = false);
 
 	// Extract solution plan (sequence of actions) from graph
-	static Array extract_solution_plan(PlannerSolutionGraph &p_graph);
+	static Array extract_solution_plan(PlannerSolutionGraph &p_graph, int p_verbose = 0);
 	// Extract only "new" actions from graph (for replanning)
 	static Array extract_new_actions(PlannerSolutionGraph &p_graph);
 	// Execute actions directly from solution graph, returning final state

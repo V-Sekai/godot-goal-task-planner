@@ -35,7 +35,7 @@
 // Determine node type from node_info
 // Supports all planner element types: actions, tasks, unigoals (goals), and multigoals
 // Methods can return Arrays containing any of these types
-PlannerNodeType PlannerGraphOperations::get_node_type(Variant p_node_info, Dictionary p_action_dict, Dictionary p_task_dict, Dictionary p_unigoal_dict) {
+PlannerNodeType PlannerGraphOperations::get_node_type(Variant p_node_info, Dictionary p_action_dict, Dictionary p_task_dict, Dictionary p_unigoal_dict, int p_verbose) {
 	// Check if it's a String - look up in dictionaries
 	if (p_node_info.get_type() == Variant::STRING) {
 		String node_str = p_node_info;
@@ -61,7 +61,7 @@ PlannerNodeType PlannerGraphOperations::get_node_type(Variant p_node_info, Dicti
 		if (dict.has("item")) {
 			// Unwrap and recursively check the item
 			Variant unwrapped_item = dict["item"];
-			return get_node_type(unwrapped_item, p_action_dict, p_task_dict, p_unigoal_dict);
+			return get_node_type(unwrapped_item, p_action_dict, p_task_dict, p_unigoal_dict, p_verbose);
 		}
 		// If it's a dictionary without "item", it's not a valid node (multigoals are Arrays)
 		return PlannerNodeType::TYPE_ROOT;
@@ -91,7 +91,7 @@ PlannerNodeType PlannerGraphOperations::get_node_type(Variant p_node_info, Dicti
 		// they are correctly classified as ACTION nodes, not TASK nodes
 		if (p_action_dict.has(first_str)) {
 			// Debug: Log classification for action names
-			if (first_str.begins_with("action_")) {
+			if (p_verbose >= 3 && first_str.begins_with("action_")) {
 				print_line(vformat("[GET_NODE_TYPE] Returning TYPE_ACTION (1) for '%s'", first_str));
 			}
 			return PlannerNodeType::TYPE_ACTION;
@@ -100,7 +100,7 @@ PlannerNodeType PlannerGraphOperations::get_node_type(Variant p_node_info, Dicti
 		// Check task method dictionary
 		if (p_task_dict.has(first_str)) {
 			// Debug: Log if action name is incorrectly in task_dict
-			if (first_str.begins_with("action_")) {
+			if (p_verbose >= 2 && first_str.begins_with("action_")) {
 				print_line(vformat("[GET_NODE_TYPE] WARNING: '%s' is in task_dict but should be in action_dict! Returning TYPE_TASK", first_str));
 			}
 			return PlannerNodeType::TYPE_TASK;
@@ -118,16 +118,16 @@ PlannerNodeType PlannerGraphOperations::get_node_type(Variant p_node_info, Dicti
 // Add nodes and edges to solution graph
 // p_children_node_info_list can contain any planner elements: goals (unigoals), PlannerMultigoal, tasks, and actions
 // Methods return Arrays of these elements, which are processed here
-int PlannerGraphOperations::add_nodes_and_edges(PlannerSolutionGraph &p_graph, int p_parent_node_id, Array p_children_node_info_list, Dictionary p_action_dict, Dictionary p_task_dict, Dictionary p_unigoal_dict, TypedArray<Callable> p_multigoal_methods) {
+int PlannerGraphOperations::add_nodes_and_edges(PlannerSolutionGraph &p_graph, int p_parent_node_id, Array p_children_node_info_list, Dictionary p_action_dict, Dictionary p_task_dict, Dictionary p_unigoal_dict, TypedArray<Callable> p_multigoal_methods, int p_verbose) {
 	int current_id = p_graph.next_node_id - 1;
 
 	for (int i = 0; i < p_children_node_info_list.size(); i++) {
 		Variant child_info = p_children_node_info_list[i];
 		// Determine type of planner element (action, task, unigoal, multigoal)
-		PlannerNodeType node_type = get_node_type(child_info, p_action_dict, p_task_dict, p_unigoal_dict);
+		PlannerNodeType node_type = get_node_type(child_info, p_action_dict, p_task_dict, p_unigoal_dict, p_verbose);
 
 		// Debug: Log node type determination for action arrays
-		if (child_info.get_type() == Variant::ARRAY) {
+		if (p_verbose >= 3 && child_info.get_type() == Variant::ARRAY) {
 			Array arr = child_info;
 			if (!arr.is_empty() && arr[0].get_type() == Variant::STRING) {
 				String first_str = arr[0];
@@ -162,13 +162,15 @@ int PlannerGraphOperations::add_nodes_and_edges(PlannerSolutionGraph &p_graph, i
 					Variant methods_var = p_task_dict[task_name];
 					available_methods = TypedArray<Callable>(methods_var);
 					// Debug: Verify we got the right methods
-					if (available_methods.size() > 0) {
+					if (p_verbose >= 3 && available_methods.size() > 0) {
 						Callable first_method = available_methods[0];
 						String method_name = first_method.get_method();
 						print_line(vformat("[ADD_NODES] Task '%s' has %d methods, first method: '%s'", task_name, available_methods.size(), method_name));
 					}
 				} else {
-					print_line(vformat("[ADD_NODES] WARNING: Task '%s' not found in task_dict (has %d keys)", task_name, p_task_dict.keys().size()));
+					if (p_verbose >= 2) {
+						print_line(vformat("[ADD_NODES] WARNING: Task '%s' not found in task_dict (has %d keys)", task_name, p_task_dict.keys().size()));
+					}
 				}
 			}
 		} else if (node_type == PlannerNodeType::TYPE_UNIGOAL) {
@@ -386,8 +388,10 @@ void PlannerGraphOperations::do_get_descendants(PlannerSolutionGraph &p_graph, T
 	}
 }
 
-Array PlannerGraphOperations::extract_solution_plan(PlannerSolutionGraph &p_graph) {
-	print_line("[EXTRACT_SOLUTION_PLAN] Starting extract_solution_plan()");
+Array PlannerGraphOperations::extract_solution_plan(PlannerSolutionGraph &p_graph, int p_verbose) {
+	if (p_verbose >= 3) {
+		print_line("[EXTRACT_SOLUTION_PLAN] Starting extract_solution_plan()");
+	}
 	Array plan;
 	Array to_visit;
 	to_visit.push_back(0); // Start from root
@@ -396,11 +400,15 @@ Array PlannerGraphOperations::extract_solution_plan(PlannerSolutionGraph &p_grap
 	// Optimize: Precompute parent map once instead of calling find_predecessor() repeatedly
 	// This follows the Nostradamus Distributor principle: reduce expensive indirect operations
 	// in tight loops (http://www.emulators.com/docs/nx25_nostradamus.htm)
-	print_line("[EXTRACT_SOLUTION_PLAN] Building parent map...");
+	if (p_verbose >= 3) {
+		print_line("[EXTRACT_SOLUTION_PLAN] Building parent map...");
+	}
 	Dictionary parent_map; // child_id -> parent_id
 	Dictionary graph_dict = p_graph.get_graph();
 	Array graph_keys = graph_dict.keys();
-	print_line(vformat("[EXTRACT_SOLUTION_PLAN] Graph has %d nodes", graph_keys.size()));
+	if (p_verbose >= 3) {
+		print_line(vformat("[EXTRACT_SOLUTION_PLAN] Graph has %d nodes", graph_keys.size()));
+	}
 
 	int parent_map_count = 0;
 	for (int i = 0; i < graph_keys.size(); i++) {
@@ -419,7 +427,9 @@ Array PlannerGraphOperations::extract_solution_plan(PlannerSolutionGraph &p_grap
 			// Skip self-references (nodes that have themselves in their successors list)
 			// This is a graph construction bug, but we can work around it here
 			if (child_id == parent_id) {
-				print_line(vformat("[EXTRACT_SOLUTION_PLAN] WARNING: Node %d has itself in successors list, skipping", parent_id));
+				if (p_verbose >= 2) {
+					print_line(vformat("[EXTRACT_SOLUTION_PLAN] WARNING: Node %d has itself in successors list, skipping", parent_id));
+				}
 				continue;
 			}
 			// In a proper tree, each node should have exactly one parent
@@ -431,62 +441,78 @@ Array PlannerGraphOperations::extract_solution_plan(PlannerSolutionGraph &p_grap
 				// Node already has a parent - this indicates a graph construction bug
 				// The solution graph should be a tree where each node has exactly one parent
 				int existing_parent = parent_map[child_id];
-				print_line(vformat("[EXTRACT_SOLUTION_PLAN] WARNING: Node %d appears in multiple successors lists (parents: %d and %d). This is a graph construction bug. Using first parent (%d).",
-						child_id, existing_parent, parent_id, existing_parent));
+				if (p_verbose >= 2) {
+					print_line(vformat("[EXTRACT_SOLUTION_PLAN] WARNING: Node %d appears in multiple successors lists (parents: %d and %d). This is a graph construction bug. Using first parent (%d).",
+							child_id, existing_parent, parent_id, existing_parent));
+				}
 				// Keep the first parent we encountered (don't change it)
 				// This is more conservative than assuming smaller IDs are closer to root
 			}
 		}
 	}
-	print_line(vformat("[EXTRACT_SOLUTION_PLAN] Parent map built with %d entries", parent_map_count));
+	if (p_verbose >= 3) {
+		print_line(vformat("[EXTRACT_SOLUTION_PLAN] Parent map built with %d entries", parent_map_count));
 
-	// Debug: Print parent map for nodes 0-6 and check each node's successors
-	print_line("[EXTRACT_SOLUTION_PLAN] Parent map contents:");
-	for (int i = 0; i <= 6; i++) {
-		if (parent_map.has(i)) {
-			print_line(vformat("[EXTRACT_SOLUTION_PLAN]   node %d -> parent %d", i, parent_map[i]));
-		}
-		// Also check each node's successors to see why parent map is wrong
-		Dictionary node = p_graph.get_node(i);
-		if (!node.is_empty() && node.has("successors")) {
-			TypedArray<int> succs = node["successors"];
-			print_line(vformat("[EXTRACT_SOLUTION_PLAN]   node %d has successors: %s", i, String(Variant(succs))));
+		// Debug: Print parent map for nodes 0-6 and check each node's successors
+		print_line("[EXTRACT_SOLUTION_PLAN] Parent map contents:");
+		for (int i = 0; i <= 6; i++) {
+			if (parent_map.has(i)) {
+				print_line(vformat("[EXTRACT_SOLUTION_PLAN]   node %d -> parent %d", i, parent_map[i]));
+			}
+			// Also check each node's successors to see why parent map is wrong
+			Dictionary node = p_graph.get_node(i);
+			if (!node.is_empty() && node.has("successors")) {
+				TypedArray<int> succs = node["successors"];
+				print_line(vformat("[EXTRACT_SOLUTION_PLAN]   node %d has successors: %s", i, String(Variant(succs))));
+			}
 		}
 	}
 
 	// Debug: Check if root node exists and is valid
 	Dictionary root_node = p_graph.get_node(0);
 	if (root_node.is_empty()) {
-		print_line("[EXTRACT_SOLUTION_PLAN] ERROR: Root node (0) is empty!");
+		if (p_verbose >= 1) {
+			print_line("[EXTRACT_SOLUTION_PLAN] ERROR: Root node (0) is empty!");
+		}
 		return plan;
 	}
-	print_line(vformat("[EXTRACT_SOLUTION_PLAN] Root node (0) exists, has type=%s, status=%s, successors=%s",
-			root_node.has("type") ? itos(root_node["type"]) : "NO_TYPE",
-			root_node.has("status") ? itos(root_node["status"]) : "NO_STATUS",
-			root_node.has("successors") ? String(Variant(root_node["successors"])) : "NO_SUCCESSORS"));
-	print_line(vformat("[EXTRACT_SOLUTION_PLAN] Starting traversal, to_visit.size()=%d", to_visit.size()));
+	if (p_verbose >= 3) {
+		print_line(vformat("[EXTRACT_SOLUTION_PLAN] Root node (0) exists, has type=%s, status=%s, successors=%s",
+				root_node.has("type") ? itos(root_node["type"]) : "NO_TYPE",
+				root_node.has("status") ? itos(root_node["status"]) : "NO_STATUS",
+				root_node.has("successors") ? String(Variant(root_node["successors"])) : "NO_SUCCESSORS"));
+		print_line(vformat("[EXTRACT_SOLUTION_PLAN] Starting traversal, to_visit.size()=%d", to_visit.size()));
+	}
 
 	while (!to_visit.is_empty()) {
 		int node_id = to_visit.pop_back();
-		print_line(vformat("[EXTRACT_SOLUTION_PLAN] Popped node %d from to_visit (remaining=%d)", node_id, to_visit.size()));
+		if (p_verbose >= 3) {
+			print_line(vformat("[EXTRACT_SOLUTION_PLAN] Popped node %d from to_visit (remaining=%d)", node_id, to_visit.size()));
+		}
 
 		// Skip if already visited
 		if (visited.has(node_id)) {
-			print_line(vformat("[EXTRACT_SOLUTION_PLAN] Node %d already visited, skipping", node_id));
+			if (p_verbose >= 3) {
+				print_line(vformat("[EXTRACT_SOLUTION_PLAN] Node %d already visited, skipping", node_id));
+			}
 			continue;
 		}
 		visited.push_back(node_id);
-		print_line(vformat("[EXTRACT_SOLUTION_PLAN] Processing node %d", node_id));
+		if (p_verbose >= 3) {
+			print_line(vformat("[EXTRACT_SOLUTION_PLAN] Processing node %d", node_id));
+		}
 
 		Dictionary node = p_graph.get_node(node_id);
 
 		// Validate node exists and has required fields
 		if (node.is_empty() || !node.has("type") || !node.has("status")) {
 			// Skip invalid nodes (may have been removed during backtracking)
-			print_line(vformat("[EXTRACT_SOLUTION_PLAN] Node %d is invalid (empty=%s, has_type=%s, has_status=%s), skipping",
-					node_id, node.is_empty() ? "YES" : "NO",
-					node.has("type") ? "YES" : "NO",
-					node.has("status") ? "YES" : "NO"));
+			if (p_verbose >= 2) {
+				print_line(vformat("[EXTRACT_SOLUTION_PLAN] Node %d is invalid (empty=%s, has_type=%s, has_status=%s), skipping",
+						node_id, node.is_empty() ? "YES" : "NO",
+						node.has("type") ? "YES" : "NO",
+						node.has("status") ? "YES" : "NO"));
+			}
 			continue;
 		}
 
@@ -509,11 +535,13 @@ Array PlannerGraphOperations::extract_solution_plan(PlannerSolutionGraph &p_grap
 				}
 			}
 			// Debug: Log action extraction
-			Array info_arr = info;
-			if (!info_arr.is_empty() && info_arr[0].get_type() == Variant::STRING) {
-				String action_name = info_arr[0];
-				if (action_name.begins_with("action_")) {
-					print_line(vformat("[EXTRACT_SOLUTION_PLAN] Extracting action node %d: %s", node_id, String(Variant(info))));
+			if (p_verbose >= 3) {
+				Array info_arr = info;
+				if (!info_arr.is_empty() && info_arr[0].get_type() == Variant::STRING) {
+					String action_name = info_arr[0];
+					if (action_name.begins_with("action_")) {
+						print_line(vformat("[EXTRACT_SOLUTION_PLAN] Extracting action node %d: %s", node_id, String(Variant(info))));
+					}
 				}
 			}
 			plan.push_back(info);
@@ -528,37 +556,51 @@ Array PlannerGraphOperations::extract_solution_plan(PlannerSolutionGraph &p_grap
 		// Debug: Log why we're visiting or skipping successors
 		bool should_visit_successors = (node_status == static_cast<int>(PlannerNodeStatus::STATUS_CLOSED) ||
 				node_id == 0); // Root is NA status, but we need to visit it
-		print_line(vformat("[EXTRACT_SOLUTION_PLAN] Node %d: type=%d, status=%d, should_visit_successors=%s",
-				node_id, node_type, node_status, should_visit_successors ? "YES" : "NO"));
+		if (p_verbose >= 3) {
+			print_line(vformat("[EXTRACT_SOLUTION_PLAN] Node %d: type=%d, status=%d, should_visit_successors=%s",
+					node_id, node_type, node_status, should_visit_successors ? "YES" : "NO"));
+		}
 		if (should_visit_successors) {
 			// Validate successors field exists
 			if (!node.has("successors")) {
-				print_line(vformat("[EXTRACT_SOLUTION_PLAN] Node %d has no successors field, skipping", node_id));
+				if (p_verbose >= 2) {
+					print_line(vformat("[EXTRACT_SOLUTION_PLAN] Node %d has no successors field, skipping", node_id));
+				}
 				continue; // Skip nodes without successors field
 			}
 			TypedArray<int> successors = node["successors"];
-			print_line(vformat("[EXTRACT_SOLUTION_PLAN] Node %d has %d successors: %s", node_id, successors.size(), String(Variant(successors))));
+			if (p_verbose >= 3) {
+				print_line(vformat("[EXTRACT_SOLUTION_PLAN] Node %d has %d successors: %s", node_id, successors.size(), String(Variant(successors))));
+			}
 			// Add successors in reverse order to maintain DFS order (last added = first visited)
 			// This ensures we process tasks in the order they appear in the todo list
 			for (int i = successors.size() - 1; i >= 0; i--) {
 				int succ_id = successors[i];
-				print_line(vformat("[EXTRACT_SOLUTION_PLAN] Checking successor %d of node %d", succ_id, node_id));
+				if (p_verbose >= 3) {
+					print_line(vformat("[EXTRACT_SOLUTION_PLAN] Checking successor %d of node %d", succ_id, node_id));
+				}
 				// Only visit if not already visited
 				if (!visited.has(succ_id)) {
 					// Verify this successor is actually in its parent's successors list
 					// Use O(1) lookup from precomputed parent_map instead of O(n) find_predecessor()
 					int parent_of_succ = parent_map.get(succ_id, -1);
-					print_line(vformat("[EXTRACT_SOLUTION_PLAN] Successor %d: parent_from_map=%d, expected_parent=%d", succ_id, parent_of_succ, node_id));
+					if (p_verbose >= 3) {
+						print_line(vformat("[EXTRACT_SOLUTION_PLAN] Successor %d: parent_from_map=%d, expected_parent=%d", succ_id, parent_of_succ, node_id));
+					}
 					if (parent_of_succ == node_id) {
 						// This successor is actually a child of the current node
-						print_line(vformat("[EXTRACT_SOLUTION_PLAN] Adding successor %d to to_visit", succ_id));
+						if (p_verbose >= 3) {
+							print_line(vformat("[EXTRACT_SOLUTION_PLAN] Adding successor %d to to_visit", succ_id));
+						}
 						Dictionary succ_node = p_graph.get_node(succ_id);
 						// Validate successor node exists and has required fields
 						if (succ_node.is_empty() || !succ_node.has("status")) {
 							// Skip invalid successor nodes (may have been removed)
-							print_line(vformat("[EXTRACT_SOLUTION_PLAN] Successor %d is invalid (empty=%s, has_status=%s), skipping",
-									succ_id, succ_node.is_empty() ? "YES" : "NO",
-									succ_node.has("status") ? "YES" : "NO"));
+							if (p_verbose >= 2) {
+								print_line(vformat("[EXTRACT_SOLUTION_PLAN] Successor %d is invalid (empty=%s, has_status=%s), skipping",
+										succ_id, succ_node.is_empty() ? "YES" : "NO",
+										succ_node.has("status") ? "YES" : "NO"));
+							}
 							continue;
 						}
 						int succ_status = succ_node["status"];
