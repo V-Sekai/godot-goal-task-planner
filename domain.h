@@ -45,13 +45,10 @@ class PlannerTaskMetadata : public Resource {
 	GDCLASS(PlannerTaskMetadata, Resource);
 
 private:
-	String task_id;
 	PlannerTimeRange time_range;
 
 public:
 	PlannerTaskMetadata();
-	void set_task_id(String p_id) { task_id = p_id; }
-	String get_task_id() const { return task_id; }
 	void set_time_range(PlannerTimeRange p_time_range) { time_range = p_time_range; }
 	PlannerTimeRange get_time_range() const { return time_range; }
 	// p_physical_time is in absolute microseconds since Unix epoch
@@ -59,8 +56,6 @@ public:
 
 protected:
 	static void _bind_methods() {
-		ClassDB::bind_method(D_METHOD("set_task_id", "id"), &PlannerTaskMetadata::set_task_id);
-		ClassDB::bind_method(D_METHOD("get_task_id"), &PlannerTaskMetadata::get_task_id);
 		ClassDB::bind_method(D_METHOD("update_metadata", "physical_time"), &PlannerTaskMetadata::update_metadata);
 	}
 };
@@ -99,9 +94,13 @@ public:
 	PlannerDomain();
 
 public:
+	// Add actions to domain. Actions return false or a new state Dictionary.
 	void add_actions(TypedArray<Callable> p_actions);
+	// Add task methods. Methods return false or an Array of planner elements (goals, PlannerMultigoal, tasks, actions).
 	void add_task_methods(String p_task_name, TypedArray<Callable> p_methods);
+	// Add unigoal methods. Methods return false or an Array of planner elements (goals, PlannerMultigoal, tasks, actions).
 	void add_unigoal_methods(String p_task_name, TypedArray<Callable> p_methods);
+	// Add multigoal methods. Methods return false or an Array of planner elements (goals, PlannerMultigoal, tasks, actions).
 	void add_multigoal_methods(TypedArray<Callable> p_methods);
 
 public:

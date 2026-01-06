@@ -43,9 +43,9 @@ enum class PlannerNodeType {
 	TYPE_ROOT = 0, // :D - Root node
 	TYPE_ACTION = 1, // :A - Action node
 	TYPE_TASK = 2, // :T - Task node
-	TYPE_GOAL = 3, // :G - Goal node
+	TYPE_UNIGOAL = 3, // :G - Unigoal node
 	TYPE_MULTIGOAL = 4, // :M - MultiGoal node
-	TYPE_VERIFY_GOAL = 5, // :VG - Verify Goal node
+	TYPE_VERIFY_GOAL = 5, // :VG - Verify Unigoal node
 	TYPE_VERIFY_MULTIGOAL = 6 // :VM - Verify MultiGoal node
 };
 
@@ -56,6 +56,8 @@ enum class PlannerNodeStatus {
 	STATUS_FAILED = 2, // :F - Failed
 	STATUS_NOT_APPLICABLE = 3 // :NA - Not applicable
 };
+
+class PlannerPlan; // Forward declaration
 
 class PlannerSolutionGraph {
 public:
@@ -79,6 +81,7 @@ public:
 		root_node["start_time"] = Variant(static_cast<int64_t>(0));
 		root_node["end_time"] = Variant(static_cast<int64_t>(0));
 		root_node["duration"] = Variant(static_cast<int64_t>(0));
+		root_node["tag"] = Variant("old"); // Root is always "old"
 		graph[0] = root_node;
 		next_node_id = 1;
 	}
@@ -98,12 +101,16 @@ public:
 		node["start_time"] = Variant(static_cast<int64_t>(0));
 		node["end_time"] = Variant(static_cast<int64_t>(0));
 		node["duration"] = Variant(static_cast<int64_t>(0));
+		node["tag"] = Variant("new"); // New nodes default to "new"
 		graph[node_id] = node;
 		return node_id;
 	}
 
 	// Get node by ID
 	Dictionary get_node(int p_node_id) const {
+		if (!graph.has(p_node_id)) {
+			return Dictionary(); // Return empty dictionary if node doesn't exist
+		}
 		return graph[p_node_id];
 	}
 
@@ -136,7 +143,8 @@ public:
 	// Save state snapshot at node
 	void save_state_snapshot(int p_node_id, Dictionary p_state) {
 		Dictionary node = graph[p_node_id];
-		node["state"] = p_state.duplicate();
+		// CRITICAL: Use deep duplicate to ensure nested dictionaries are copied
+		node["state"] = p_state.duplicate(true);
 		graph[p_node_id] = node;
 	}
 
@@ -147,6 +155,26 @@ public:
 		if (state.is_empty()) {
 			return Dictionary();
 		}
-		return state.duplicate();
+		// CRITICAL: Use deep duplicate to ensure nested dictionaries are copied
+		return state.duplicate(true);
+	}
+
+	// Set node tag ("new" or "old")
+	void set_node_tag(int p_node_id, const String &p_tag) {
+		Dictionary node = graph[p_node_id];
+		node["tag"] = Variant(p_tag);
+		graph[p_node_id] = node;
+	}
+
+	// Get node tag
+	String get_node_tag(int p_node_id) const {
+		if (!graph.has(p_node_id)) {
+			return String("new"); // Default to "new" if node doesn't exist
+		}
+		Dictionary node = graph[p_node_id];
+		if (node.has("tag")) {
+			return node["tag"];
+		}
+		return String("new"); // Default to "new" if not set
 	}
 };

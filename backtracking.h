@@ -49,5 +49,6 @@ public:
 	};
 
 	// Backtrack from a failed node
-	static BacktrackResult backtrack(PlannerSolutionGraph p_graph, int p_parent_node_id, int p_current_node_id, Dictionary p_state, TypedArray<Variant> p_blacklisted_commands);
+	// p_verbose: verbosity level (0=none, 1=basic, 2=detailed, 3=very detailed)
+	static BacktrackResult backtrack(PlannerSolutionGraph p_graph, int p_parent_node_id, int p_current_node_id, Dictionary p_state, TypedArray<Variant> p_blacklisted_commands, int p_verbose = 0);
 };

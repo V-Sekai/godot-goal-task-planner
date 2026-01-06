@@ -53,11 +53,19 @@ public:
 	static int find_predecessor(PlannerSolutionGraph &p_graph, int p_node_id);
 
 	// Remove descendants of a node
-	static void remove_descendants(PlannerSolutionGraph &p_graph, int p_node_id);
+	// If p_also_remove_from_parent is true, also remove the node itself from its parent's successors list
+	static void remove_descendants(PlannerSolutionGraph &p_graph, int p_node_id, bool p_also_remove_from_parent = false);
 
 	// Extract solution plan (sequence of actions) from graph
 	static Array extract_solution_plan(PlannerSolutionGraph &p_graph);
+	// Extract only "new" actions from graph (for replanning)
+	static Array extract_new_actions(PlannerSolutionGraph &p_graph);
+	// Execute actions directly from solution graph, returning final state
+	// Takes initial state and domain, executes actions as it traverses the graph
+	// Uses domain->action_dictionary to look up action callables
+	static Dictionary execute_solution_graph(PlannerSolutionGraph &p_graph, Dictionary p_initial_state, Ref<PlannerDomain> p_domain);
 
 private:
+	// Helper for remove_descendants - collects all descendant node IDs
 	static void do_get_descendants(PlannerSolutionGraph &p_graph, TypedArray<int> p_current_nodes, TypedArray<int> &p_visited, TypedArray<int> &p_result);
 };

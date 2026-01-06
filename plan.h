@@ -39,6 +39,7 @@
 
 #include "modules/goal_task_planner/multigoal.h"
 #include "modules/goal_task_planner/planner_metadata.h"
+#include "modules/goal_task_planner/planner_result.h"
 #include "modules/goal_task_planner/planner_time_range.h"
 #include "modules/goal_task_planner/solution_graph.h"
 #include "modules/goal_task_planner/stn_solver.h"
@@ -50,70 +51,52 @@ class PlannerPlan : public Resource {
 	GDCLASS(PlannerPlan, Resource);
 
 	int verbose = 0;
-	TypedArray<PlannerDomain> domains;
 	Ref<PlannerDomain> current_domain;
 	PlannerTimeRange time_range; // Added for temporal
 	PlannerSolutionGraph solution_graph; // Solution graph for explicit backtracking
 	TypedArray<Variant> blacklisted_commands; // Blacklisted commands/actions
 	PlannerSTNSolver stn; // STN solver for temporal constraint validation
 	PlannerSTNSolver::Snapshot stn_snapshot; // STN snapshot for backtracking
+	Array original_todo_list; // Store original todo_list to check if all tasks completed
 
-	// If verify_goals is True, then whenever the planner uses a method m to refine
-	// unigoal or multigoal, it will insert a "verification" task into the
-	// current partial plan. If verify_goals is False, the planner won't insert any
-	// verification tasks into the plan.
-	//
-	// The purpose of the verification task is to raise an exception if the
-	// refinement produced by m doesn't achieve the goal or multigoal that it is
-	// supposed to achieve. The verification task won't insert anything into the
-	// final plan; it just will verify whether m did what it was supposed to do.
-	bool verify_goals = true;
 	int max_depth = 10; // Maximum recursion depth to prevent infinite loops
+	int iterations = 0; // Track number of planning iterations
+
+	// VSIDS-style method activity tracking (following Chuffed's proven approach)
+	Dictionary method_activities; // Track activity scores: method_id -> double
+	double activity_var_inc = 1.0; // Increment value (grows over time via activity inflation)
+	int activity_bump_count = 0; // Track bumps to trigger decay
+	static const int ACTIVITY_DECAY_INTERVAL = 100; // Decay every N bumps
+	// Note: No activity_decay_factor - we use activity inflation (var_inc *= 1.05) instead
+	TypedArray<String> rewarded_methods_this_solve; // Track which methods already rewarded this solve
+
 	static String _item_to_string(Variant p_item);
-	Variant _apply_task_and_continue(Dictionary p_state, Callable p_command, Array p_arguments);
+	static Dictionary _deep_copy_state(Dictionary p_state); // Manual deep copy for state dictionaries
+
+	// VSIDS activity management
+	String _method_to_id(Callable p_method) const;
+	double _get_method_activity(Callable p_method) const;
+	void _bump_method_activity(Callable p_method);
+	void _decay_method_activities();
+	void _bump_conflict_path_activities(int p_fail_node_id);
+	void _reward_successful_methods(int p_plan_length);
+	void _reward_method_immediate(Callable p_method, int p_current_action_count);
+	int _count_closed_actions(); // Count closed action nodes in solution graph
+
+	// Method selection with activity scoring
+	struct MethodCandidate {
+		Callable method;
+		Array subtasks;
+		double score;
+	};
+	MethodCandidate _select_best_method(TypedArray<Callable> p_methods, Dictionary p_state, Variant p_node_info, Variant p_args, int p_node_type);
 	// Graph-based planning methods
 	Dictionary _planning_loop_recursive(int p_parent_node_id, Dictionary p_state, int p_iter);
 	bool _is_command_blacklisted(Variant p_command) const;
 	void _blacklist_command(Variant p_command);
 	void _restore_stn_from_node(int p_node_id);
+	int _post_failure_modify(int p_fail_node_id, Dictionary p_state);
 
-	// Goal solver methods (moved from PlannerGoalSolver)
-	// Constraining factor for a goal/task - two optimization strategies:
-	// 1. Method count: fewer total methods = more constraining
-	// 2. Applicable method count: fewer applicable methods in current state = more constraining
-	struct ConstrainingFactor {
-		int total_method_count; // Total methods available for this unigoal
-		int applicable_method_count; // Methods actually applicable in current state
-		bool has_temporal_constraints;
-
-		ConstrainingFactor() :
-				total_method_count(0), applicable_method_count(0), has_temporal_constraints(false) {}
-		ConstrainingFactor(int p_total, int p_applicable, bool p_temporal) :
-				total_method_count(p_total), applicable_method_count(p_applicable), has_temporal_constraints(p_temporal) {}
-
-		// Compare: more constraining = fewer applicable methods, or has temporal constraints
-		// Use applicable_method_count as primary factor (more accurate optimization)
-		bool operator<(const ConstrainingFactor &p_other) const {
-			if (has_temporal_constraints != p_other.has_temporal_constraints) {
-				return has_temporal_constraints; // Temporal constraints make it more constraining
-			}
-			return applicable_method_count < p_other.applicable_method_count; // Fewer applicable methods = more constraining
-		}
-	};
-
-	// Internal storage for goal ordering
-	struct GoalWithFactor {
-		Variant goal;
-		ConstrainingFactor factor;
-
-		GoalWithFactor() :
-				goal(), factor() {}
-		GoalWithFactor(const Variant &p_goal, const ConstrainingFactor &p_factor) :
-				goal(p_goal), factor(p_factor) {}
-	};
-
-	ConstrainingFactor _calculate_constraining_factor(const Variant &p_goal, const Dictionary &p_state, const Dictionary &p_unigoal_method_dict) const;
-	PlannerMetadata _extract_temporal_constraints(const Variant &p_item) const;
 	PlannerMetadata _extract_metadata(const Variant &p_item) const; // Extract full PlannerMetadata (temporal + entity requirements)
 
 	// Entity matching helper (used during planning when PlannerMetadata has entity requirements)
@@ -121,31 +104,46 @@ class PlannerPlan : public Resource {
 	bool _validate_entity_requirements(const Dictionary &p_state, const PlannerMetadata &p_metadata) const;
 
 public:
+	// Constructor: Initialize all state to defaults
+	PlannerPlan();
+	// Destructor: Clean up all state on object destruction (C++ needs explicit cleanup, unlike functional Elixir)
+	~PlannerPlan();
 	// Temporal constraint methods (public for testing)
 	Variant _attach_temporal_constraints(const Variant &p_item, const Dictionary &p_temporal_constraints);
 	Dictionary _get_temporal_constraints(const Variant &p_item) const;
 	bool _has_temporal_constraints(const Variant &p_item) const;
-	Array _optimize_unigoal_order(const Array &p_unigoals, const Dictionary &p_state, const Dictionary &p_unigoal_method_dict);
+
+	// Unified metadata attachment method (public API)
+	// Attach temporal and/or entity constraints to any planner element (action, task, goal, multigoal)
+	// p_temporal: Dictionary with optional keys: "duration", "start_time", "end_time" (all int64_t in microseconds)
+	// p_entity: Dictionary with either:
+	//   - {"type": String, "capabilities": Array} (convenience format)
+	//   - {"requires_entities": Array} (full format with PlannerEntityRequirement dictionaries)
+	Variant attach_metadata(const Variant &p_item, const Dictionary &p_temporal_constraints = Dictionary(), const Dictionary &p_entity_constraints = Dictionary());
 	int get_verbose() const;
 	void set_verbose(int p_level);
-	TypedArray<PlannerDomain> get_domains() const;
-	void set_domains(TypedArray<PlannerDomain> p_domain);
 	Ref<PlannerDomain> get_current_domain() const;
 	void set_current_domain(Ref<PlannerDomain> p_current_domain) { current_domain = p_current_domain; }
-	void set_verify_goals(bool p_value);
-	bool get_verify_goals() const;
 	void set_max_depth(int p_max_depth);
 	int get_max_depth() const;
-	Variant find_plan(Dictionary p_state, Array p_todo_list);
-	Dictionary run_lazy_lookahead(Dictionary p_state, Array p_todo_list, int p_max_tries = 10);
+	Ref<PlannerResult> find_plan(Dictionary p_state, Array p_todo_list);
+	Ref<PlannerResult> run_lazy_lookahead(Dictionary p_state, Array p_todo_list, int p_max_tries = 10);
 	// Graph-based lazy refinement (Elixir-style)
-	Dictionary run_lazy_refineahead(Dictionary p_state, Array p_todo_list);
+	Ref<PlannerResult> run_lazy_refineahead(Dictionary p_state, Array p_todo_list);
 	// Temporal methods
-	String generate_plan_id();
 	PlannerTimeRange get_time_range() const { return time_range; }
 	void set_time_range(PlannerTimeRange p_time_range) { time_range = p_time_range; }
-	Dictionary submit_operation(Dictionary p_operation);
-	Dictionary get_global_state();
+
+	// Public API methods
+	void blacklist_command(Variant p_command);
+	int get_iterations() const { return iterations; }
+	Dictionary get_method_activities() const; // Get VSIDS activity scores for testing
+	void reset_vsids_activity(); // Reset VSIDS activity tracking (clears all activity scores)
+	void reset(); // Reset all planner state for complete test isolation
+	static Dictionary deep_copy_state(Dictionary p_state); // Public deep copy for test isolation
+	Array simulate(Ref<PlannerResult> p_result, Dictionary p_state, int p_start_ind = 0);
+	Ref<PlannerResult> replan(Ref<PlannerResult> p_result, Dictionary p_state, int p_fail_node_id);
+	void load_solution_graph(Dictionary p_graph);
 
 protected:
 	static void _bind_methods();

@@ -117,6 +117,13 @@ void PlannerSTNSolver::rebuild_distance_matrix() {
 		String key = E.key;
 		Constraint constraint = E.value;
 
+		// Check for invalid constraints (empty intersection) - these indicate inconsistency
+		if (constraint.min_distance > constraint.max_distance) {
+			// Invalid constraint found - mark as inconsistent
+			consistent = false;
+			continue;
+		}
+
 		// Parse key: "from:to"
 		int colon_pos = key.find(":");
 		if (colon_pos < 0) {
@@ -133,9 +140,21 @@ void PlannerSTNSolver::rebuild_distance_matrix() {
 		}
 
 		// Set distance to max (temporal constraint: to - from <= max)
+		// In STN, constraint [min, max] means: min <= to - from <= max
+		// This translates to: distance[from][to] <= max
+		// Also need to handle min: to - from >= min means from - to <= -min
+		// So: distance[to][from] <= -min
 		int64_t current_dist = distance_matrix_internal[from_idx][to_idx];
 		if (current_dist == STN_INFINITY || constraint.max_distance < current_dist) {
 			distance_matrix_internal[from_idx][to_idx] = constraint.max_distance;
+		}
+
+		// Handle min_distance constraint: set reverse edge
+		// min <= to - from means from - to <= -min
+		int64_t reverse_dist = distance_matrix_internal[to_idx][from_idx];
+		int64_t min_reverse = -constraint.min_distance;
+		if (reverse_dist == STN_INFINITY || min_reverse < reverse_dist) {
+			distance_matrix_internal[to_idx][from_idx] = min_reverse;
 		}
 	}
 }
@@ -147,9 +166,24 @@ void PlannerSTNSolver::run_floyd_warshall() {
 		return;
 	}
 
+	// Check for invalid constraints first (empty intersections indicate inconsistency)
+	for (const KeyValue<String, Constraint> &E : constraints_map_internal) {
+		if (E.value.min_distance > E.value.max_distance) {
+			consistent = false;
+			return;
+		}
+	}
+
 	// Ensure distance matrix is built
 	if (distance_matrix_internal.size() != n) {
 		rebuild_distance_matrix();
+		// Re-check for invalid constraints after rebuild
+		for (const KeyValue<String, Constraint> &E : constraints_map_internal) {
+			if (E.value.min_distance > E.value.max_distance) {
+				consistent = false;
+				return;
+			}
+		}
 	}
 
 	// Floyd-Warshall algorithm: all-pairs shortest paths
@@ -203,6 +237,10 @@ bool PlannerSTNSolver::check_negative_cycles() const {
 }
 
 int64_t PlannerSTNSolver::add_time_point(const String &p_name) {
+	// Validate time point name is not empty
+	if (p_name.is_empty()) {
+		return -1; // Invalid time point name
+	}
 	ensure_time_point(p_name);
 	return get_time_point_index(p_name);
 }
@@ -226,6 +264,12 @@ bool PlannerSTNSolver::add_constraint(const String &p_from, const String &p_to, 
 }
 
 bool PlannerSTNSolver::add_constraint(const String &p_from, const String &p_to, const Constraint &p_constraint) {
+	// Validate time point names are not empty
+	if (p_from.is_empty() || p_to.is_empty()) {
+		consistent = false;
+		return false; // Invalid time point names
+	}
+
 	// Ensure time points exist
 	ensure_time_point(p_from);
 	ensure_time_point(p_to);
@@ -249,7 +293,14 @@ bool PlannerSTNSolver::add_constraint(const String &p_from, const String &p_to, 
 
 		// Check if intersection is empty
 		if (forward_constraint.min_distance > forward_constraint.max_distance) {
-			consistent = false;
+			// Store invalid constraint to mark inconsistency
+			constraints_map_internal[forward_key] = forward_constraint;
+			// Update reverse constraint to reflect the conflict
+			reverse_constraint = Constraint(-forward_constraint.max_distance, -forward_constraint.min_distance);
+			constraints_map_internal[reverse_key] = reverse_constraint;
+			// Rebuild and check to ensure inconsistency is detected
+			rebuild_distance_matrix();
+			run_floyd_warshall();
 			return false;
 		}
 	}
@@ -261,7 +312,14 @@ bool PlannerSTNSolver::add_constraint(const String &p_from, const String &p_to, 
 
 		// Check if intersection is empty
 		if (reverse_constraint.min_distance > reverse_constraint.max_distance) {
-			consistent = false;
+			// Store invalid constraint to mark inconsistency
+			constraints_map_internal[reverse_key] = reverse_constraint;
+			// Update forward constraint to reflect the conflict
+			forward_constraint = Constraint(-reverse_constraint.max_distance, -reverse_constraint.min_distance);
+			constraints_map_internal[forward_key] = forward_constraint;
+			// Rebuild and check to ensure inconsistency is detected
+			rebuild_distance_matrix();
+			run_floyd_warshall();
 			return false;
 		}
 	}
@@ -314,10 +372,16 @@ bool PlannerSTNSolver::has_constraint(const String &p_from, const String &p_to) 
 }
 
 void PlannerSTNSolver::check_consistency() {
+	rebuild_distance_matrix();
 	run_floyd_warshall();
 }
 
 int64_t PlannerSTNSolver::get_distance(const String &p_from, const String &p_to) const {
+	// Validate time point names are not empty
+	if (p_from.is_empty() || p_to.is_empty()) {
+		return STN_INFINITY; // Invalid time point names
+	}
+
 	int64_t from_idx = get_time_point_index(p_from);
 	int64_t to_idx = get_time_point_index(p_to);
 
@@ -333,10 +397,20 @@ int64_t PlannerSTNSolver::get_distance(const String &p_from, const String &p_to)
 }
 
 int64_t PlannerSTNSolver::get_earliest_time(const String &p_point) const {
+	// Validate time point name is not empty
+	if (p_point.is_empty()) {
+		return STN_INFINITY; // Invalid time point name
+	}
+
 	// Distance from origin (time point 0) to this point
 	// Assuming origin is at index 0, or we need to track it
 	if (time_points_list_internal.size() == 0) {
 		return 0;
+	}
+
+	// Validate time point exists
+	if (!has_time_point(p_point)) {
+		return STN_INFINITY; // Time point not found
 	}
 
 	// For now, return distance from first time point (could be origin)
@@ -345,9 +419,19 @@ int64_t PlannerSTNSolver::get_earliest_time(const String &p_point) const {
 }
 
 int64_t PlannerSTNSolver::get_latest_time(const String &p_point) const {
+	// Validate time point name is not empty
+	if (p_point.is_empty()) {
+		return STN_INFINITY; // Invalid time point name
+	}
+
 	// Latest time is negative of distance from point to origin
 	if (time_points_list_internal.size() == 0) {
 		return 0;
+	}
+
+	// Validate time point exists
+	if (!has_time_point(p_point)) {
+		return STN_INFINITY; // Time point not found
 	}
 
 	String origin = time_points_list_internal[0];
