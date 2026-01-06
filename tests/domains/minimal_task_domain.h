@@ -41,7 +41,7 @@ namespace MinimalTaskDomain {
 // Minimal action: Increment a counter
 Dictionary action_increment(Dictionary p_state, int p_amount) {
 	Dictionary new_state = p_state.duplicate(true);
-	
+
 	// Get current value
 	int current_value = 0;
 	if (new_state.has("value")) {
@@ -54,12 +54,12 @@ Dictionary action_increment(Dictionary p_state, int p_amount) {
 		value_dict["value"] = 0;
 		new_state["value"] = value_dict;
 	}
-	
+
 	// Increment
 	Dictionary value_dict = new_state["value"];
 	value_dict["value"] = current_value + p_amount;
 	new_state["value"] = value_dict;
-	
+
 	return new_state;
 }
 
@@ -79,7 +79,7 @@ public:
 	static Dictionary action_increment(Dictionary p_state, int p_amount) {
 		return MinimalTaskDomain::action_increment(p_state, p_amount);
 	}
-	
+
 	static Variant task_increment(Dictionary p_state) {
 		return MinimalTaskDomain::task_increment(p_state);
 	}
@@ -88,19 +88,18 @@ public:
 // Helper: Create minimal domain
 Ref<PlannerDomain> create_minimal_domain() {
 	Ref<PlannerDomain> domain = memnew(PlannerDomain);
-	
+
 	// Add action
 	TypedArray<Callable> actions;
 	actions.push_back(callable_mp_static(&MinimalTaskDomainCallable::action_increment));
 	domain->add_actions(actions);
-	
+
 	// Add task method
 	TypedArray<Callable> task_methods;
 	task_methods.push_back(callable_mp_static(&MinimalTaskDomainCallable::task_increment));
 	domain->add_task_methods("increment", task_methods);
-	
+
 	return domain;
 }
 
 } // namespace MinimalTaskDomain
-

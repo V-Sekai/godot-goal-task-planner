@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  minimal_task_test.h                                                  */
+/*  minimal_task_test.h                                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -47,28 +47,28 @@ TEST_CASE("[Modules][Planner][MinimalTask] Simple task with single action") {
 	plan->set_current_domain(domain);
 	plan->set_max_depth(10);
 	plan->set_verbose(1);
-	
+
 	// Create initial state with value = 0
 	Dictionary init_state;
 	Dictionary value_dict;
 	value_dict["value"] = 0;
 	init_state["value"] = value_dict;
 	Dictionary clean_init_state = PlannerPlan::deep_copy_state(init_state);
-	
+
 	// Create todo list with increment task
 	Array todo_list;
 	todo_list.push_back("increment");
-	
+
 	// Plan should succeed
 	Ref<PlannerResult> result = plan->find_plan(clean_init_state, todo_list);
-	
+
 	CHECK(result.is_valid());
 	CHECK(result->get_success());
-	
+
 	// Extract plan and verify it contains the increment action
 	Array plan_result = result->extract_plan();
 	CHECK(plan_result.size() > 0); // Should have at least one action
-	
+
 	// Verify the action is correct
 	if (plan_result.size() > 0) {
 		Array first_action = plan_result[0];
@@ -76,7 +76,7 @@ TEST_CASE("[Modules][Planner][MinimalTask] Simple task with single action") {
 		CHECK(first_action[0] == "action_increment");
 		CHECK(int(first_action[1]) == 1); // increment amount
 	}
-	
+
 	// Verify final state
 	Dictionary final_state = result->get_final_state();
 	CHECK(final_state.has("value"));
@@ -86,4 +86,3 @@ TEST_CASE("[Modules][Planner][MinimalTask] Simple task with single action") {
 }
 
 } // namespace TestMinimalTask
-

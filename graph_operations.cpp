@@ -125,15 +125,15 @@ int PlannerGraphOperations::add_nodes_and_edges(PlannerSolutionGraph &p_graph, i
 		Variant child_info = p_children_node_info_list[i];
 		// Determine type of planner element (action, task, unigoal, multigoal)
 		PlannerNodeType node_type = get_node_type(child_info, p_action_dict, p_task_dict, p_unigoal_dict);
-		
+
 		// Debug: Log node type determination for action arrays
 		if (child_info.get_type() == Variant::ARRAY) {
 			Array arr = child_info;
 			if (!arr.is_empty() && arr[0].get_type() == Variant::STRING) {
 				String first_str = arr[0];
 				if (first_str.begins_with("action_")) {
-					print_line(vformat("[ADD_NODES] After get_node_type: child_info=%s, node_type=%d (ACTION=1, TASK=2), expected=ACTION(1)", 
-						String(Variant(child_info)), static_cast<int>(node_type)));
+					print_line(vformat("[ADD_NODES] After get_node_type: child_info=%s, node_type=%d (ACTION=1, TASK=2), expected=ACTION(1)",
+							String(Variant(child_info)), static_cast<int>(node_type)));
 					if (static_cast<int>(node_type) != 1) {
 						print_line(vformat("[ADD_NODES] ERROR: node_type is %d but should be 1 (TYPE_ACTION)!", static_cast<int>(node_type)));
 					}
@@ -432,14 +432,14 @@ Array PlannerGraphOperations::extract_solution_plan(PlannerSolutionGraph &p_grap
 				// The solution graph should be a tree where each node has exactly one parent
 				int existing_parent = parent_map[child_id];
 				print_line(vformat("[EXTRACT_SOLUTION_PLAN] WARNING: Node %d appears in multiple successors lists (parents: %d and %d). This is a graph construction bug. Using first parent (%d).",
-					child_id, existing_parent, parent_id, existing_parent));
+						child_id, existing_parent, parent_id, existing_parent));
 				// Keep the first parent we encountered (don't change it)
 				// This is more conservative than assuming smaller IDs are closer to root
 			}
 		}
 	}
 	print_line(vformat("[EXTRACT_SOLUTION_PLAN] Parent map built with %d entries", parent_map_count));
-	
+
 	// Debug: Print parent map for nodes 0-6 and check each node's successors
 	print_line("[EXTRACT_SOLUTION_PLAN] Parent map contents:");
 	for (int i = 0; i <= 6; i++) {
@@ -453,7 +453,7 @@ Array PlannerGraphOperations::extract_solution_plan(PlannerSolutionGraph &p_grap
 			print_line(vformat("[EXTRACT_SOLUTION_PLAN]   node %d has successors: %s", i, String(Variant(succs))));
 		}
 	}
-	
+
 	// Debug: Check if root node exists and is valid
 	Dictionary root_node = p_graph.get_node(0);
 	if (root_node.is_empty()) {
@@ -461,9 +461,9 @@ Array PlannerGraphOperations::extract_solution_plan(PlannerSolutionGraph &p_grap
 		return plan;
 	}
 	print_line(vformat("[EXTRACT_SOLUTION_PLAN] Root node (0) exists, has type=%s, status=%s, successors=%s",
-		root_node.has("type") ? itos(root_node["type"]) : "NO_TYPE",
-		root_node.has("status") ? itos(root_node["status"]) : "NO_STATUS",
-		root_node.has("successors") ? String(Variant(root_node["successors"])) : "NO_SUCCESSORS"));
+			root_node.has("type") ? itos(root_node["type"]) : "NO_TYPE",
+			root_node.has("status") ? itos(root_node["status"]) : "NO_STATUS",
+			root_node.has("successors") ? String(Variant(root_node["successors"])) : "NO_SUCCESSORS"));
 	print_line(vformat("[EXTRACT_SOLUTION_PLAN] Starting traversal, to_visit.size()=%d", to_visit.size()));
 
 	while (!to_visit.is_empty()) {
@@ -484,9 +484,9 @@ Array PlannerGraphOperations::extract_solution_plan(PlannerSolutionGraph &p_grap
 		if (node.is_empty() || !node.has("type") || !node.has("status")) {
 			// Skip invalid nodes (may have been removed during backtracking)
 			print_line(vformat("[EXTRACT_SOLUTION_PLAN] Node %d is invalid (empty=%s, has_type=%s, has_status=%s), skipping",
-				node_id, node.is_empty() ? "YES" : "NO",
-				node.has("type") ? "YES" : "NO",
-				node.has("status") ? "YES" : "NO"));
+					node_id, node.is_empty() ? "YES" : "NO",
+					node.has("type") ? "YES" : "NO",
+					node.has("status") ? "YES" : "NO"));
 			continue;
 		}
 
@@ -528,8 +528,8 @@ Array PlannerGraphOperations::extract_solution_plan(PlannerSolutionGraph &p_grap
 		// Debug: Log why we're visiting or skipping successors
 		bool should_visit_successors = (node_status == static_cast<int>(PlannerNodeStatus::STATUS_CLOSED) ||
 				node_id == 0); // Root is NA status, but we need to visit it
-		print_line(vformat("[EXTRACT_SOLUTION_PLAN] Node %d: type=%d, status=%d, should_visit_successors=%s", 
-			node_id, node_type, node_status, should_visit_successors ? "YES" : "NO"));
+		print_line(vformat("[EXTRACT_SOLUTION_PLAN] Node %d: type=%d, status=%d, should_visit_successors=%s",
+				node_id, node_type, node_status, should_visit_successors ? "YES" : "NO"));
 		if (should_visit_successors) {
 			// Validate successors field exists
 			if (!node.has("successors")) {
@@ -557,8 +557,8 @@ Array PlannerGraphOperations::extract_solution_plan(PlannerSolutionGraph &p_grap
 						if (succ_node.is_empty() || !succ_node.has("status")) {
 							// Skip invalid successor nodes (may have been removed)
 							print_line(vformat("[EXTRACT_SOLUTION_PLAN] Successor %d is invalid (empty=%s, has_status=%s), skipping",
-								succ_id, succ_node.is_empty() ? "YES" : "NO",
-								succ_node.has("status") ? "YES" : "NO"));
+									succ_id, succ_node.is_empty() ? "YES" : "NO",
+									succ_node.has("status") ? "YES" : "NO"));
 							continue;
 						}
 						int succ_status = succ_node["status"];

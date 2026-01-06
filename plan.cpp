@@ -85,16 +85,16 @@ Ref<PlannerResult> PlannerPlan::find_plan(Dictionary p_state, Array p_todo_list)
 	// CRITICAL: Reset planning-specific state for each planning call
 	// Note: We do NOT reset configuration (verbose, max_depth, domain) - those persist across planning calls
 	// Only reset() resets everything including configuration
-	
+
 	// Reset solution graph (creates fresh graph with root node)
 	solution_graph = PlannerSolutionGraph();
-	
+
 	// Reset command blacklist
 	blacklisted_commands.clear();
-	
+
 	// Reset todo list tracking
 	original_todo_list.clear();
-	
+
 	// Reset iteration counter
 	iterations = 0;
 
@@ -108,7 +108,7 @@ Ref<PlannerResult> PlannerPlan::find_plan(Dictionary p_state, Array p_todo_list)
 	// Reset STN solver and snapshot (temporal constraint state)
 	stn.clear();
 	stn_snapshot = PlannerSTNSolver::Snapshot(); // Reset snapshot to empty state
-	
+
 	// Initialize STN solver with origin time point (planning-specific initialization)
 	stn.add_time_point("origin");
 
@@ -837,8 +837,8 @@ PlannerPlan::MethodCandidate PlannerPlan::_select_best_method(TypedArray<Callabl
 			if (verbose >= 3) {
 				print_line(vformat("_select_best_method: Calling task method with %d args", args.size()));
 				if (args.size() > 0) {
-					print_line(vformat("_select_best_method: First arg type: %d (DICT=%d), is_empty: %s", 
-						args[0].get_type(), Variant::DICTIONARY, args[0].get_type() == Variant::DICTIONARY ? "false" : "true"));
+					print_line(vformat("_select_best_method: First arg type: %d (DICT=%d), is_empty: %s",
+							args[0].get_type(), Variant::DICTIONARY, args[0].get_type() == Variant::DICTIONARY ? "false" : "true"));
 					if (args[0].get_type() == Variant::DICTIONARY) {
 						Dictionary state_dict = args[0];
 						Array keys = state_dict.keys();
@@ -877,8 +877,8 @@ PlannerPlan::MethodCandidate PlannerPlan::_select_best_method(TypedArray<Callabl
 			method.callp(argptrs, args.size(), return_value, call_error);
 			if (call_error.error != Callable::CallError::CALL_OK) {
 				if (verbose >= 2) {
-					ERR_PRINT(vformat("_select_best_method: Task method call failed with error %d (argument %d, expected %d)", 
-						call_error.error, call_error.argument, call_error.expected));
+					ERR_PRINT(vformat("_select_best_method: Task method call failed with error %d (argument %d, expected %d)",
+							call_error.error, call_error.argument, call_error.expected));
 					if (is_valid_count) {
 						ERR_PRINT(vformat("_select_best_method: Method signature expects %d arguments", method_arg_count));
 					}
@@ -1196,40 +1196,40 @@ void PlannerPlan::reset_vsids_activity() {
 void PlannerPlan::reset() {
 	// Complete reset of ALL planner state for test isolation
 	// This ensures no state pollution between tests (Elixir is functional/immutable, C++ needs explicit resets)
-	
+
 	// Reset solution graph (creates fresh graph with root node)
 	solution_graph = PlannerSolutionGraph();
-	
+
 	// Reset command blacklist
 	blacklisted_commands.clear();
-	
+
 	// Reset todo list tracking
 	original_todo_list.clear();
-	
+
 	// Reset iteration counter
 	iterations = 0;
-	
+
 	// Reset VSIDS activity tracking (all learning state)
 	method_activities.clear();
 	activity_var_inc = 1.0;
 	activity_bump_count = 0;
 	rewarded_methods_this_solve.clear();
-	
+
 	// Reset STN solver and snapshot (temporal constraint state)
 	stn.clear();
 	stn_snapshot = PlannerSTNSolver::Snapshot(); // Reset snapshot to empty state
-	
+
 	// Reset time range
 	time_range.set_start_time(0);
-	
+
 	// CRITICAL: Clear current_domain to prevent domain pollution between tests
 	// Tests must explicitly set the domain after calling reset()
 	current_domain = Ref<PlannerDomain>();
-	
+
 	// Reset configuration to defaults
 	max_depth = 10; // Default maximum recursion depth
 	verbose = 0; // Default verbosity level
-	
+
 	if (verbose >= 2) {
 		print_line("PlannerPlan::reset() - All state cleared for test isolation (including domain, STN snapshot, max_depth, verbose, and all mutable state)");
 	}
@@ -1248,16 +1248,16 @@ Ref<PlannerResult> PlannerPlan::run_lazy_refineahead(Dictionary p_state, Array p
 	// CRITICAL: Reset planning-specific state for each planning call
 	// Note: We do NOT reset configuration (verbose, max_depth, domain) - those persist across planning calls
 	// Only reset() resets everything including configuration
-	
+
 	// Reset solution graph (creates fresh graph with root node)
 	solution_graph = PlannerSolutionGraph();
-	
+
 	// Reset command blacklist
 	blacklisted_commands.clear();
-	
+
 	// Reset todo list tracking
 	original_todo_list.clear();
-	
+
 	// Reset iteration counter
 	iterations = 0;
 
@@ -1270,7 +1270,7 @@ Ref<PlannerResult> PlannerPlan::run_lazy_refineahead(Dictionary p_state, Array p
 	// Reset STN solver and snapshot (temporal constraint state)
 	stn.clear();
 	stn_snapshot = PlannerSTNSolver::Snapshot(); // Reset snapshot to empty state
-	
+
 	// Initialize STN solver with origin time point (planning-specific initialization)
 	stn.add_time_point("origin"); // Origin time point (plan start)
 
@@ -1420,7 +1420,7 @@ Dictionary PlannerPlan::_planning_loop_recursive(int p_parent_node_id, Dictionar
 					// Find tasks from original todo_list that aren't in the graph or are FAILED
 					Array tasks_to_recreate;
 					TypedArray<int> failed_root_children_to_remove;
-					
+
 					// CRITICAL FIX: If root_successors is empty but original_todo_list is not,
 					// it means tasks were never added to the graph. Recreate all tasks.
 					if (root_successors.size() == 0 && original_todo_list.size() > 0) {
@@ -1627,7 +1627,7 @@ Dictionary PlannerPlan::_planning_loop_recursive(int p_parent_node_id, Dictionar
 					actual_task_info = dict["item"];
 				}
 			}
-			
+
 			// CRITICAL: Retrieve methods dynamically from current_domain to prevent domain pollution
 			// Do NOT use stored available_methods from node - it may be stale from a previous domain
 			Array task_arr = actual_task_info;
@@ -1637,7 +1637,7 @@ Dictionary PlannerPlan::_planning_loop_recursive(int p_parent_node_id, Dictionar
 				Variant methods_var = current_domain->task_method_dictionary[task_name];
 				available_methods = TypedArray<Callable>(methods_var);
 			}
-			
+
 			if (available_methods.is_empty()) {
 				if (verbose >= 1) {
 					ERR_PRINT(vformat("PlannerPlan::_planning_loop_recursive: Task '%s' has no available methods in current domain", task_name));
@@ -1706,8 +1706,8 @@ Dictionary PlannerPlan::_planning_loop_recursive(int p_parent_node_id, Dictionar
 			}
 			if (verbose >= 3) {
 				Array state_keys = p_state.keys();
-				print_line(vformat("Task refinement: args = [state with %d keys: %s] + %d additional args from task array", 
-					state_keys.size(), _item_to_string(state_keys), task_arr.size() > 1 ? task_arr.size() - 1 : 0));
+				print_line(vformat("Task refinement: args = [state with %d keys: %s] + %d additional args from task array",
+						state_keys.size(), _item_to_string(state_keys), task_arr.size() > 1 ? task_arr.size() - 1 : 0));
 			}
 
 			MethodCandidate best = _select_best_method(available_methods, p_state, actual_task_info, args, static_cast<int>(PlannerNodeType::TYPE_TASK));
@@ -2322,7 +2322,7 @@ Dictionary PlannerPlan::_planning_loop_recursive(int p_parent_node_id, Dictionar
 				Variant methods_var = current_domain->unigoal_method_dictionary[predicate];
 				available_methods = TypedArray<Callable>(methods_var);
 			}
-			
+
 			if (available_methods.is_empty()) {
 				if (verbose >= 1) {
 					ERR_PRINT(vformat("PlannerPlan::_planning_loop_recursive: Unigoal predicate '%s' has no available methods in current domain", predicate));
@@ -2541,7 +2541,7 @@ Dictionary PlannerPlan::_planning_loop_recursive(int p_parent_node_id, Dictionar
 			if (current_domain.is_valid()) {
 				available_methods = current_domain->multigoal_method_list;
 			}
-			
+
 			if (available_methods.is_empty()) {
 				if (verbose >= 1) {
 					ERR_PRINT("PlannerPlan::_planning_loop_recursive: MultiGoal has no available methods in current domain");
@@ -3473,7 +3473,7 @@ Dictionary PlannerPlan::deep_copy_state(Dictionary p_state) {
 	for (int i = 0; i < keys.size(); i++) {
 		Variant key = keys[i];
 		Variant value = p_state[key];
-		
+
 		// Recursively copy nested dictionaries
 		if (value.get_type() == Variant::DICTIONARY) {
 			Dictionary nested_dict = value;

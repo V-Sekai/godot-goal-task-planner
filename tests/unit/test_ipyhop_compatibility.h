@@ -28,9 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-// Tests converted from IPyHOP Python tests to verify compatibility
-// Original tests: modules/goal_task_planner/thirdparty/IPyHOP/ipyhop_tests/
-
 #pragma once
 
 #include "../../domain.h"

@@ -12,7 +12,7 @@
 		<method name="extract_plan" qualifiers="const">
 			<return type="Array" />
 			<description>
-				Extracts the sequence of actions from the solution graph. Returns an [Array] of action arrays, where each action array has the format [action_name, arg1, arg2, ...]. Only successfully completed (CLOSED) actions are included in the extracted plan.
+				Extracts the sequence of actions from the solution graph. Returns an [Array] of action arrays, where each action array has the format "action_name", "arg1", "arg2", etc. Only successfully completed (CLOSED) actions are included in the extracted plan.
 			</description>
 		</method>
 		<method name="find_failed_nodes" qualifiers="const">

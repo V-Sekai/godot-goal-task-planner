@@ -319,7 +319,7 @@ Variant action_cross_east(Dictionary p_state, int p_fox_count, int p_geese_count
 	// Calculate new state - use deep copy to preserve all fields including nested structures
 	// Use duplicate(true) which works correctly for nested dictionaries in Godot (matches plan.cpp)
 	Dictionary new_state = p_state.duplicate(true);
-	
+
 	// Update nested dictionaries (create new dictionaries to ensure deep copy)
 	Dictionary west_fox_dict;
 	west_fox_dict["value"] = west_fox - p_fox_count;
@@ -386,7 +386,7 @@ Variant action_cross_west(Dictionary p_state, int p_fox_count, int p_geese_count
 	// Calculate new state - use deep copy to preserve all fields including nested structures
 	// Use duplicate(true) which works correctly for nested dictionaries in Godot (matches plan.cpp)
 	Dictionary new_state = p_state.duplicate(true);
-	
+
 	// Update nested dictionaries (create new dictionaries to ensure deep copy)
 	Dictionary west_fox_dict;
 	west_fox_dict["value"] = get_int(p_state, "west_fox") + p_fox_count;

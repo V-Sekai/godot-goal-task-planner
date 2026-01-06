@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  minimal_backtracking_domain.h                                        */
+/*  minimal_backtracking_domain.h                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -41,7 +41,7 @@ namespace MinimalBacktrackingDomain {
 // Minimal action: Increment a counter
 Dictionary action_increment(Dictionary p_state, int p_amount) {
 	Dictionary new_state = p_state.duplicate(true);
-	
+
 	// Get current value
 	int current_value = 0;
 	if (new_state.has("value")) {
@@ -54,12 +54,12 @@ Dictionary action_increment(Dictionary p_state, int p_amount) {
 		value_dict["value"] = 0;
 		new_state["value"] = value_dict;
 	}
-	
+
 	// Increment
 	Dictionary value_dict = new_state["value"];
 	value_dict["value"] = current_value + p_amount;
 	new_state["value"] = value_dict;
-	
+
 	return new_state;
 }
 
@@ -85,11 +85,11 @@ public:
 	static Dictionary action_increment(Dictionary p_state, int p_amount) {
 		return MinimalBacktrackingDomain::action_increment(p_state, p_amount);
 	}
-	
+
 	static Variant task_increment_method_fail(Dictionary p_state) {
 		return MinimalBacktrackingDomain::task_increment_method_fail(p_state);
 	}
-	
+
 	static Variant task_increment_method_succeed(Dictionary p_state) {
 		return MinimalBacktrackingDomain::task_increment_method_succeed(p_state);
 	}
@@ -98,20 +98,19 @@ public:
 // Helper: Create minimal backtracking domain
 Ref<PlannerDomain> create_minimal_backtracking_domain() {
 	Ref<PlannerDomain> domain = memnew(PlannerDomain);
-	
+
 	// Add action
 	TypedArray<Callable> actions;
 	actions.push_back(callable_mp_static(&MinimalBacktrackingDomainCallable::action_increment));
 	domain->add_actions(actions);
-	
+
 	// Add task methods (first fails, second succeeds - tests backtracking)
 	TypedArray<Callable> task_methods;
 	task_methods.push_back(callable_mp_static(&MinimalBacktrackingDomainCallable::task_increment_method_fail));
 	task_methods.push_back(callable_mp_static(&MinimalBacktrackingDomainCallable::task_increment_method_succeed));
 	domain->add_task_methods("increment", task_methods);
-	
+
 	return domain;
 }
 
 } // namespace MinimalBacktrackingDomain
-

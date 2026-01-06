@@ -377,10 +377,10 @@ TEST_CASE("[Modules][Planner] VSIDS Activity Tracking - Verify Activity Bumping 
 	CHECK(result2->get_success());
 
 	Dictionary activities_after2 = plan->get_method_activities();
-	
+
 	// Activities should still exist (persist across planning calls)
 	CHECK(!activities_after2.is_empty());
-	
+
 	// Verify activity values are reasonable (not exploding)
 	keys = activities_after2.keys();
 	for (int i = 0; i < keys.size(); i++) {
