@@ -519,8 +519,8 @@ TEST_CASE("[Modules][Planner] PlannerPlan - Complete planning workflow") {
 	SUBCASE("Attach metadata") {
 		Variant item = "study_magic_class";
 		Dictionary temporal;
-		temporal["duration"] = 5000000LL; // 5 seconds
-		temporal["start_time"] = 1735689600000000LL;
+		temporal["duration"] = static_cast<int64_t>(5000000LL); // 5 seconds
+		temporal["start_time"] = static_cast<int64_t>(1735689600000000LL);
 
 		Dictionary entity;
 		entity["type"] = "protagonist";
@@ -535,7 +535,7 @@ TEST_CASE("[Modules][Planner] PlannerPlan - Complete planning workflow") {
 	SUBCASE("Get temporal constraints") {
 		Variant item = "test_item";
 		Dictionary temporal;
-		temporal["duration"] = 3000000LL;
+		temporal["duration"] = static_cast<int64_t>(3000000LL);
 		Variant wrapped_item = plan->attach_metadata(item, temporal);
 
 		Dictionary constraints = plan->_get_temporal_constraints(wrapped_item);
@@ -545,7 +545,7 @@ TEST_CASE("[Modules][Planner] PlannerPlan - Complete planning workflow") {
 	SUBCASE("Has temporal constraints") {
 		Variant item = "test_item";
 		Dictionary temporal;
-		temporal["duration"] = 2000000LL;
+		temporal["duration"] = static_cast<int64_t>(2000000LL);
 		Variant wrapped_item = plan->attach_metadata(item, temporal);
 
 		bool has_temporal = plan->_has_temporal_constraints(wrapped_item);

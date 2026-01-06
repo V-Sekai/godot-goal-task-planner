@@ -70,7 +70,33 @@ Tests are organized in `tests/` directory:
 -   Test files must be included in `test_all.h` to be discovered
 -   When adding new tests, update `test_all.h` accordingly
 -   **Test Isolation**: Always call `plan->reset()` at the start of each test case that uses `PlannerPlan`, even though the constructor initializes state. This ensures complete isolation between tests.
--   **Deep Copy State**: Use `PlannerPlan::deep_copy_state(init_state)` before passing state to `find_plan()` to prevent state pollution
+-   **State Copying**: Use `init_state.duplicate(true)` before passing state to `find_plan()` to prevent state pollution. The `duplicate(true)` method correctly handles nested dictionaries and arrays in Godot.
+
+## Temporal Planning
+
+The planner supports temporal constraints using absolute time in microseconds (since Unix epoch). This differs from IPyHOP which uses ISO 8601 duration strings (e.g., `PT5M` for 5 minutes).
+
+### Time Representation
+
+-   **Absolute Time**: All times are in microseconds since Unix epoch (1970-01-01 00:00:00 UTC)
+-   **Duration**: Action durations are specified in microseconds
+-   **Conversion**: Use `PlannerTimeRange.unix_time_to_microseconds()` to convert from Unix time (seconds)
+
+### Temporal Action Metadata
+
+Actions can have temporal metadata attached:
+
+```cpp
+Dictionary temporal_metadata;
+temporal_metadata["duration"] = static_cast<int64_t>(300000000LL); // 5 minutes
+temporal_metadata["start_time"] = static_cast<int64_t>(1735732800000000LL); // Optional
+temporal_metadata["end_time"] = static_cast<int64_t>(1735732805000000LL); // Optional
+plan->attach_metadata(action_array, temporal_metadata);
+```
+
+### STN Solver
+
+The planner uses a Simple Temporal Network (STN) solver to validate temporal constraints. The STN ensures all timing constraints are consistent and calculates feasible time windows for actions.
 
 ## IPyHOP Compatibility
 
@@ -85,6 +111,8 @@ This planner aims to be compatible with IPyHOP (Python HTN planner). Reference i
 -   **Task method pattern**: Methods check state conditions and return actions directly (no pre-execution)
 -   **Action validation**: Actions validate themselves when executed, returning `None` (NIL) if they fail
 -   **HTN decomposition**: Tasks should be decomposed into multiple methods, each handling specific cases
+-   **State restoration**: When revisiting a node, always restore the saved state (matches IPyHOP behavior)
+-   **Time representation**: Uses absolute microseconds instead of ISO 8601 durations (PT5M, PT10M, etc.)
 
 ### IPyHOP Task Method Pattern
 
@@ -189,6 +217,8 @@ From test files:
 -   **Destructor**: `~PlannerPlan()` automatically calls `reset()` to clean up all state
 -   **Test Isolation**: Always call `plan->reset()` at the start of each test case to ensure complete isolation, even though the constructor initializes state
 -   **State Persistence**: Configuration (verbose, max_depth, domain) persists across `find_plan()` calls, but planning-specific state (solution_graph, blacklisted_commands, iterations, VSIDS activity) is reset at the start of each planning call
+-   **State Copying**: The planner automatically deep-copies the input state using `duplicate(true)` to prevent state pollution. Tests should also use `state.duplicate(true)` before passing state to `find_plan()` for isolation.
+-   **Temporal Time**: All temporal constraints use absolute time in microseconds (not ISO 8601 durations). Convert from Unix time using `PlannerTimeRange::unix_time_to_microseconds()`.
 
 ### Backtracking Logic
 

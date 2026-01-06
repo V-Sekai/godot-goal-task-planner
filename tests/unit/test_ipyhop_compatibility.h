@@ -377,7 +377,7 @@ TEST_CASE("[Modules][Planner] IPyHOP Compatibility - Temporal and Entity Constra
 
 	// Attach temporal constraint to action_work_task (takes 10 seconds)
 	Dictionary temporal_constraint;
-	temporal_constraint["duration"] = 10000000LL; // 10 seconds in microseconds
+	temporal_constraint["duration"] = static_cast<int64_t>(10000000LL); // 10 seconds in microseconds
 	Array work_task_action;
 	work_task_action.push_back("action_work_task");
 	work_task_action.push_back("worker1");

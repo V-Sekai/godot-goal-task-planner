@@ -7,6 +7,7 @@
 
 # ignore the virtual environment directory.
 venv/
+.venv/
 
 # ignore the following test and temp test_files
 test.*
@@ -24,3 +25,6 @@ temp??.*
 # ignore logs
 **/logs/
 **/logs*/
+
+# uv files (uv.lock should be committed for reproducible builds)
+# .python-version can be committed or ignored based on project preference

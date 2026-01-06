@@ -6,11 +6,13 @@ File Description: File used for definition of IPyHOP Class.
 # ******************************************    Libraries to be imported    ****************************************** #
 from __future__ import print_function, division
 from itertools import count
-from typing import List, Tuple, Union, Optional
+from typing import List, Tuple, Union, Optional, Dict
 from ipyhop.methods import Methods
 from ipyhop.actions import Actions
 from ipyhop.state import State
 from ipyhop.mulitgoal import MultiGoal
+from ipyhop.temporal_metadata import TemporalMetadata
+from ipyhop.temporal.utils import calculate_end_time, duration_to_seconds, now_iso8601
 from networkx import DiGraph, dfs_preorder_nodes, descendants, is_tree
 from copy import deepcopy
 
@@ -25,12 +27,14 @@ class IPyHOP(object):
         To plan using the planner, you should use planner.plan(state, task_list).
     """
 
-    def __init__(self, methods: Methods, actions: Actions):
+    def __init__(self, methods: Methods, actions: Actions, default_origin_time: Optional[str] = None):
         """
         IPyHOP Constructor.
 
         :param methods: An instance of Methods class containing the collection of methods in the planning domain.
         :param actions: An instance of Actions class containing the collection of actions in the planning domain.
+        :param default_origin_time: Default origin time (ISO 8601 string) for temporal planning.
+                                   If None and state has no initial_time, uses current time.
         """
         self.methods = methods
         self.actions = actions
@@ -40,6 +44,9 @@ class IPyHOP(object):
         self.sol_tree = DiGraph()
         self.blacklist = set()
         self.iterations = None
+        self._temporal_enabled = False  # Track if temporal planning is enabled
+        self._current_time = None  # Current time during planning
+        self._default_origin_time = default_origin_time  # Default origin time for temporal planning
 
         self._verbose = 0
 
@@ -81,6 +88,29 @@ class IPyHOP(object):
         self.methods = self.methods if methods is None else methods
         self.actions = self.actions if actions is None else actions
         self._verbose = verbose
+        
+        # Check if temporal planning is enabled (if any actions have temporal info)
+        self._temporal_enabled = len(self.actions.action_temporal_dict) > 0
+        if self._temporal_enabled:
+            # Initialize current time from state, or use default origin time
+            # Priority: state's explicit initial_time > planner's default_origin_time > state's auto-time > current time
+            if hasattr(self.state, '_initial_time_set') and self.state._initial_time_set:
+                # State was explicitly initialized with a time - use it
+                self._current_time = self.state.get_current_time()
+            elif self._default_origin_time:
+                # Use planner's default origin time (overrides auto-generated state time)
+                self._current_time = self._default_origin_time
+                # Update state to use default origin time
+                self.state.set_current_time(self._default_origin_time)
+            else:
+                # Use state's time (which may be auto-generated)
+                state_time = self.state.get_current_time()
+                if state_time:
+                    self._current_time = state_time
+                else:
+                    # Fallback to current time
+                    self._current_time = now_iso8601()
+                    self.state.set_current_time(self._current_time)
 
         if self._verbose > 0:
             run_info = '**IPyHOP, verbose = {verbosity}: **\n\tstate = {state}\n\ttasks/goals = {task_list}.'
@@ -98,9 +128,14 @@ class IPyHOP(object):
         assert is_tree(self.sol_tree), "Error! Solution graph is not a tree."
 
         # Store the planning solution as a list of actions to be executed.
-        for node_id in dfs_preorder_nodes(self.sol_tree, source=0):
-            if self.sol_tree.nodes[node_id]['type'] == 'A':
-                self.sol_plan.append(self.sol_tree.nodes[node_id]['info'])
+        if self._temporal_enabled:
+            # Build temporal plan with metadata
+            self.sol_plan = self._build_temporal_plan()
+        else:
+            # Classical plan (backward compatible)
+            for node_id in dfs_preorder_nodes(self.sol_tree, source=0):
+                if self.sol_tree.nodes[node_id]['type'] == 'A':
+                    self.sol_plan.append(self.sol_tree.nodes[node_id]['info'])
 
         return self.sol_plan
 
@@ -180,6 +215,36 @@ class IPyHOP(object):
                         if new_state is not None:
                             curr_node['status'] = 'C'
                             self.state.update(new_state)
+                            
+                            # Handle temporal information
+                            if self._temporal_enabled:
+                                action_name = curr_node_info[0]
+                                temporal_metadata = self.actions.get_temporal_metadata(action_name)
+                                
+                                if temporal_metadata is not None:
+                                    # Create temporal metadata for this action instance
+                                    action_temporal = temporal_metadata.copy()
+                                    action_temporal.set_start_time(self._current_time)
+                                    action_temporal.calculate_end_from_duration()
+                                    
+                                    # Store in node
+                                    curr_node['temporal'] = action_temporal
+                                    
+                                    # Update current time to end of this action
+                                    if action_temporal.end_time:
+                                        self._current_time = action_temporal.end_time
+                                        self.state.set_current_time(self._current_time)
+                                    
+                                    if self._verbose > 2:
+                                        print('Iteration {}, Action {} temporal: {}'.format(
+                                            _iter, repr(curr_node_info), action_temporal))
+                                else:
+                                    # Instant action (no duration)
+                                    action_temporal = TemporalMetadata(duration=0)
+                                    action_temporal.set_start_time(self._current_time)
+                                    action_temporal.set_end_time(self._current_time)
+                                    curr_node['temporal'] = action_temporal
+                            
                             if self._verbose > 2:
                                 print('Iteration {}, Action {} successful.'.format(_iter, repr(curr_node_info)))
                     if new_state is None:
@@ -300,6 +365,26 @@ class IPyHOP(object):
         """
 
         self.state = state.copy()
+        
+        # Update temporal state if enabled
+        if self._temporal_enabled:
+            # Priority: state's explicit initial_time > planner's default_origin_time > state's auto-time > current time
+            if hasattr(self.state, '_initial_time_set') and self.state._initial_time_set:
+                # State was explicitly initialized with a time - use it
+                self._current_time = self.state.get_current_time()
+            elif self._default_origin_time:
+                # Use planner's default origin time (overrides auto-generated state time)
+                self._current_time = self._default_origin_time
+                self.state.set_current_time(self._default_origin_time)
+            else:
+                # Use state's time (which may be auto-generated)
+                state_time = self.state.get_current_time()
+                if state_time:
+                    self._current_time = state_time
+                else:
+                    # Fallback to current time
+                    self._current_time = now_iso8601()
+                    self.state.set_current_time(self._current_time)
 
         max_id = self._post_failure_modify(fail_node_id)
         parent_node_id, curr_node_id = self._backtrack(list(self.sol_tree.predecessors(fail_node_id))[0], fail_node_id)
@@ -307,12 +392,28 @@ class IPyHOP(object):
         self.iterations = self._planning(max_id, parent_node_id)
         assert is_tree(self.sol_tree), "Error! Solution graph is not a tree."
 
-        self.sol_plan = []
-        # Store the planning solution as a list of actions to be executed.
-        for node_id in dfs_preorder_nodes(self.sol_tree, source=0):
-            if self.sol_tree.nodes[node_id]['type'] == 'A':
-                if self.sol_tree.nodes[node_id]['tag'] == 'new':
-                    self.sol_plan.append(self.sol_tree.nodes[node_id]['info'])
+        # Build plan (temporal or classical)
+        if self._temporal_enabled:
+            self.sol_plan = []
+            for node_id in dfs_preorder_nodes(self.sol_tree, source=0):
+                if self.sol_tree.nodes[node_id]['type'] == 'A':
+                    if self.sol_tree.nodes[node_id]['tag'] == 'new':
+                        action_info = self.sol_tree.nodes[node_id]['info']
+                        temporal_metadata = self.sol_tree.nodes[node_id].get('temporal')
+                        if temporal_metadata is not None:
+                            self.sol_plan.append((action_info, temporal_metadata.to_dict()))
+                        else:
+                            instant_metadata = TemporalMetadata(duration=0)
+                            instant_metadata.set_start_time(self._current_time if self._current_time else now_iso8601())
+                            instant_metadata.set_end_time(instant_metadata.start_time)
+                            self.sol_plan.append((action_info, instant_metadata.to_dict()))
+        else:
+            self.sol_plan = []
+            # Store the planning solution as a list of actions to be executed.
+            for node_id in dfs_preorder_nodes(self.sol_tree, source=0):
+                if self.sol_tree.nodes[node_id]['type'] == 'A':
+                    if self.sol_tree.nodes[node_id]['tag'] == 'new':
+                        self.sol_plan.append(self.sol_tree.nodes[node_id]['info'])
 
         return self.sol_plan
 
@@ -334,7 +435,13 @@ class IPyHOP(object):
                 self.sol_tree.add_edge(parent_node_id, _id)
             elif child_node_info[0] in self.actions.action_dict:
                 action = self.actions.action_dict[child_node_info[0]]
-                self.sol_tree.add_node(_id, info=child_node_info, type='A', status='O', action=action, tag='new')
+                node_attrs = {'info': child_node_info, 'type': 'A', 'status': 'O', 'action': action, 'tag': 'new'}
+                # Add temporal metadata if available
+                if self._temporal_enabled:
+                    temporal_metadata = self.actions.get_temporal_metadata(child_node_info[0])
+                    if temporal_metadata is not None:
+                        node_attrs['temporal'] = None  # Will be set during planning
+                self.sol_tree.add_node(_id, **node_attrs)
                 self.sol_tree.add_edge(parent_node_id, _id)
             elif child_node_info[0] in self.methods.goal_method_dict:
                 relevant_methods = self.methods.goal_method_dict[child_node_info[0]]
@@ -353,6 +460,31 @@ class IPyHOP(object):
             self.sol_tree.add_edge(parent_node_id, _id)
 
         return _id
+    
+    # ******************************        Temporal Planning Methods        ****************************************** #
+    def _build_temporal_plan(self) -> List:
+        """
+        Build a temporal plan with metadata from the solution tree.
+        
+        :return: List of (action_tuple, temporal_metadata_dict) tuples
+        """
+        temporal_plan = []
+        for node_id in dfs_preorder_nodes(self.sol_tree, source=0):
+            if self.sol_tree.nodes[node_id]['type'] == 'A':
+                action_info = self.sol_tree.nodes[node_id]['info']
+                temporal_metadata = self.sol_tree.nodes[node_id].get('temporal')
+                
+                if temporal_metadata is not None:
+                    # Include temporal metadata
+                    temporal_plan.append((action_info, temporal_metadata.to_dict()))
+                else:
+                    # Action without temporal info (instant action)
+                    instant_metadata = TemporalMetadata(duration=0)
+                    instant_metadata.set_start_time(self._current_time if self._current_time else now_iso8601())
+                    instant_metadata.set_end_time(instant_metadata.start_time)
+                    temporal_plan.append((action_info, instant_metadata.to_dict()))
+        
+        return temporal_plan
 
     # ******************************        Class Method Declaration        ****************************************** #
     def _post_failure_modify(self, fail_node_id):

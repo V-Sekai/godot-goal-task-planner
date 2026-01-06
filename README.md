@@ -203,24 +203,59 @@ var result = plan.run_lazy_refineahead(state, todo_list)
 
 ## Temporal Constraints
 
+The planner supports temporal planning with action durations and timing constraints. **Time is represented in absolute microseconds** (since Unix epoch), not civil time or ISO 8601 durations.
+
+### Setting Initial Time
+
+```gdscript
+# Set initial time for temporal planning (2025-01-01 10:00:00 UTC)
+var time_range = PlannerTimeRange.new()
+time_range.set_start_time(1735732800000000)  # microseconds
+plan.set_time_range(time_range)
+```
+
+### Action Durations
+
+Attach temporal metadata to actions to specify their duration:
+
+```gdscript
+# Action takes 5 minutes (300000000 microseconds)
+var temporal_metadata = {
+    "duration": 300000000  # 5 minutes in microseconds
+}
+var action = ["walk", "person", "from", "to"]
+plan.attach_metadata(action, temporal_metadata)
+```
+
+### Temporal Constraints
+
 You can specify when actions must occur using temporal constraints:
 
 ```gdscript
 # Action with timing requirements
-var action_with_time = {
-    "item": ["deliver", "package", "customer"],
-    "temporal_constraints": {
-        "start_time": 1000000,  # Must start at this time (microseconds)
-        "end_time": 2000000,    # Must finish by this time
-        "duration": 500000      # Takes 0.5 seconds
-    }
+var temporal_constraints = {
+    "start_time": 1735732800000000,  # Must start at this time (microseconds)
+    "end_time": 1735732805000000,    # Must finish by this time
+    "duration": 5000000              # Takes 5 seconds
 }
 
-var todo_list = [action_with_time]
-var result = plan.find_plan(state, todo_list)
+var action = ["deliver", "package", "customer"]
+plan.attach_metadata(action, temporal_constraints)
 ```
 
 The planner uses a Simple Temporal Network (STN) to ensure all timing constraints are consistent. If constraints conflict, planning fails.
+
+### Converting Time Formats
+
+```gdscript
+# Convert Unix time (seconds) to microseconds
+var unix_time = 1735732800.0  # 2025-01-01 10:00:00 UTC
+var microseconds = PlannerTimeRange.unix_time_to_microseconds(unix_time)
+# Result: 1735732800000000
+
+# Get current time in microseconds
+var now = PlannerTimeRange.now_microseconds()
+```
 
 ## Entity Requirements
 

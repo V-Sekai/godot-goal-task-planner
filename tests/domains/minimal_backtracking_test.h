@@ -56,7 +56,7 @@ TEST_CASE("[Modules][Planner][MinimalBacktracking] Task with backtracking - firs
 	Dictionary value_dict;
 	value_dict["value"] = 0;
 	init_state["value"] = value_dict;
-	Dictionary clean_init_state = PlannerPlan::deep_copy_state(init_state);
+	Dictionary clean_init_state = init_state.duplicate(true);
 
 	// Create todo list with increment task
 	Array todo_list;

@@ -242,8 +242,8 @@ TEST_CASE("[Modules][Planner][FoxGeeseCorn] PlannerPlan - find_plan with transpo
 
 	Dictionary init_state = FoxGeeseCornDomain::initialize_state(1, 1, 1, 2, 4, 4, 3);
 	// CRITICAL: Deep copy the state to ensure test isolation
-	// Use PlannerPlan's manual deep copy function to ensure all nested structures are properly copied
-	Dictionary clean_init_state = PlannerPlan::deep_copy_state(init_state);
+	// Use duplicate(true) which works correctly for nested dictionaries in Godot
+	Dictionary clean_init_state = init_state.duplicate(true);
 
 	// Create todo_list with transport_all task
 	Array todo_list;
@@ -275,8 +275,8 @@ TEST_CASE("[Modules][Planner][FoxGeeseCorn] PlannerPlan - simulate method verifi
 
 	Dictionary init_state = FoxGeeseCornDomain::initialize_state(1, 1, 1, 2, 4, 4, 3);
 	// CRITICAL: Deep copy the state to ensure test isolation
-	// Use PlannerPlan's manual deep copy function to ensure all nested structures are properly copied
-	Dictionary clean_init_state = PlannerPlan::deep_copy_state(init_state);
+	// Use duplicate(true) which works correctly for nested dictionaries in Godot
+	Dictionary clean_init_state = init_state.duplicate(true);
 
 	Array todo_list;
 	todo_list.push_back("transport_all");
@@ -348,8 +348,8 @@ TEST_CASE("[Modules][Planner][FoxGeeseCorn] PlannerPlan - complete planning work
 	// Test fixture from aria-planner: params = %{f: 1, g: 1, c: 1, k: 2, pf: 4, pg: 4, pc: 3}
 	Dictionary init_state = FoxGeeseCornDomain::initialize_state(1, 1, 1, 2, 4, 4, 3);
 	// CRITICAL: Deep copy the state to ensure test isolation
-	// Use PlannerPlan's manual deep copy function to ensure all nested structures are properly copied
-	Dictionary clean_init_state = PlannerPlan::deep_copy_state(init_state);
+	// Use duplicate(true) which works correctly for nested dictionaries in Godot
+	Dictionary clean_init_state = init_state.duplicate(true);
 
 	Array todo_list;
 	todo_list.push_back("transport_all");

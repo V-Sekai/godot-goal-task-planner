@@ -4,9 +4,9 @@
 ; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
 ;
 [subrepo]
-	remote = https://github.com/YashBansod/IPyHOP.git
+	remote = https://github.com/V-Sekai-fire/IPyHOP-temporal
 	branch = main
-	commit = bdda21012b2396aed9a91980af8fbb71dbcb7075
-	parent = 2ed9f5f8af7c8625b81d8a0baafd7e76aac201a6
+	commit = 4636308badf5c84e844ab5ea406279457efa3a54
+	parent = 143d3624d41498ece7d4ec3b46e8a0c5e637a778
 	method = merge
 	cmdver = 0.4.9

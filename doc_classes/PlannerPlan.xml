@@ -41,6 +41,11 @@
 				Returns the maximum number of planning iterations that occurred during the last planning operation. This can be useful for debugging and performance analysis. The iteration count is reset at the start of each planning method call.
 			</description>
 		</method>
+		<method name="get_method_activities" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+			</description>
+		</method>
 		<method name="load_solution_graph">
 			<return type="void" />
 			<param index="0" name="graph" type="Dictionary" />
@@ -56,6 +61,16 @@
 			<description>
 				Re-plans from a failure point in a previous plan. This method loads the solution graph from the provided [PlannerResult], marks nodes from root to the failure point as "old", reopens them, and continues planning from the failure point. Only actions tagged as "new" are included in the returned plan. This is useful for handling execution failures and generating alternative plans.
 				Use [method PlannerResult.find_failed_nodes] to identify which nodes failed, then pass one of those node IDs to this method.
+			</description>
+		</method>
+		<method name="reset">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="reset_vsids_activity">
+			<return type="void" />
+			<description>
 			</description>
 		</method>
 		<method name="run_lazy_lookahead">

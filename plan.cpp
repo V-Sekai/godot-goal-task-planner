@@ -1154,7 +1154,6 @@ void PlannerPlan::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_method_activities"), &PlannerPlan::get_method_activities);
 	ClassDB::bind_method(D_METHOD("reset_vsids_activity"), &PlannerPlan::reset_vsids_activity);
 	ClassDB::bind_method(D_METHOD("reset"), &PlannerPlan::reset);
-	ClassDB::bind_static_method("PlannerPlan", D_METHOD("deep_copy_state", "state"), &PlannerPlan::deep_copy_state);
 	ClassDB::bind_method(D_METHOD("simulate", "result", "state", "start_ind"), &PlannerPlan::simulate, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("replan", "result", "state", "fail_node_id"), &PlannerPlan::replan);
 	ClassDB::bind_method(D_METHOD("load_solution_graph", "graph"), &PlannerPlan::load_solution_graph);
@@ -3462,59 +3461,4 @@ Dictionary PlannerPlan::_match_entities(const Dictionary &p_state, const LocalVe
 	result["success"] = true;
 	result["matched_entities"] = matched_entities;
 	return result;
-}
-
-// Public deep copy function for test isolation
-// Manual deep copy function for state dictionaries
-// duplicate(true) may not properly handle all nested structures, so we manually recurse
-Dictionary PlannerPlan::deep_copy_state(Dictionary p_state) {
-	Dictionary result;
-	Array keys = p_state.keys();
-	for (int i = 0; i < keys.size(); i++) {
-		Variant key = keys[i];
-		Variant value = p_state[key];
-
-		// Recursively copy nested dictionaries
-		if (value.get_type() == Variant::DICTIONARY) {
-			Dictionary nested_dict = value;
-			result[key] = deep_copy_state(nested_dict);
-		}
-		// Recursively copy nested arrays
-		else if (value.get_type() == Variant::ARRAY) {
-			Array nested_array = value;
-			Array copied_array;
-			copied_array.resize(nested_array.size());
-			for (int j = 0; j < nested_array.size(); j++) {
-				Variant elem = nested_array[j];
-				if (elem.get_type() == Variant::DICTIONARY) {
-					copied_array[j] = deep_copy_state(elem);
-				} else if (elem.get_type() == Variant::ARRAY) {
-					Array elem_array = elem;
-					Array copied_elem_array;
-					copied_elem_array.resize(elem_array.size());
-					for (int k = 0; k < elem_array.size(); k++) {
-						if (elem_array[k].get_type() == Variant::DICTIONARY) {
-							copied_elem_array[k] = deep_copy_state(elem_array[k]);
-						} else {
-							copied_elem_array[k] = elem_array[k];
-						}
-					}
-					copied_array[j] = copied_elem_array;
-				} else {
-					copied_array[j] = elem;
-				}
-			}
-			result[key] = copied_array;
-		}
-		// Copy primitive values directly
-		else {
-			result[key] = value;
-		}
-	}
-	return result;
-}
-
-// Private wrapper that calls the public method
-Dictionary PlannerPlan::_deep_copy_state(Dictionary p_state) {
-	return deep_copy_state(p_state);
 }

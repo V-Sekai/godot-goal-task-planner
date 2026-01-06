@@ -71,7 +71,6 @@ class PlannerPlan : public Resource {
 	TypedArray<String> rewarded_methods_this_solve; // Track which methods already rewarded this solve
 
 	static String _item_to_string(Variant p_item);
-	static Dictionary _deep_copy_state(Dictionary p_state); // Manual deep copy for state dictionaries
 
 	// VSIDS activity management
 	String _method_to_id(Callable p_method) const;
@@ -140,7 +139,6 @@ public:
 	Dictionary get_method_activities() const; // Get VSIDS activity scores for testing
 	void reset_vsids_activity(); // Reset VSIDS activity tracking (clears all activity scores)
 	void reset(); // Reset all planner state for complete test isolation
-	static Dictionary deep_copy_state(Dictionary p_state); // Public deep copy for test isolation
 	Array simulate(Ref<PlannerResult> p_result, Dictionary p_state, int p_start_ind = 0);
 	Ref<PlannerResult> replan(Ref<PlannerResult> p_result, Dictionary p_state, int p_fail_node_id);
 	void load_solution_graph(Dictionary p_graph);
