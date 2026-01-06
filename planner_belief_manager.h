@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  planner_belief_manager.h                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,40 +28,49 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-/* register_types.cpp */
+#pragma once
 
-#include "register_types.h"
+// SPDX-FileCopyrightText: 2025-present K. S. Ernest (iFire) Lee
+// SPDX-License-Identifier: MIT
 
-#include "core/object/class_db.h"
-
-#include "domain.h"
-#include "multigoal.h"
-#include "plan.h"
-#include "planner_belief_manager.h"
-#include "planner_facts_allocentric.h"
+#include "core/io/resource.h"
+#include "core/variant/dictionary.h"
 #include "planner_persona.h"
-#include "planner_result.h"
-#include "planner_state.h"
 
-void initialize_goal_task_planner_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
+// Belief Manager for the Belief-Based Ego Architecture
+// Handles belief formation, updating, and confidence management across personas
+class PlannerBeliefManager : public Resource {
+	GDCLASS(PlannerBeliefManager, Resource);
 
-	ClassDB::register_class<PlannerTaskMetadata>();
-	ClassDB::register_class<PlannerTask>();
-	ClassDB::register_class<PlannerDomain>();
-	ClassDB::register_class<PlannerPlan>();
-	ClassDB::register_class<PlannerResult>();
-	ClassDB::register_class<PlannerState>();
-	ClassDB::register_class<PlannerMultigoal>();
-	ClassDB::register_class<PlannerPersona>();
-	ClassDB::register_class<PlannerBeliefManager>();
-	ClassDB::register_class<PlannerFactsAllocentric>();
-}
+private:
+	Dictionary persona_registry; // persona_id -> Ref<PlannerPersona>
 
-void uninitialize_goal_task_planner_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-}
+protected:
+	static void _bind_methods();
+
+public:
+	PlannerBeliefManager();
+	~PlannerBeliefManager();
+
+	// Persona management
+	void register_persona(Ref<PlannerPersona> p_persona);
+	void unregister_persona(const String &p_persona_id);
+	Ref<PlannerPersona> get_persona(const String &p_persona_id) const;
+	bool has_persona(const String &p_persona_id) const;
+	TypedArray<String> get_all_persona_ids() const;
+
+	// Belief retrieval
+	Dictionary get_beliefs_about(Ref<PlannerPersona> p_persona, const String &p_target_persona_id) const;
+
+	// Information asymmetry enforcement
+	Dictionary get_planner_state(const String &p_target_persona_id, const String &p_requesting_persona_id) const;
+
+	// Observation processing
+	void process_observation_for_persona(const String &p_persona_id, const Dictionary &p_observation);
+
+	// Communication processing
+	void process_communication_for_persona(const String &p_persona_id, const Dictionary &p_communication);
+
+	// Clear all (for testing)
+	void clear_all();
+};

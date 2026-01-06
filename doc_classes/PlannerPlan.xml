@@ -105,8 +105,14 @@
 		</method>
 	</methods>
 	<members>
+		<member name="allocentric_facts" type="PlannerFactsAllocentric" setter="set_allocentric_facts" getter="get_allocentric_facts">
+		</member>
+		<member name="belief_manager" type="PlannerBeliefManager" setter="set_belief_manager" getter="get_belief_manager">
+		</member>
 		<member name="current_domain" type="PlannerDomain" setter="set_current_domain" getter="get_current_domain">
 			The active [PlannerDomain] in which the [PlannerPlan] is operating.
+		</member>
+		<member name="current_persona" type="PlannerPersona" setter="set_current_persona" getter="get_current_persona">
 		</member>
 		<member name="max_depth" type="int" setter="set_max_depth" getter="get_max_depth" default="10">
 		</member>

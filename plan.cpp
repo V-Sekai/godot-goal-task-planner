@@ -1157,6 +1157,19 @@ void PlannerPlan::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("simulate", "result", "state", "start_ind"), &PlannerPlan::simulate, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("replan", "result", "state", "fail_node_id"), &PlannerPlan::replan);
 	ClassDB::bind_method(D_METHOD("load_solution_graph", "graph"), &PlannerPlan::load_solution_graph);
+
+	// Belief-immersed architecture: Persona and belief management
+	ClassDB::bind_method(D_METHOD("get_current_persona"), &PlannerPlan::get_current_persona);
+	ClassDB::bind_method(D_METHOD("set_current_persona", "persona"), &PlannerPlan::set_current_persona);
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "current_persona", PROPERTY_HINT_RESOURCE_TYPE, "PlannerPersona"), "set_current_persona", "get_current_persona");
+
+	ClassDB::bind_method(D_METHOD("get_belief_manager"), &PlannerPlan::get_belief_manager);
+	ClassDB::bind_method(D_METHOD("set_belief_manager", "manager"), &PlannerPlan::set_belief_manager);
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "belief_manager", PROPERTY_HINT_RESOURCE_TYPE, "PlannerBeliefManager"), "set_belief_manager", "get_belief_manager");
+
+	ClassDB::bind_method(D_METHOD("get_allocentric_facts"), &PlannerPlan::get_allocentric_facts);
+	ClassDB::bind_method(D_METHOD("set_allocentric_facts", "facts"), &PlannerPlan::set_allocentric_facts);
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "allocentric_facts", PROPERTY_HINT_RESOURCE_TYPE, "PlannerFactsAllocentric"), "set_allocentric_facts", "get_allocentric_facts");
 }
 
 // Temporal method implementations
@@ -1204,6 +1217,11 @@ void PlannerPlan::reset() {
 
 	// Reset todo list tracking
 	original_todo_list.clear();
+
+	// Reset persona-related state (belief-immersed architecture)
+	current_persona = Ref<PlannerPersona>();
+	belief_manager = Ref<PlannerBeliefManager>();
+	allocentric_facts = Ref<PlannerFactsAllocentric>();
 
 	// Reset iteration counter
 	iterations = 0;

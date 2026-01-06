@@ -38,7 +38,10 @@
 #include "core/variant/typed_array.h"
 
 #include "modules/goal_task_planner/multigoal.h"
+#include "modules/goal_task_planner/planner_belief_manager.h"
+#include "modules/goal_task_planner/planner_facts_allocentric.h"
 #include "modules/goal_task_planner/planner_metadata.h"
+#include "modules/goal_task_planner/planner_persona.h"
 #include "modules/goal_task_planner/planner_result.h"
 #include "modules/goal_task_planner/planner_time_range.h"
 #include "modules/goal_task_planner/solution_graph.h"
@@ -58,6 +61,11 @@ class PlannerPlan : public Resource {
 	PlannerSTNSolver stn; // STN solver for temporal constraint validation
 	PlannerSTNSolver::Snapshot stn_snapshot; // STN snapshot for backtracking
 	Array original_todo_list; // Store original todo_list to check if all tasks completed
+
+	// Belief-immersed architecture support
+	Ref<PlannerPersona> current_persona; // Current persona for ego-centric planning
+	Ref<PlannerBeliefManager> belief_manager; // Belief manager for multi-persona interactions
+	Ref<PlannerFactsAllocentric> allocentric_facts; // Shared ground truth observable by all personas
 
 	int max_depth = 10; // Maximum recursion depth to prevent infinite loops
 	int iterations = 0; // Track number of planning iterations
@@ -142,6 +150,14 @@ public:
 	Array simulate(Ref<PlannerResult> p_result, Dictionary p_state, int p_start_ind = 0);
 	Ref<PlannerResult> replan(Ref<PlannerResult> p_result, Dictionary p_state, int p_fail_node_id);
 	void load_solution_graph(Dictionary p_graph);
+
+	// Belief-immersed architecture: Persona and belief management
+	Ref<PlannerPersona> get_current_persona() const { return current_persona; }
+	void set_current_persona(Ref<PlannerPersona> p_persona) { current_persona = p_persona; }
+	Ref<PlannerBeliefManager> get_belief_manager() const { return belief_manager; }
+	void set_belief_manager(Ref<PlannerBeliefManager> p_manager) { belief_manager = p_manager; }
+	Ref<PlannerFactsAllocentric> get_allocentric_facts() const { return allocentric_facts; }
+	void set_allocentric_facts(Ref<PlannerFactsAllocentric> p_facts) { allocentric_facts = p_facts; }
 
 protected:
 	static void _bind_methods();

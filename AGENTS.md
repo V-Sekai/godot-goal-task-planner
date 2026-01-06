@@ -25,11 +25,13 @@ Key components:
 
 ## Build Commands
 
--   Build editor: `godot-build-editor` (alias for `scons platform=macos arch=arm64 target=editor dev_build=yes debug_symbols=yes compiledb=yes tests=yes generate_bundle=yes cache_path=/Users/ernest.lee/.scons_cache`)
+See [BUILD.md](BUILD.md) for detailed build instructions.
+
+Quick reference:
+
+-   Build editor: `godot-build-editor`
 -   Build and run tests: `godot-build-editor && ./bin/godot.macos.editor.dev.arm64 --test --test-path=modules/goal_task_planner/tests`
 -   Run specific test: `./bin/godot.macos.editor.dev.arm64 --test --test-path=modules/goal_task_planner/tests --test-name="<Test Name>"`
-
-The module uses SCons build system. Source files are automatically discovered via `SCsub`.
 
 ## Code Style
 
@@ -540,6 +542,35 @@ This optimization helps the planner learn from past planning attempts and priori
 -   **Success-based bumping**: Successful methods also get bumped (optimization for plan quality)
 
 **TLA+ Models**: See `tla/VSIDSActivityTracking.tla` for a formal model of the activity tracking logic. Note: The TLA+ model is simplified; the actual implementation uses floating-point activities with growing increment values.
+
+## Missing Features from aria-planner
+
+The Godot planner is focused on core HTN planning functionality and does not include several features present in the Elixir aria-planner implementation. See [MISSING_FEATURES.md](MISSING_FEATURES.md) for a complete list.
+
+### Major Missing Features
+
+1. **Persona System**: aria-planner has a complete persona-centric architecture with unified persona models (human, AI, hybrid) and capability-based differentiation. The Godot planner is domain-centric, not persona-centric.
+
+2. **Belief-Immersed Architecture**: aria-planner implements ego-centric planning with allocentric execution, information asymmetry, and belief formation. The Godot planner assumes complete information and does not support multi-agent belief systems.
+
+3. **Plan Lifecycle Management**: aria-planner has comprehensive plan lifecycle tracking with execution status ("planned", "executing", "completed", "failed"), plan persistence, and performance metrics. The Godot planner has `PlannerResult` with success status but no execution lifecycle management.
+
+4. **Domain Registry**: aria-planner has a domain registry system (GenServer) for dynamic domain registration and discovery. The Godot planner requires manual domain creation and management.
+
+5. **External Constraint Solvers**: aria-planner includes Chuffed solver integration and FlatZinc generation. The Godot planner has `PlannerSTNSolver` for temporal constraints but no external constraint solvers.
+
+6. **Database Persistence**: aria-planner uses Ecto schemas for predicates and plan storage. The Godot planner uses in-memory `Dictionary` structures (appropriate for game engines).
+
+7. **MCP Integration**: aria-planner has Model Context Protocol tool handlers for external integration. The Godot planner has no MCP integration.
+
+8. **Execution State Management**: aria-planner separates execution state from planning state with `AriaCore.ExecutionState`. The Godot planner uses the same `Dictionary` for both planning and execution.
+
+### Design Differences (Not Missing Features)
+
+-   **ISO 8601 vs Microseconds**: aria-planner uses ISO 8601 strings for temporal constraints; Godot uses integer microseconds (intentional design difference for performance)
+-   **Database vs In-Memory**: aria-planner uses Ecto/PostgreSQL; Godot uses in-memory dictionaries (appropriate for game engine use)
+
+For complete details, see [MISSING_FEATURES.md](MISSING_FEATURES.md).
 
 ## Commit Guidelines
 
