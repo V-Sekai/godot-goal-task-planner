@@ -22,10 +22,13 @@ Key components:
 -   `PlannerEntityRequirement`: Entity matching requirements
 -   `PlannerTimeRange`: Time range management
 -   `PlannerTask` / `PlannerTaskMetadata`: Task metadata support
+-   `PlannerPersona`: Persona entity for belief-immersed planning (human, AI, hybrid)
+-   `PlannerBeliefManager`: Belief formation and updating across personas
+-   `PlannerState`: Unified knowledge representation using triples with metadata
 
 ## Build Commands
 
-See [BUILD.md](BUILD.md) for detailed build instructions.
+See [docs/BUILD.md](docs/BUILD.md) for detailed build instructions.
 
 Quick reference:
 
@@ -180,6 +183,8 @@ The `PlannerPlan` class provides three planning methods. **All three methods sup
 
 ### Core Module Files
 
+All source files are located in `src/` directory:
+
 -   `plan.h/cpp`: Main planning logic and three planning methods
 -   `domain.h/cpp`: Domain definition and management (actions, task methods, unigoal methods, multigoal methods)
 -   `planner_state.h/cpp`: State representation
@@ -193,6 +198,9 @@ The `PlannerPlan` class provides three planning methods. **All three methods sup
 -   `planner_metadata.h`: Metadata system (temporal + entity requirements)
 -   `entity_requirement.h`: Entity requirement matching
 -   `planner_time_range.h`: Time range management
+-   `planner_persona.h/cpp`: Persona entity for belief-immersed planning
+-   `planner_belief_manager.h/cpp`: Belief formation and updating across personas
+-   `planner_state.h/cpp`: Unified knowledge representation using triples with metadata
 
 ### Test Files
 
@@ -206,7 +214,7 @@ The `PlannerPlan` class provides three planning methods. **All three methods sup
 
 From test files:
 
--   Module headers: `../../<header>.h` (from `tests/unit/` or `tests/problems/`)
+-   Module headers: `../../src/<header>.h` (from `tests/unit/` or `tests/problems/`)
 -   Test helpers: `../helpers/<helper>.h`
 -   Test domains: `../domains/<domain>.h`
 -   Other test files: `../<subdir>/<file>.h` or `./<file>.h` (same directory)
@@ -233,10 +241,17 @@ From test files:
 
 ### State Representation
 
--   States are `Dictionary` objects with nested structures
+-   States are `Dictionary` objects with nested structures or flat predicates
 -   Actions return new state dictionaries (use `state.duplicate()`) or `Variant()` (NIL) on failure
 -   Task methods return `Array` of planner elements (goals, [PlannerMultigoal], tasks, and actions) on success, or `Variant()` (NIL) on failure
 -   Goals are predicate-subject-value triples `[predicate, subject, value]`
+    -   **Subject must never be empty**: All goals must have a non-empty subject field
+    -   **Standard goals**: `["study_points", "yuki", 10]` where state structure is `state["study_points"]["yuki"] = 10`
+    -   **Flat predicate goals**: `["relationship_points", "relationship_points_yuki_maya", 3]` where:
+        -   Predicate is `"relationship_points"` (used for method lookup)
+        -   Subject is the full flat predicate `"relationship_points_yuki_maya"` (contains persona_id and companion_id)
+        -   State structure is `state["relationship_points_yuki_maya"] = 3` (flat, not nested)
+        -   The multigoal verification checks `state[subject] == value` for flat predicates
 -   Multigoals are `Array` of unigoal arrays: `[[predicate, subject, value], ...]`
 -   **Important**: Use `Variant()` (NIL) to signal failure, not empty `Array()` or empty `Dictionary()`. Empty arrays mean "success with no work", empty dictionaries are invalid.
 
@@ -483,18 +498,30 @@ When you have a `PlannerResult` from a planning operation:
 
 ## Additional Notes
 
-### PlannerTask and PlannerTaskMetadata
-
--   `PlannerTask`: Resource class for tasks with metadata support
--   `PlannerTaskMetadata`: Resource class for task temporal metadata
--   Used for tasks that need temporal constraints attached
-
 ### PlannerMultigoal
 
 -   Utility class for working with multigoal arrays
--   Static methods: `is_multigoal_array()`, `method_goals_not_achieved()`, `method_verify_multigoal()`
+-   Static methods: `is_multigoal_array()`, `method_goals_not_achieved()`, `method_verify_multigoal()`, `get_goal_tag()`, `set_goal_tag()`
 -   Multigoals are `Array` of unigoal arrays: `[[predicate, subject, value], ...]`
 -   **Goal Tag Support**: `get_goal_tag(multigoal)` extracts the goal tag from a multigoal (returns empty string if no tag). `set_goal_tag(multigoal, tag)` attaches a goal tag to a multigoal, wrapping it in a Dictionary with "item" and "goal_tag" keys. Tags can be used to match multigoals to specific methods in the domain.
+
+### Belief-Immersed Architecture
+
+The planner supports belief-immersed planning through three key classes:
+
+-   **`PlannerPersona`**: Represents a persona (human, AI, or hybrid) with capabilities and ego-centric beliefs. Personas are differentiated by capabilities (human: movable, inventory, craft, mine, build, interact; AI: movable, compute, optimize, predict, learn, navigate). Each persona maintains beliefs about other personas with confidence levels and timestamps. Use `PlannerPersona::create_human()`, `create_ai()`, `create_hybrid()`, or `create_basic()` to create personas.
+
+-   **`PlannerBeliefManager`**: Handles belief formation, updating, and confidence management across personas. Manages the persona registry and enforces information asymmetry (personas cannot directly access each other's internal states). Use `register_persona()` to register personas, `get_beliefs_about()` to retrieve ego-centric beliefs, and `process_observation_for_persona()` / `process_communication_for_persona()` to update beliefs.
+
+-   **`PlannerState`**: Unified knowledge representation using subject-predicate-object triples with metadata for information asymmetry. Stores facts, beliefs, terrain information, shared objects, public events, and entity data. Supports different knowledge types (facts, beliefs, states) with metadata including confidence, timestamps, and accessibility levels. Use `set_predicate()` with metadata to store beliefs, `observe_*()` methods to access observable information.
+
+**Integration with PlannerPlan**: Set `current_persona` and `belief_manager` on a `PlannerPlan` instance to enable belief-immersed planning. The planner will:
+
+1. **Merge observable facts** from the unified state into the planning state automatically (terrain, shared objects, public events, entity positions, public capabilities)
+2. **Apply ego-centric perspective** by merging the persona's beliefs about others into the state (beliefs are accessible as state predicates like `belief_{target_persona_id}_{belief_key}`)
+3. **Update beliefs** automatically when actions execute, processing observations through the belief manager
+
+This enables multi-agent planning where each persona plans from their own perspective while sharing observable facts.
 
 ### STN Solver Details
 
@@ -545,13 +572,13 @@ This optimization helps the planner learn from past planning attempts and priori
 
 ## Missing Features from aria-planner
 
-The Godot planner is focused on core HTN planning functionality and does not include several features present in the Elixir aria-planner implementation. See [MISSING_FEATURES.md](MISSING_FEATURES.md) for a complete list.
+The Godot planner is focused on core HTN planning functionality and does not include several features present in the Elixir aria-planner implementation.
 
 ### Major Missing Features
 
-1. **Persona System**: aria-planner has a complete persona-centric architecture with unified persona models (human, AI, hybrid) and capability-based differentiation. The Godot planner is domain-centric, not persona-centric.
+1. **Persona System**: ✅ **IMPLEMENTED** - The Godot planner now includes `PlannerPersona` with unified persona models (human, AI, hybrid) and capability-based differentiation. Personas can be created using `PlannerPersona::create_human()`, `create_ai()`, `create_hybrid()`, or `create_basic()`. The planner supports both domain-centric and persona-centric planning.
 
-2. **Belief-Immersed Architecture**: aria-planner implements ego-centric planning with allocentric execution, information asymmetry, and belief formation. The Godot planner assumes complete information and does not support multi-agent belief systems.
+2. **Belief-Immersed Architecture**: ✅ **IMPLEMENTED** - The Godot planner now implements ego-centric planning with allocentric execution, information asymmetry, and belief formation through `PlannerPersona`, `PlannerBeliefManager`, and unified `PlannerState`. Personas maintain ego-centric beliefs about other personas, and the belief manager enforces information asymmetry. The unified state represents shared ground truth observable by all personas using triples with metadata.
 
 3. **Plan Lifecycle Management**: aria-planner has comprehensive plan lifecycle tracking with execution status ("planned", "executing", "completed", "failed"), plan persistence, and performance metrics. The Godot planner has `PlannerResult` with success status but no execution lifecycle management.
 
@@ -569,8 +596,6 @@ The Godot planner is focused on core HTN planning functionality and does not inc
 
 -   **ISO 8601 vs Microseconds**: aria-planner uses ISO 8601 strings for temporal constraints; Godot uses integer microseconds (intentional design difference for performance)
 -   **Database vs In-Memory**: aria-planner uses Ecto/PostgreSQL; Godot uses in-memory dictionaries (appropriate for game engine use)
-
-For complete details, see [MISSING_FEATURES.md](MISSING_FEATURES.md).
 
 ## Commit Guidelines
 

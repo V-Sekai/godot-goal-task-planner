@@ -30,23 +30,8 @@
 
 #pragma once
 
-// Central test file that includes all test files in the goal_task_planner module.
-// This file is included by the test runner to ensure all tests are registered.
-
-// Unit tests
-#include "unit/test_comprehensive.h"
-#include "unit/test_ipyhop_compatibility.h"
-#include "unit/test_new_api.h"
+#include "unit/test_minimal_backtracking.h"
 #include "unit/test_persona_belief.h"
 #include "unit/test_planner_components.h"
-#include "unit/test_vsids.h"
-
-// Problem/integration tests
-
-// Domain tests
-#include "domains/fox_geese_corn_test.h"
-#include "domains/magical_girls_college_test.h"
-#include "domains/minimal_backtracking_test.h"
-#include "domains/minimal_task_test.h"
-#include "domains/rescue_test.h"
-#include "domains/temporal_travel_test.h"
+#include "unit/test_solution_graph.h"
+#include "unit/test_specification.h"

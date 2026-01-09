@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  planner_belief_manager.h                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,36 +28,32 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-/* register_types.cpp */
+#pragma once
 
-#include "register_types.h"
+// SPDX-FileCopyrightText: 2021 University of Maryland
+// SPDX-License-Identifier: BSD-3-Clause-Clear
+// Author: Dana Nau <nau@umd.edu>, July 7, 2021
 
-#include "core/object/class_db.h"
+#include "core/io/resource.h"
+#include "core/templates/hash_map.h"
 
-#include "src/domain.h"
-#include "src/multigoal.h"
-#include "src/plan.h"
-#include "src/planner_belief_manager.h"
-#include "src/planner_persona.h"
-#include "src/planner_result.h"
-#include "src/planner_state.h"
+#include "planner_persona.h"
 
-void initialize_goal_task_planner_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
+class PlannerBeliefManager : public Resource {
+	GDCLASS(PlannerBeliefManager, Resource);
 
-	ClassDB::register_class<PlannerDomain>();
-	ClassDB::register_class<PlannerPlan>();
-	ClassDB::register_class<PlannerResult>();
-	ClassDB::register_class<PlannerState>();
-	ClassDB::register_class<PlannerMultigoal>();
-	ClassDB::register_class<PlannerPersona>();
-	ClassDB::register_class<PlannerBeliefManager>();
-}
+	HashMap<String, Ref<PlannerPersona>> personas;
 
-void uninitialize_goal_task_planner_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-}
+protected:
+	static void _bind_methods();
+
+public:
+	PlannerBeliefManager();
+	~PlannerBeliefManager();
+
+	Ref<PlannerPersona> get_persona(const String &p_persona_id);
+	bool has_persona(const String &p_persona_id) const;
+	void register_persona(const Ref<PlannerPersona> &p_persona);
+	void process_observation_for_persona(const String &p_persona_id, const Dictionary &p_observation);
+	Dictionary get_planner_state(const String &p_target_persona_id, const String &p_requester_persona_id);
+};

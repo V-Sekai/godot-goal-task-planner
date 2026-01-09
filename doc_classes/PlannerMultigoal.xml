@@ -20,6 +20,7 @@
 			<return type="bool" />
 			<param index="0" name="variant" type="Variant" />
 			<description>
+				Checks if a [Variant] is a multigoal array. A multigoal array is an [Array] where the first element is also an [Array] (representing a unigoal). Returns true if the variant is a multigoal array, false otherwise.
 			</description>
 		</method>
 		<method name="method_goals_not_achieved" qualifiers="static">

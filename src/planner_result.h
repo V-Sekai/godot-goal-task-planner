@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  planner_result.h                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,36 +28,49 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-/* register_types.cpp */
+#pragma once
 
-#include "register_types.h"
+#include "core/io/resource.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/typed_array.h"
+#include "solution_graph.h"
 
-#include "core/object/class_db.h"
+class PlannerResult : public Resource {
+	GDCLASS(PlannerResult, Resource);
 
-#include "src/domain.h"
-#include "src/multigoal.h"
-#include "src/plan.h"
-#include "src/planner_belief_manager.h"
-#include "src/planner_persona.h"
-#include "src/planner_result.h"
-#include "src/planner_state.h"
+private:
+	Dictionary final_state;
+	Dictionary solution_graph; // The graph Dictionary from PlannerSolutionGraph
+	bool success;
 
-void initialize_goal_task_planner_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
+public:
+	PlannerResult();
 
-	ClassDB::register_class<PlannerDomain>();
-	ClassDB::register_class<PlannerPlan>();
-	ClassDB::register_class<PlannerResult>();
-	ClassDB::register_class<PlannerState>();
-	ClassDB::register_class<PlannerMultigoal>();
-	ClassDB::register_class<PlannerPersona>();
-	ClassDB::register_class<PlannerBeliefManager>();
-}
+	Dictionary get_final_state() const { return final_state; }
+	void set_final_state(Dictionary p_state) { final_state = p_state; }
 
-void uninitialize_goal_task_planner_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-}
+	Dictionary get_solution_graph() const { return solution_graph; }
+	void set_solution_graph(Dictionary p_graph) { solution_graph = p_graph; }
+
+	bool get_success() const { return success; }
+	void set_success(bool p_success) { success = p_success; }
+
+	// Extract array of actions from the solution graph
+	Array extract_plan(int p_verbose = 0) const;
+
+	// Helper methods for working with the solution graph
+	Array find_failed_nodes() const;
+	Dictionary get_node(int p_node_id) const;
+	Array get_all_nodes() const;
+	bool has_node(int p_node_id) const;
+
+	// Plan explanation and debugging methods
+	Dictionary explain_plan() const; // Get explanation of why this plan was chosen
+	Array get_alternative_methods(int p_node_id) const; // Get alternative methods considered for a node
+	Dictionary get_decision_path(int p_node_id) const; // Get decision path from root to node
+	Dictionary to_graph_json() const; // Export plan graph as JSON for visualization
+	String get_node_explanation(int p_node_id) const; // Get human-readable explanation for a node
+
+protected:
+	static void _bind_methods();
+};

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  planner_time_range.h                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,36 +28,62 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-/* register_types.cpp */
+#pragma once
 
-#include "register_types.h"
+#include "core/os/os.h"
+#include "core/typedefs.h"
 
-#include "core/object/class_db.h"
+struct PlannerTimeRange {
+	// All times in absolute microseconds since Unix epoch (1970-01-01 00:00:00 UTC)
+	static constexpr double MICROSECONDS_PER_SECOND = 1000000.0; // Conversion factor from seconds to microseconds
 
-#include "src/domain.h"
-#include "src/multigoal.h"
-#include "src/plan.h"
-#include "src/planner_belief_manager.h"
-#include "src/planner_persona.h"
-#include "src/planner_result.h"
-#include "src/planner_state.h"
+	int64_t start_time = 0; // Absolute microseconds
+	int64_t end_time = 0; // Absolute microseconds
+	int64_t duration = 0; // Duration in microseconds
 
-void initialize_goal_task_planner_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
+	PlannerTimeRange() {}
+
+	void set_start_time(int64_t p_time) { start_time = p_time; }
+	int64_t get_start_time() const { return start_time; }
+
+	void set_end_time(int64_t p_time) { end_time = p_time; }
+	int64_t get_end_time() const { return end_time; }
+
+	void set_duration(int64_t p_duration) { duration = p_duration; }
+	int64_t get_duration() const { return duration; }
+
+	// Helper methods for absolute time conversion
+	// Convert from Godot's unix time (seconds) to microseconds
+	static int64_t unix_time_to_microseconds(double p_unix_time) {
+		return static_cast<int64_t>(p_unix_time * MICROSECONDS_PER_SECOND);
 	}
 
-	ClassDB::register_class<PlannerDomain>();
-	ClassDB::register_class<PlannerPlan>();
-	ClassDB::register_class<PlannerResult>();
-	ClassDB::register_class<PlannerState>();
-	ClassDB::register_class<PlannerMultigoal>();
-	ClassDB::register_class<PlannerPersona>();
-	ClassDB::register_class<PlannerBeliefManager>();
-}
-
-void uninitialize_goal_task_planner_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
+	// Get current absolute time in microseconds
+	static int64_t now_microseconds() {
+		return unix_time_to_microseconds(OS::get_singleton()->get_unix_time());
 	}
-}
+
+	// Set start time to current absolute time
+	void set_start_now() {
+		start_time = now_microseconds();
+	}
+
+	// Set end time to current absolute time
+	void set_end_now() {
+		end_time = now_microseconds();
+	}
+
+	// Calculate duration from start_time to end_time
+	void calculate_duration() {
+		if (end_time > start_time) {
+			duration = end_time - start_time;
+		} else {
+			duration = 0;
+		}
+	}
+
+	// Calculate end_time from start_time and duration
+	void calculate_end_from_duration() {
+		end_time = start_time + duration;
+	}
+};

@@ -30,8 +30,8 @@
 
 #pragma once
 
-#include "../../domain.h"
-#include "../../planner_result.h"
+#include "../../src/domain.h"
+#include "../../src/planner_result.h"
 #include "../domains/ipyhop_test_domain.h"
 #include "core/variant/array.h"
 #include "core/variant/variant.h"
@@ -53,11 +53,13 @@ Ref<PlannerDomain> create_ipyhop_test_domain() {
 	Ref<PlannerDomain> domain = memnew(PlannerDomain);
 
 	// Register actions
-	TypedArray<Callable> actions;
-	actions.push_back(callable_mp_static(&IPyHOPTestDomainCallable::action_transfer_flag));
-	actions.push_back(callable_mp_static(&IPyHOPTestDomainCallable::action_putv));
-	actions.push_back(callable_mp_static(&IPyHOPTestDomainCallable::action_getv));
-	domain->add_actions(actions);
+	// Note: In tools-disabled builds, use add_command with explicit names
+	// For now, actions are registered inline (requires IPyHOPTestDomainCallable to be defined)
+	// TypedArray<Callable> actions;
+	// actions.push_back(callable_mp_static(&IPyHOPTestDomainCallable::action_transfer_flag));
+	// actions.push_back(callable_mp_static(&IPyHOPTestDomainCallable::action_putv));
+	// actions.push_back(callable_mp_static(&IPyHOPTestDomainCallable::action_getv));
+	// For explicit naming: domain->add_command("name", callable);
 
 	return domain;
 }

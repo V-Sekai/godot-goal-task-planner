@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  domain.h                                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,36 +28,45 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-/* register_types.cpp */
+#pragma once
 
-#include "register_types.h"
+// SPDX-FileCopyrightText: 2021 University of Maryland
+// SPDX-License-Identifier: BSD-3-Clause-Clear
+// Author: Dana Nau <nau@umd.edu>, July 7, 2021
 
-#include "core/object/class_db.h"
+#include "core/io/resource.h"
+#include "core/object/object.h"
+#include "core/variant/typed_array.h"
 
-#include "src/domain.h"
-#include "src/multigoal.h"
-#include "src/plan.h"
-#include "src/planner_belief_manager.h"
-#include "src/planner_persona.h"
-#include "src/planner_result.h"
-#include "src/planner_state.h"
+class PlannerPlan;
+class PlannerDomain : public Resource {
+	GDCLASS(PlannerDomain, Resource);
+	friend PlannerPlan;
 
-void initialize_goal_task_planner_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
+public:
+	Dictionary command_dictionary; // Public for testing
+private:
+	Dictionary task_method_dictionary;
+	Dictionary unigoal_method_dictionary; // Internal use only (for multigoal decomposition)
+	TypedArray<Callable> multigoal_method_list;
 
-	ClassDB::register_class<PlannerDomain>();
-	ClassDB::register_class<PlannerPlan>();
-	ClassDB::register_class<PlannerResult>();
-	ClassDB::register_class<PlannerState>();
-	ClassDB::register_class<PlannerMultigoal>();
-	ClassDB::register_class<PlannerPersona>();
-	ClassDB::register_class<PlannerBeliefManager>();
-}
+public:
+	PlannerDomain();
 
-void uninitialize_goal_task_planner_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-}
+public:
+	// Add a command with an explicit name (useful when method names are stripped in non-tools builds).
+	void add_command(String p_name, Callable p_command);
+	// Add task methods. Methods return false or an Array of planner elements (goals, PlannerMultigoal, tasks, commands).
+	void add_task_methods(String p_task_name, TypedArray<Callable> p_methods);
+	// Add unigoal methods. Methods return false or an Array of planner elements (goals, PlannerMultigoal, tasks, commands).
+	// Note: Unigoals are internal only - users should use multigoals in task agendas.
+	void add_unigoal_methods(String p_task_name, TypedArray<Callable> p_methods);
+	// Add multigoal methods. Methods return false or an Array of planner elements (goals, PlannerMultigoal, tasks, commands).
+	void add_multigoal_methods(TypedArray<Callable> p_methods);
+
+public:
+	static Variant method_verify_goal(Dictionary p_state, String p_method, String p_state_var, String p_arguments, Variant p_desired_values, int p_depth, int verbose);
+
+protected:
+	static void _bind_methods();
+};

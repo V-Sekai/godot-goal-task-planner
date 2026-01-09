@@ -18,7 +18,6 @@ def get_doc_classes():
         "PlannerResult",
         "PlannerPersona",
         "PlannerBeliefManager",
-        "PlannerFactsAllocentric",
     ]
 
 

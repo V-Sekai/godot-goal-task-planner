@@ -3,4 +3,11 @@ from misc.utility.scons_hints import *
 
 Import("env")
 
-env.add_source_files(env.modules_sources, "*.cpp")
+# Add src/ to include path so headers can be included from anywhere
+env.Prepend(CPPPATH=["src"])
+
+# Include register_types.cpp from root (required by build system)
+env.add_source_files(env.modules_sources, "register_types.cpp")
+
+# Include all source files from src/
+env.add_source_files(env.modules_sources, "src/*.cpp")

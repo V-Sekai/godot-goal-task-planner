@@ -101,12 +101,12 @@ constraint forall(a in 8..max_actions) (action_used[a] = false);
 
 solve satisfy;
 
-output [
-    "Action sequence:\n",
+output [ "Action sequence:\n" ] ++
+[
     "  " ++ show(a) ++ ": action_transfer_flag(" ++ show(from_flag[a]) ++ ", " ++ show(to_flag[a]) ++ ")\n"
     | a in 1..7
-] ++ [
-    "\nFinal state:\n",
+] ++ [ "\nFinal state:\n" ] ++
+[
     "  flag[" ++ show(f) ++ "] = " ++ show(flag_state[max_actions, f]) ++ "\n"
     | f in 0..7
 ];
